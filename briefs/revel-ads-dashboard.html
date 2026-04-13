@@ -260,6 +260,8 @@
     .view-creative svg { width: 12px; height: 12px; }
 
     /* Runner-up Rows */
+    .runner-item { border-radius: 12px; transition: all 0.2s; border: 1px solid transparent; }
+    .runner-item.open { background: rgba(0,0,0,0.015); border-color: rgba(0,0,0,0.06); }
     .runner-row {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 16px;
@@ -267,11 +269,11 @@
       cursor: pointer;
       transition: all 0.2s;
       text-align: left;
-      border: 1px solid transparent;
       background: none;
       width: 100%;
+      border: none;
     }
-    .runner-row:hover { background: rgba(0,0,0,0.01); border-color: rgba(0,0,0,0.05); }
+    .runner-item:hover { background: rgba(0,0,0,0.01); border-color: rgba(0,0,0,0.05); }
     .runner-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .runner-rank {
       width: 24px; height: 24px;
@@ -296,8 +298,47 @@
       text-transform: uppercase; letter-spacing: 1px;
     }
     .runner-meta .dot { width: 3px; height: 3px; background: rgba(0,0,0,0.1); border-radius: 50%; }
-    .runner-count { font-size: 14px; font-weight: 700; color: var(--brand); flex-shrink: 0; margin-left: 16px; }
-    .runners-list { padding: 8px 12px; }
+    .runner-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 16px; }
+    .runner-count { font-size: 14px; font-weight: 700; color: var(--brand); }
+    .runner-chevron {
+      width: 16px; height: 16px; color: rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+    .runner-item.open .runner-chevron { transform: rotate(180deg); }
+    .runner-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      padding: 0 16px;
+    }
+    .runner-item.open .runner-detail {
+      max-height: 500px;
+      padding: 0 16px 16px;
+    }
+    .runner-detail-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 24px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    .runner-detail-inner .stat-item { padding: 6px 0; }
+    .runner-detail-inner .stat-label { font-size: 9px; }
+    .runner-detail-inner .stat-value { font-size: 13px; }
+    .runner-detail-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 10px;
+      padding: 8px 14px;
+      background: var(--black); color: var(--white);
+      border-radius: 8px;
+      font-size: 11px; font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s;
+      grid-column: 1 / -1;
+    }
+    .runner-detail-link:hover { background: rgba(0,0,0,0.8); }
+    .runner-detail-link svg { width: 11px; height: 11px; }
+    .runners-list { padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; }
 
     /* Sidebar */
     .sidebar { display: flex; flex-direction: column; gap: 16px; }
@@ -680,19 +721,37 @@
                     currentCategory === 'clicks' ? num(ad['Outbound Clicks']) :
                     fmtCurrency(num(ad['Cost per Result']));
                   return `
-                  <div class="runner-row">
-                    <div class="runner-left">
-                      <div class="runner-rank">${i + 2}</div>
-                      <div class="runner-info">
-                        <div class="runner-name">${ad['Ad Name'] || '—'}</div>
-                        <div class="runner-meta">
-                          <span>Spend: ${fmtCurrency(num(ad['Amount Spent']))}</span>
-                          <div class="dot"></div>
-                          <span>ROAS: ${num(ad['Purchase ROAS']).toFixed(1)}x</span>
+                  <div class="runner-item" onclick="toggleRunner(this)">
+                    <div class="runner-row">
+                      <div class="runner-left">
+                        <div class="runner-rank">${i + 2}</div>
+                        <div class="runner-info">
+                          <div class="runner-name">${ad['Ad Name'] || '—'}</div>
+                          <div class="runner-meta">
+                            <span>Spend: ${fmtCurrency(num(ad['Amount Spent']))}</span>
+                            <div class="dot"></div>
+                            <span>ROAS: ${num(ad['Purchase ROAS']).toFixed(1)}x</span>
+                          </div>
                         </div>
                       </div>
+                      <div class="runner-right">
+                        <div class="runner-count">${metricVal}</div>
+                        <svg class="runner-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                      </div>
                     </div>
-                    <div class="runner-count">${metricVal}</div>
+                    <div class="runner-detail">
+                      <div class="runner-detail-inner">
+                        <div class="stat-item"><p class="stat-label">Reach</p><p class="stat-value">${fmt(num(ad['Reach']))}</p></div>
+                        <div class="stat-item"><p class="stat-label">Amount Spent</p><p class="stat-value">${fmtCurrency(num(ad['Amount Spent']))}</p></div>
+                        <div class="stat-item"><p class="stat-label">Outbound Clicks</p><p class="stat-value">${fmt(num(ad['Outbound Clicks']))}</p></div>
+                        <div class="stat-item"><p class="stat-label">Outbound CTR</p><p class="stat-value">${ad['Outbound CTR'] || '—'}</p></div>
+                        <div class="stat-item"><p class="stat-label">Adds to Cart</p><p class="stat-value">${fmt(num(ad['Adds to Cart']))}</p></div>
+                        <div class="stat-item"><p class="stat-label">Purchases</p><p class="stat-value">${fmt(num(ad['Purchases']))}</p></div>
+                        <div class="stat-item"><p class="stat-label">ROAS</p><p class="stat-value">${num(ad['Purchase ROAS']).toFixed(2)}x</p></div>
+                        <div class="stat-item"><p class="stat-label">CPA</p><p class="stat-value">${fmtCurrency(num(ad['Cost per Result']))}</p></div>
+                        ${ad['Media Preview URL'] ? `<a href="${ad['Media Preview URL']}" target="_blank" rel="noopener noreferrer" class="runner-detail-link" onclick="event.stopPropagation()">View Ad Creative <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
+                      </div>
+                    </div>
                   </div>`;
                 }).join('')}
               </div>
@@ -744,6 +803,10 @@
     function switchCategory(cat) {
       currentCategory = cat;
       render(adsData);
+    }
+
+    function toggleRunner(el) {
+      el.classList.toggle('open');
     }
 
     async function loadData() {
