@@ -316,18 +316,39 @@
       padding: 0 16px 16px;
     }
     .runner-detail-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px 24px;
-      padding-top: 8px;
+      display: flex;
+      gap: 16px;
+      padding-top: 12px;
       border-top: 1px solid rgba(0,0,0,0.05);
     }
-    .runner-detail-inner .stat-item { padding: 6px 0; }
-    .runner-detail-inner .stat-label { font-size: 9px; }
-    .runner-detail-inner .stat-value { font-size: 13px; }
+    .runner-thumb {
+      width: 120px; height: 120px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.04);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .runner-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .runner-thumb-placeholder {
+      color: rgba(0,0,0,0.15);
+    }
+    .runner-thumb-placeholder svg { width: 32px; height: 32px; }
+    .runner-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 20px;
+      flex: 1;
+    }
+    .runner-stats-grid .stat-item { padding: 4px 0; }
+    .runner-stats-grid .stat-label { font-size: 9px; }
+    .runner-stats-grid .stat-value { font-size: 13px; }
     .runner-detail-link {
       display: inline-flex; align-items: center; gap: 6px;
-      margin-top: 10px;
+      margin-top: 6px;
       padding: 8px 14px;
       background: var(--black); color: var(--white);
       border-radius: 8px;
@@ -335,6 +356,7 @@
       text-decoration: none;
       transition: background 0.2s;
       grid-column: 1 / -1;
+      width: fit-content;
     }
     .runner-detail-link:hover { background: rgba(0,0,0,0.8); }
     .runner-detail-link svg { width: 11px; height: 11px; }
@@ -741,15 +763,20 @@
                     </div>
                     <div class="runner-detail">
                       <div class="runner-detail-inner">
-                        <div class="stat-item"><p class="stat-label">Reach</p><p class="stat-value">${fmt(num(ad['Reach']))}</p></div>
-                        <div class="stat-item"><p class="stat-label">Amount Spent</p><p class="stat-value">${fmtCurrency(num(ad['Amount Spent']))}</p></div>
-                        <div class="stat-item"><p class="stat-label">Outbound Clicks</p><p class="stat-value">${fmt(num(ad['Outbound Clicks']))}</p></div>
-                        <div class="stat-item"><p class="stat-label">Outbound CTR</p><p class="stat-value">${ad['Outbound CTR'] || '—'}</p></div>
-                        <div class="stat-item"><p class="stat-label">Adds to Cart</p><p class="stat-value">${fmt(num(ad['Adds to Cart']))}</p></div>
-                        <div class="stat-item"><p class="stat-label">Purchases</p><p class="stat-value">${fmt(num(ad['Purchases']))}</p></div>
-                        <div class="stat-item"><p class="stat-label">ROAS</p><p class="stat-value">${num(ad['Purchase ROAS']).toFixed(2)}x</p></div>
-                        <div class="stat-item"><p class="stat-label">CPA</p><p class="stat-value">${fmtCurrency(num(ad['Cost per Result']))}</p></div>
-                        ${ad['Media Preview URL'] ? `<a href="${ad['Media Preview URL']}" target="_blank" rel="noopener noreferrer" class="runner-detail-link" onclick="event.stopPropagation()">View Ad Creative <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
+                        <div class="runner-thumb">
+                          ${ad['Media Preview URL'] ? `<img src="${ad['Media Preview URL']}" alt="${ad['Ad Name'] || ''}" referrerpolicy="no-referrer" onerror="this.parentElement.innerHTML='<div class=\\'runner-thumb-placeholder\\'><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\'><rect x=\\'3\\' y=\\'3\\' width=\\'18\\' height=\\'18\\' rx=\\'2\\'/><circle cx=\\'8.5\\' cy=\\'8.5\\' r=\\'1.5\\'/><path d=\\'m21 15-5-5L5 21\\'/></svg></div>'">` : `<div class="runner-thumb-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>`}
+                        </div>
+                        <div class="runner-stats-grid">
+                          <div class="stat-item"><p class="stat-label">Reach</p><p class="stat-value">${fmt(num(ad['Reach']))}</p></div>
+                          <div class="stat-item"><p class="stat-label">Amount Spent</p><p class="stat-value">${fmtCurrency(num(ad['Amount Spent']))}</p></div>
+                          <div class="stat-item"><p class="stat-label">Outbound Clicks</p><p class="stat-value">${fmt(num(ad['Outbound Clicks']))}</p></div>
+                          <div class="stat-item"><p class="stat-label">Outbound CTR</p><p class="stat-value">${ad['Outbound CTR'] || '—'}</p></div>
+                          <div class="stat-item"><p class="stat-label">Adds to Cart</p><p class="stat-value">${fmt(num(ad['Adds to Cart']))}</p></div>
+                          <div class="stat-item"><p class="stat-label">Purchases</p><p class="stat-value">${fmt(num(ad['Purchases']))}</p></div>
+                          <div class="stat-item"><p class="stat-label">ROAS</p><p class="stat-value">${num(ad['Purchase ROAS']).toFixed(2)}x</p></div>
+                          <div class="stat-item"><p class="stat-label">CPA</p><p class="stat-value">${fmtCurrency(num(ad['Cost per Result']))}</p></div>
+                          ${ad['Media Preview URL'] ? `<a href="${ad['Media Preview URL']}" target="_blank" rel="noopener noreferrer" class="runner-detail-link" onclick="event.stopPropagation()">View Ad Creative <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
+                        </div>
                       </div>
                     </div>
                   </div>`;
