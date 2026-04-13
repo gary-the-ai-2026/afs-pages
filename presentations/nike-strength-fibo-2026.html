@@ -285,7 +285,7 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
                 <div className="flex-1">
                   <div className="flex justify-between mb-0.5">
                     <span className="font-medium text-gaf-darkGrey">{c.name}</span>
-                    <span className="font-bold text-gaf-darkGrey">${(c.rev/1000).toFixed(0)}K <span className="text-gray-400 font-normal">{c.margin} margin</span></span>
+                    <span className="font-bold text-gaf-darkGrey">${(c.rev/1000).toFixed(0)}K <span className="text-gray-400 font-normal">({c.margin} margin)</span></span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1">
                     <div className="bg-gaf-orange h-full rounded-full" style={{ width: `${c.pct * 2.5}%` }}></div>
