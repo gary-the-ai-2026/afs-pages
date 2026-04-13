@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nike Strength — Supplier Review | FIBO 2026</title>
+<title>Nike Strength — Supplier Update</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {
@@ -15,10 +15,6 @@ tailwind.config = {
           black: '#000000',
           darkGrey: '#424242',
           paleGrey: '#f0f0f0',
-        },
-        nike: {
-          black: '#111111',
-          grey: '#757575',
         }
       },
       fontFamily: {
@@ -52,7 +48,7 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
 <script src="https://esm.sh/react-dom@19.1.0/client" type="module"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script type="text/babel" data-type="module">
-import React, { useState, useEffect } from 'https://esm.sh/react@19.1.0';
+import React, { useState, useEffect, useRef } from 'https://esm.sh/react@19.1.0';
 import { createRoot } from 'https://esm.sh/react-dom@19.1.0/client';
 
 // ===== ICONS =====
@@ -80,6 +76,44 @@ const AlertTriangle = (p) => <Icon {...p} d={["M10.29 3.86L1.82 18a2 2 0 001.71 
 const ArrowRight = (p) => <Icon {...p} d={["M5 12h14","M12 5l7 7-7 7"]} />;
 const MessageCircle = (p) => <Icon {...p} d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />;
 const Percent = (p) => <Icon {...p} d={["M19 5L5 19","M6.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5","M17.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5"]} />;
+
+// ===== PIE CHART COMPONENT =====
+const PieChart = ({ data, size = 200 }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  const cx = size / 2, cy = size / 2, r = size / 2 - 8;
+  let cumAngle = -Math.PI / 2;
+
+  const slices = data.map((d, i) => {
+    const angle = (d.value / total) * 2 * Math.PI;
+    const startX = cx + r * Math.cos(cumAngle);
+    const startY = cy + r * Math.sin(cumAngle);
+    const endX = cx + r * Math.cos(cumAngle + angle);
+    const endY = cy + r * Math.sin(cumAngle + angle);
+    const largeArc = angle > Math.PI ? 1 : 0;
+    const midAngle = cumAngle + angle / 2;
+    const labelR = r * 0.65;
+    const labelX = cx + labelR * Math.cos(midAngle);
+    const labelY = cy + labelR * Math.sin(midAngle);
+    const pct = ((d.value / total) * 100).toFixed(1);
+    cumAngle += angle;
+    return { ...d, startX, startY, endX, endY, largeArc, labelX, labelY, pct, angle };
+  });
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
+      {slices.map((s, i) => (
+        <g key={i}>
+          <path d={`M${cx},${cy} L${s.startX},${s.startY} A${r},${r} 0 ${s.largeArc},1 ${s.endX},${s.endY} Z`}
+            fill={s.color} stroke="white" strokeWidth="2" />
+          {s.angle > 0.3 && (
+            <text x={s.labelX} y={s.labelY} textAnchor="middle" dominantBaseline="central"
+              fill="white" fontSize="11" fontWeight="800" fontFamily="Montserrat, sans-serif">{s.pct}%</text>
+          )}
+        </g>
+      ))}
+    </svg>
+  );
+};
 
 // ===== LOGO =====
 const Logo = ({ className = "h-12" }) => (
@@ -117,17 +151,16 @@ const SlideLayout = ({ children, title, subtitle, slideNumber, totalSlides }) =>
 const TitleSlide = ({ slideNumber, totalSlides }) => (
   <div className="w-full h-full bg-white relative flex flex-col items-center justify-center overflow-hidden">
     <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gaf-orange opacity-10 transform rotate-45 translate-x-1/2 -translate-y-1/2"></div>
-    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-nike-black opacity-5 transform -rotate-12 -translate-x-1/4 translate-y-1/4"></div>
+    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-black opacity-5 transform -rotate-12 -translate-x-1/4 translate-y-1/4"></div>
     <div className="z-10 text-center space-y-8 animate-fade-in-up">
       <div className="scale-150 mb-12 flex justify-center"><Logo /></div>
       <div className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-bold tracking-[0.2em] text-gray-500 uppercase">Supplier Review</h2>
+        <h2 className="text-xl md:text-2xl font-bold tracking-[0.2em] text-gray-500 uppercase">Supplier Update</h2>
         <h1 className="text-5xl md:text-8xl font-extrabold text-black uppercase leading-tight">
           Nike<br/><span className="text-gaf-orange">Strength</span>
         </h1>
       </div>
       <div className="w-24 h-2 bg-black mx-auto mt-8"></div>
-      <p className="text-xl text-gray-600 font-body max-w-2xl mx-auto mt-8">FIBO 2026 | Prepared for Steven</p>
       <p className="text-sm text-gray-400 font-body">May 2025 — March 2026 Performance</p>
     </div>
     <div className="absolute bottom-8 left-0 w-full text-center">
@@ -138,39 +171,46 @@ const TitleSlide = ({ slideNumber, totalSlides }) => (
 
 // ===== SLIDE 2: PERFORMANCE YTD =====
 const monthlyData = [
-  { month: 'May', rev: 4386, gp: 718, units: 29 },
-  { month: 'Jun', rev: 10497, gp: 2310, units: 77 },
-  { month: 'Jul', rev: 26759, gp: 4099, units: 206 },
-  { month: 'Aug', rev: 45459, gp: 5755, units: 323 },
-  { month: 'Sep', rev: 44832, gp: 5698, units: 316 },
-  { month: 'Oct', rev: 73414, gp: 9720, units: 558 },
-  { month: 'Nov', rev: 78649, gp: 10756, units: 685 },
-  { month: 'Dec', rev: 66802, gp: 10108, units: 592 },
-  { month: 'Jan', rev: 65651, gp: 8830, units: 632 },
-  { month: 'Feb', rev: 64410, gp: 8489, units: 525 },
-  { month: 'Mar', rev: 78351, gp: 10191, units: 806 },
+  { month: 'May', rev: 4121, gp: 1457, units: 33 },
+  { month: 'Jun', rev: 14830, gp: 992, units: 145 },
+  { month: 'Jul', rev: 35472, gp: 9031, units: 371 },
+  { month: 'Aug', rev: 17202, gp: 3870, units: 224 },
+  { month: 'Sep', rev: 41628, gp: 10950, units: 293 },
+  { month: 'Oct', rev: 56908, gp: 1184, units: 468 },
+  { month: 'Nov', rev: 77515, gp: 12399, units: 772 },
+  { month: 'Dec', rev: 93022, gp: 2410, units: 699 },
+  { month: 'Jan', rev: 58936, gp: 9071, units: 659 },
+  { month: 'Feb', rev: 81149, gp: 5562, units: 603 },
+  { month: 'Mar', rev: 78428, gp: 19749, units: 482 },
 ];
 
 const topProducts = [
-  { name: 'Grind Bumper Plates 20kg', rev: 29083, units: 234 },
-  { name: 'Half Rack Bundle', rev: 26396, units: 24 },
-  { name: 'Shield Barbell 20kg', rev: 22381, units: 94 },
-  { name: 'Grind Dumbbell (range)', rev: 19842, units: 312 },
-  { name: 'Pro Urethane Dumbbells', rev: 18736, units: 87 },
+  { name: 'Grind Bumper Plates 20kg', rev: 29324, units: 168 },
+  { name: 'Half Rack Bundle', rev: 26252, units: 15 },
+  { name: 'Shield Barbell 20kg', rev: 21750, units: 44 },
+  { name: 'Grind Bumper Plates 10kg', rev: 17110, units: 193 },
+  { name: 'Hex Grind Dumbbell 15kg', rev: 15163, units: 156 },
 ];
 
 const topCategories = [
-  { name: 'Dumbbells', rev: 182000, margin: '7%', pct: 32.6 },
-  { name: 'Bumper Plates', rev: 97000, margin: '30%', pct: 17.3 },
-  { name: 'Barbells', rev: 74000, margin: '12%', pct: 13.2 },
-  { name: 'Rack Packages', rev: 62000, margin: '15%', pct: 11.1 },
-  { name: 'Kettlebells', rev: 44000, margin: '22%', pct: 7.9 },
+  { name: 'Dumbbells', rev: 182221, margin: '7.2%', pct: 32.6 },
+  { name: 'Bumper Plates', rev: 97405, margin: '29.6%', pct: 17.4 },
+  { name: 'Barbells', rev: 74494, margin: '12.3%', pct: 13.3 },
+  { name: 'Power Racks', rev: 54604, margin: '17.2%', pct: 9.8 },
+  { name: 'Storage', rev: 46622, margin: '18.8%', pct: 8.3 },
+];
+
+const departmentData = [
+  { name: 'GAF AU (Retail)', value: 291136, color: '#f26422' },
+  { name: 'GAF Online', value: 207504, color: '#424242' },
+  { name: 'GAF Wholesale', value: 42623, color: '#999999' },
+  { name: 'GAF Commercial', value: 17948, color: '#d1d5db' },
 ];
 
 const PerformanceSlide = ({ slideNumber, totalSlides }) => {
   const maxRev = Math.max(...monthlyData.map(d => d.rev));
   return (
-  <SlideLayout title="Performance YTD" subtitle="Nike Strength sales performance: May 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
+  <SlideLayout title="Performance YTD" subtitle="Nike Strength sales: May 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
       {/* Hero KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
@@ -203,8 +243,8 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
             <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Growth</span>
             <Zap size={16} className="text-gaf-orange" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">1,686%</h3>
-          <p className="text-xs text-gaf-orange font-bold mt-1">May $4K → Mar $78K</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">1,803%</h3>
+          <p className="text-xs text-gaf-orange font-bold mt-1">May $4K → Dec $93K peak</p>
         </div>
       </div>
 
@@ -212,12 +252,12 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex-1 min-h-0">
         <div className="flex items-center gap-2 mb-3">
           <BarChart size={16} className="text-gaf-orange" />
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Revenue Trend</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Revenue</span>
         </div>
         <div className="flex items-end gap-2 h-[calc(100%-32px)]">
           {monthlyData.map((d, i) => (
             <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
-              <span className="text-[9px] font-bold text-gaf-darkGrey mb-1">${(d.rev/1000).toFixed(0)}K</span>
+              <span className="text-[8px] font-bold text-gaf-darkGrey mb-1">${(d.rev/1000).toFixed(0)}K</span>
               <div className="w-full rounded-t-md bg-gradient-to-t from-gaf-orange to-orange-300 transition-all hover:from-gaf-orange hover:to-orange-400" style={{ height: `${(d.rev / maxRev) * 85}%`, minHeight: '4px' }}></div>
               <span className="text-[9px] text-gray-400 mt-1 font-bold">{d.month}</span>
             </div>
@@ -262,34 +302,76 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
   );
 };
 
-// ===== SLIDE 3: GA4 & DIGITAL PERFORMANCE =====
+// ===== SLIDE 3: SALES BY DEPARTMENT =====
+const DepartmentSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Sales by Department" subtitle="Revenue distribution across GAF sales channels" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col md:flex-row h-full gap-6 items-center">
+      {/* Pie Chart */}
+      <div className="flex-shrink-0 flex flex-col items-center justify-center">
+        <PieChart data={departmentData} size={280} />
+      </div>
+      {/* Legend + Detail Cards */}
+      <div className="flex-1 flex flex-col gap-4 justify-center">
+        {departmentData.map((d, i) => {
+          const pct = ((d.value / 559210) * 100).toFixed(1);
+          return (
+          <div key={i} className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-5 h-5 rounded-md shrink-0" style={{ backgroundColor: d.color }}></div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-gaf-darkGrey">{d.name}</h4>
+                <span className="text-lg font-extrabold text-gaf-darkGrey">${(d.value/1000).toFixed(0)}K</span>
+              </div>
+              <div className="flex items-center gap-3 mt-1">
+                <div className="flex-1 bg-gray-100 rounded-full h-2">
+                  <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: d.color }}></div>
+                </div>
+                <span className="text-xs font-bold text-gray-500 w-12 text-right">{pct}%</span>
+              </div>
+            </div>
+          </div>
+          );
+        })}
+        <div className="bg-gaf-darkGrey text-white p-4 rounded-xl mt-2">
+          <div className="flex items-center gap-2 mb-1">
+            <BarChart size={16} className="text-gaf-orange" />
+            <span className="text-xs font-bold uppercase tracking-wider text-gaf-orange">Key Insight</span>
+          </div>
+          <p className="text-sm leading-relaxed">Retail (in-store) drives 52% of Nike Strength revenue, with online contributing 37%. Wholesale and commercial channels represent growth opportunity at 11% combined.</p>
+        </div>
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 4: GA4 & DIGITAL PERFORMANCE =====
 const monthlyTraffic = [
-  { month: 'May', views: 40611, sessions: 22091 },
-  { month: 'Jun', views: 38345, sessions: 19524 },
-  { month: 'Jul', views: 51719, sessions: 23844 },
-  { month: 'Aug', views: 60611, sessions: 34379 },
-  { month: 'Sep', views: 55569, sessions: 31272 },
-  { month: 'Oct', views: 64538, sessions: 35640 },
-  { month: 'Nov', views: 59449, sessions: 31782 },
-  { month: 'Dec', views: 46561, sessions: 26215 },
-  { month: 'Jan', views: 71165, sessions: 38873 },
-  { month: 'Feb', views: 51548, sessions: 28749 },
-  { month: 'Mar', views: 63574, sessions: 35149 },
+  { month: 'May', views: 35399, sessions: 19271 },
+  { month: 'Jun', views: 35549, sessions: 18031 },
+  { month: 'Jul', views: 47994, sessions: 21795 },
+  { month: 'Aug', views: 58524, sessions: 33049 },
+  { month: 'Sep', views: 53671, sessions: 30026 },
+  { month: 'Oct', views: 62378, sessions: 34161 },
+  { month: 'Nov', views: 57895, sessions: 30852 },
+  { month: 'Dec', views: 44850, sessions: 25237 },
+  { month: 'Jan', views: 69157, sessions: 37678 },
+  { month: 'Feb', views: 49559, sessions: 27588 },
+  { month: 'Mar', views: 60646, sessions: 33408 },
 ];
 
 const topPages = [
-  { page: '/collections/nike-strength', views: 163466, sessions: 78762 },
-  { page: '/products/nike-strength-grind-dumbbell', views: 59558, sessions: 18728 },
-  { page: '/products/nike-strength-grind-bumper-plates', views: 28906, sessions: 9917 },
-  { page: '/pages/nike-strength-australia (landing)', views: 19674, sessions: 11405 },
-  { page: '/products/nike-strength-pro-urethane-dumbbells', views: 15708, sessions: 5065 },
-  { page: '/products/nike-strength-dumbbell-rack-set-grind', views: 14805, sessions: 7361 },
+  { page: '/collections/nike-strength', views: 152196, sessions: 72764 },
+  { page: '/products/nike-strength-grind-dumbbell', views: 57780, sessions: 17993 },
+  { page: '/products/nike-strength-grind-bumper-plates', views: 27809, sessions: 9389 },
+  { page: '/pages/nike-strength-australia (landing)', views: 19061, sessions: 11032 },
+  { page: '/products/nike-strength-pro-urethane-dumbbells', views: 15111, sessions: 4839 },
+  { page: '/products/nike-strength-dumbbell-rack-set-grind', views: 14501, sessions: 7209 },
 ];
 
 const GA4Slide = ({ slideNumber, totalSlides }) => {
   const maxViews = Math.max(...monthlyTraffic.map(d => d.views));
   return (
-  <SlideLayout title="Digital Performance" subtitle="GA4 website analytics for Nike Strength pages: May 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
+  <SlideLayout title="Digital Performance" subtitle="GA4 website analytics — Australian traffic only | May 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
       {/* Hero KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
@@ -298,32 +380,32 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
             <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Page Views</span>
             <Eye size={16} />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold">603,690</h3>
-          <p className="text-xs text-gray-400 mt-1">Across all Nike pages</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold">575,622</h3>
+          <p className="text-xs text-gray-400 mt-1">AU traffic only</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sessions</span>
             <Users size={16} className="text-blue-500" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">327,518</h3>
-          <p className="text-xs text-blue-600 font-bold mt-1">29,774/month avg</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">311,096</h3>
+          <p className="text-xs text-blue-600 font-bold mt-1">28,282/month avg</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unique Pages</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Collection Page</span>
             <Globe size={16} className="text-purple-500" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">2,719</h3>
-          <p className="text-xs text-purple-600 font-bold mt-1">URLs with Nike content</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">152K</h3>
+          <p className="text-xs text-purple-600 font-bold mt-1">Views on /nike-strength</p>
         </div>
         <div className="bg-gaf-orange/5 p-4 rounded-xl border border-gaf-orange/20">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Traffic Growth</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Session Growth</span>
             <TrendingUp size={16} className="text-gaf-orange" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">+59%</h3>
-          <p className="text-xs text-gaf-orange font-bold mt-1">May 22K → Mar 35K sessions</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">+73%</h3>
+          <p className="text-xs text-gaf-orange font-bold mt-1">May 19K → Mar 33K</p>
         </div>
       </div>
 
@@ -331,8 +413,7 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex-1 min-h-0">
         <div className="flex items-center gap-2 mb-3">
           <BarChart size={16} className="text-blue-500" />
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Page Views</span>
-          <span className="text-[9px] text-gray-300 ml-auto">Bars = views | Line = sessions</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Page Views (AU Only)</span>
         </div>
         <div className="flex items-end gap-2 h-[calc(100%-32px)]">
           {monthlyTraffic.map((d, i) => (
@@ -349,7 +430,7 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden shrink-0">
         <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center gap-2">
           <Globe className="text-gaf-orange" size={14} />
-          <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Top Nike Pages by Views</h4>
+          <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Top Nike Pages by Views (AU)</h4>
         </div>
         <div className="overflow-auto">
           <table className="w-full text-left border-collapse">
@@ -377,11 +458,10 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
   );
 };
 
-// ===== SLIDE 4: WINS & CHALLENGES =====
+// ===== SLIDE 5: WINS & CHALLENGES =====
 const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
   <SlideLayout title="Wins & Challenges" subtitle="Key highlights and areas for discussion" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-      {/* Wins */}
       <div className="flex flex-col gap-4">
         <div className="bg-green-50 p-5 rounded-xl border border-green-100 flex-1">
           <div className="flex items-center gap-2 mb-4">
@@ -390,11 +470,11 @@ const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
           </div>
           <div className="space-y-3">
             {[
-              { title: "Explosive growth trajectory", desc: "Revenue grew from $4K/month to $78K/month in 11 months — 1,686% growth" },
-              { title: "Strong brand page traffic", desc: "163K views on the collection page alone — Nike Strength is a destination, not just a product" },
-              { title: "Consistent session growth", desc: "Website sessions up 59% from launch month — organic discovery building momentum" },
-              { title: "Category breadth performing", desc: "5 categories generating meaningful revenue — not reliant on a single hero SKU" },
-              { title: "Bumper plates margin leader", desc: "30% GP margin on bumper plates ($97K rev) — strongest margin in the range" },
+              { title: "Explosive growth trajectory", desc: "Revenue grew from $4K to $93K/month peak in 8 months — brand established rapidly" },
+              { title: "Strong organic brand traffic", desc: "152K views on collection page (AU only) — Nike Strength is a destination, not just a product listing" },
+              { title: "Multi-channel traction", desc: "Retail (52%), online (37%), wholesale (8%), commercial (3%) — healthy distribution" },
+              { title: "Bumper plates margin leader", desc: "29.6% GP margin on bumper plates ($97K rev) — strongest margin in the range" },
+              { title: "Consistent session growth", desc: "AU sessions up 73% from launch — organic demand building momentum" },
             ].map((w, i) => (
               <div key={i} className="flex items-start gap-3">
                 <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
@@ -407,7 +487,6 @@ const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
           </div>
         </div>
       </div>
-      {/* Challenges */}
       <div className="flex flex-col gap-4">
         <div className="bg-amber-50 p-5 rounded-xl border border-amber-100 flex-1">
           <div className="flex items-center gap-2 mb-4">
@@ -416,9 +495,9 @@ const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
           </div>
           <div className="space-y-3">
             {[
-              { title: "[Placeholder — discuss with Steven]", desc: "Add specific challenges relating to supply, logistics, or product quality" },
-              { title: "[Placeholder — margin pressure]", desc: "Dumbbell category at 7% margin — discuss pricing strategy or support" },
-              { title: "[Placeholder — competitor landscape]", desc: "Key competitors and how Nike Strength is positioned" },
+              { title: "[Placeholder — discuss]", desc: "Add specific challenges relating to supply, logistics, or product quality" },
+              { title: "[Placeholder — margin pressure]", desc: "Dumbbell category at 7.2% margin drives 33% of revenue — discuss pricing strategy" },
+              { title: "[Placeholder — competitor landscape]", desc: "Key competitors and how Nike Strength is positioned in AU market" },
               { title: "[Placeholder — stock availability]", desc: "Any stock-out or lead time issues impacting sales" },
               { title: "[Placeholder — marketing support]", desc: "What co-marketing assets or support would accelerate growth" },
             ].map((c, i) => (
@@ -437,15 +516,14 @@ const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
   </SlideLayout>
 );
 
-// ===== SLIDE 5: PLANS =====
+// ===== SLIDE 6: PLANS =====
 const PlansSlide = ({ slideNumber, totalSlides }) => (
   <SlideLayout title="Plans & Priorities" subtitle="Nike Strength growth strategy — next 6 months" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
       <div className="bg-gaf-darkGrey text-white p-5 rounded-xl border-l-8 border-gaf-orange shadow-lg shrink-0">
         <div className="flex items-center gap-2 mb-2"><Target size={18} className="text-gaf-orange" /><h3 className="text-sm font-bold uppercase tracking-wide text-gaf-orange">Growth Objective</h3></div>
-        <p className="text-lg font-bold">[Placeholder — define revenue target for next 6 months with Steven]</p>
+        <p className="text-lg font-bold">[Placeholder — define revenue target for next 6 months]</p>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0">
         {[
           { title: "Product & Range", icon: Package, color: "text-blue-600", bgColor: "bg-blue-50 border-blue-100", items: [
@@ -487,7 +565,7 @@ const PlansSlide = ({ slideNumber, totalSlides }) => (
   </SlideLayout>
 );
 
-// ===== SLIDE 6: SUPPORT NEEDED =====
+// ===== SLIDE 7: SUPPORT NEEDED =====
 const SupportSlide = ({ slideNumber, totalSlides }) => (
   <SlideLayout title="Support Needed" subtitle="Requests and discussion points for Nike" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
@@ -535,13 +613,13 @@ const SupportSlide = ({ slideNumber, totalSlides }) => (
         ))}
       </div>
       <div className="bg-gray-100 p-4 rounded-xl flex items-center gap-2 text-gray-500 italic text-xs shrink-0">
-        <MessageCircle size={14} /><span>Sections 3–5 are placeholder frameworks for Steven to populate prior to the FIBO meeting. Data in slides 1–2 is live from Shopify & GA4.</span>
+        <MessageCircle size={14} /><span>Slides 1–4 use live sales and GA4 data. Slides 5–7 are placeholder frameworks to populate prior to the meeting.</span>
       </div>
     </div>
   </SlideLayout>
 );
 
-// ===== SLIDE 7: QUESTIONS =====
+// ===== SLIDE 8: QUESTIONS =====
 const QuestionsSlide = () => (
   <div className="w-full h-full bg-[#3d3d3d] flex flex-col items-center justify-center p-12 overflow-hidden">
     <h2 className="text-white text-7xl md:text-[10rem] font-black uppercase tracking-[0.1em] text-center drop-shadow-sm select-none">Questions</h2>
@@ -549,7 +627,7 @@ const QuestionsSlide = () => (
 );
 
 // ===== APP =====
-const SLIDES = [TitleSlide, PerformanceSlide, GA4Slide, WinsChallengesSlide, PlansSlide, SupportSlide, QuestionsSlide];
+const SLIDES = [TitleSlide, PerformanceSlide, DepartmentSlide, GA4Slide, WinsChallengesSlide, PlansSlide, SupportSlide, QuestionsSlide];
 
 function App() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -586,7 +664,6 @@ function App() {
   );
 }
 
-// ===== MOUNT =====
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
 </script>
