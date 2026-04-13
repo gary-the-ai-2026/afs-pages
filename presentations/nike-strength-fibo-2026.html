@@ -201,10 +201,9 @@ const topCategories = [
 ];
 
 const departmentData = [
-  { name: 'GAF AU (Retail)', value: 291136, color: '#f26422' },
-  { name: 'GAF Online', value: 207504, color: '#424242' },
-  { name: 'GAF Wholesale', value: 42623, color: '#999999' },
-  { name: 'GAF Commercial', value: 17948, color: '#d1d5db' },
+  { name: 'gymandfitness.com.au', value: 498640, color: '#f26422' },
+  { name: 'GAF Wholesale', value: 42623, color: '#424242' },
+  { name: 'GAF Commercial', value: 17948, color: '#999999' },
 ];
 
 const PerformanceSlide = ({ slideNumber, totalSlides }) => {
@@ -286,7 +285,7 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
                 <div className="flex-1">
                   <div className="flex justify-between mb-0.5">
                     <span className="font-medium text-gaf-darkGrey">{c.name}</span>
-                    <span className="font-bold text-gaf-darkGrey">${(c.rev/1000).toFixed(0)}K <span className="text-gray-400 font-normal">({c.margin})</span></span>
+                    <span className="font-bold text-gaf-darkGrey">${(c.rev/1000).toFixed(0)}K <span className="text-gray-400 font-normal">{c.margin} margin</span></span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1">
                     <div className="bg-gaf-orange h-full rounded-full" style={{ width: `${c.pct * 2.5}%` }}></div>
@@ -337,7 +336,7 @@ const DepartmentSlide = ({ slideNumber, totalSlides }) => (
             <BarChart size={16} className="text-gaf-orange" />
             <span className="text-xs font-bold uppercase tracking-wider text-gaf-orange">Key Insight</span>
           </div>
-          <p className="text-sm leading-relaxed">Retail (in-store) drives 52% of Nike Strength revenue, with online contributing 37%. Wholesale and commercial channels represent growth opportunity at 11% combined.</p>
+          <p className="text-sm leading-relaxed">gymandfitness.com.au (retail + online) drives 89% of Nike Strength revenue. Wholesale and commercial channels represent growth opportunity at 11% combined.</p>
         </div>
       </div>
     </div>
