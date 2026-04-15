@@ -161,7 +161,7 @@ const TitleSlide = ({ slideNumber, totalSlides }) => (
         </h1>
       </div>
       <div className="w-24 h-2 bg-black mx-auto mt-8"></div>
-      <p className="text-sm text-gray-400 font-body">FIBO 2026 — Prepared for Steven Goltman</p>
+      <p className="text-sm text-gray-400 font-body">May 2025 — March 2026 Performance</p>
     </div>
     <div className="absolute bottom-8 left-0 w-full text-center">
       <p className="text-sm text-gray-400 font-bold tracking-widest">CONFIDENTIAL INTERNAL USE</p>
@@ -457,22 +457,22 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
   );
 };
 
-// ===== SLIDE 5: WINS & CHALLENGES =====
-const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
-  <SlideLayout title="Wins & Challenges" subtitle="Key highlights and areas requiring support" slideNumber={slideNumber} totalSlides={totalSlides}>
+// ===== SLIDE 5: WINS =====
+const WinsSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Wins" subtitle="Key highlights from the first 11 months" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col">
         <div className="bg-green-50 p-5 rounded-xl border border-green-100 flex-1">
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-4">
             <div className="bg-green-100 p-2 rounded-lg"><Award size={20} className="text-green-600" /></div>
             <h3 className="font-bold text-lg uppercase text-green-800">Wins</h3>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {[
               { title: "Aus Fitness Expo Launch — BJ Stone Collab", desc: "Successful brand activation at Australia's largest fitness expo with strongman athlete BJ Stone driving foot traffic and brand credibility" },
               { title: "Sarah's Day Partnership (1.2M IG followers)", desc: "High-profile influencer collaboration generating organic reach and social proof for Nike Strength in the AU fitness market" },
               { title: "1,803% revenue growth in 11 months", desc: "From $4K (May '25) to $93K peak (Dec '25) — brand established rapidly with $559K total revenue" },
-              { title: "575K page views — destination brand status", desc: "152K views on collection page alone. Nike Strength is a search destination, not just a product listing on GAF" },
+              { title: "575K page views across Nike Strength pages", desc: "Strong traffic driven largely through generic gym equipment searches — validates product-market fit. Brand search awareness remains an opportunity area" },
               { title: "Bumper plates margin leader at 29.6% GP", desc: "$97K revenue on bumper plates with the strongest margin in the range — validates premium positioning" },
             ].map((w, i) => (
               <div key={i} className="flex items-start gap-3">
@@ -485,29 +485,43 @@ const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
             ))}
           </div>
         </div>
-        {/* Collab images */}
-        <div className="grid grid-cols-2 gap-3 shrink-0">
-          <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm">
-            <img src="assets/bj-stone-nike.png" alt="BJ Stone — Aus Fitness Expo" className="w-full h-24 object-cover" />
-            <div className="bg-green-50 px-3 py-1.5"><p className="text-[9px] font-bold text-green-800">BJ Stone — Expo Launch</p></div>
+      </div>
+      {/* Collab images — right column */}
+      <div className="flex flex-col gap-4">
+        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1">
+          <img src="assets/bj-stone-nike.png" alt="BJ Stone — Aus Fitness Expo" className="w-full h-full object-cover" style={{minHeight: '200px'}} />
+          <div className="bg-green-50 px-4 py-2">
+            <p className="text-xs font-bold text-green-800">BJ Stone — Aus Fitness Expo Launch</p>
+            <p className="text-[10px] text-green-700">Strongman athlete collab driving brand credibility and foot traffic</p>
           </div>
-          <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm">
-            <img src="assets/sarahs-day-nike.png" alt="Sarah's Day — Nike Strength" className="w-full h-24 object-cover" />
-            <div className="bg-green-50 px-3 py-1.5"><p className="text-[9px] font-bold text-green-800">Sarah's Day — 1.2M followers</p></div>
+        </div>
+        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1">
+          <img src="assets/sarahs-day-nike.png" alt="Sarah's Day — Nike Strength" className="w-full h-full object-cover" style={{minHeight: '200px'}} />
+          <div className="bg-green-50 px-4 py-2">
+            <p className="text-xs font-bold text-green-800">Sarah's Day — 1.2M Instagram Followers</p>
+            <p className="text-[10px] text-green-700">High-profile influencer partnership for organic reach and social proof</p>
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-4">
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 6: CHALLENGES =====
+const ChallengesSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Challenges" subtitle="Key areas requiring attention and support" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full">
+      <div className="flex flex-col">
         <div className="bg-amber-50 p-5 rounded-xl border border-amber-100 flex-1">
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-4">
             <div className="bg-amber-100 p-2 rounded-lg"><AlertTriangle size={20} className="text-amber-600" /></div>
             <h3 className="font-bold text-lg uppercase text-amber-800">Challenges</h3>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {[
-              { title: "Brand awareness — 'Nike the strength equipment brand'", desc: "Consumer confusion between Nike (apparel) and Nike Strength (equipment). Building awareness that this is a dedicated strength equipment brand requires sustained top-of-funnel investment" },
-              { title: "Margin pressure on dumbbells + domestic freight", desc: "Dumbbell category drives 33% of revenue but only 7.2% GP margin. Domestic freight costs are squeezing margins further — balancing retail price, wholesale price, and desired margin is the core tension" },
-              { title: "KVD / Grind SKU margin through the chain", desc: "Need support ensuring adequate margin on KVD SKUs (Grind) across the entire distribution chain — current pricing leaves limited room for all parties" },
+              { title: "Brand awareness — 'Nike the strength equipment brand'", desc: "Consumer confusion between Nike (apparel) and Nike Strength (equipment). Building awareness that this is a dedicated strength equipment brand requires sustained top-of-funnel investment. Current traffic is largely driven by generic gym equipment searches — brand-specific search demand needs to grow." },
+              { title: "Margin pressure on dumbbells + domestic freight", desc: "Dumbbell category drives 33% of revenue but only 7.2% GP margin. Domestic freight costs on heavy products are squeezing margins further — balancing retail price, wholesale price, and desired margin is the core tension." },
+              { title: "KVD / Grind SKU margin through the chain", desc: "Need support ensuring adequate margin on KVD SKUs (Grind) across the entire distribution chain — current pricing leaves limited room for all parties to make adequate margin." },
             ].map((c, i) => (
               <div key={i} className="flex items-start gap-3">
                 <AlertTriangle size={16} className="text-amber-500 mt-0.5 shrink-0" />
@@ -519,26 +533,38 @@ const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
             ))}
           </div>
         </div>
-        <div className="bg-gaf-darkGrey text-white p-4 rounded-xl">
-          <div className="flex items-center gap-2 mb-2">
-            <Percent size={16} className="text-gaf-orange" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Margin Snapshot</span>
+      </div>
+      <div className="flex flex-col gap-4">
+        {/* Margin Snapshot */}
+        <div className="bg-gaf-darkGrey text-white p-6 rounded-xl flex-1">
+          <div className="flex items-center gap-2 mb-4">
+            <Percent size={18} className="text-gaf-orange" />
+            <span className="text-sm font-bold uppercase tracking-wider text-gaf-orange">Margin Snapshot by Category</span>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-3">
             {[
-              { cat: 'Dumbbells', margin: '7.2%', rev: '$182K', flag: true },
-              { cat: 'Bumper Plates', margin: '29.6%', rev: '$97K', flag: false },
-              { cat: 'Barbells', margin: '12.3%', rev: '$74K', flag: false },
-              { cat: 'Power Racks', margin: '17.2%', rev: '$55K', flag: false },
+              { cat: 'Dumbbells', margin: '7.2%', rev: '$182K', pct: 32.6, flag: true },
+              { cat: 'Bumper Plates', margin: '29.6%', rev: '$97K', pct: 17.4, flag: false },
+              { cat: 'Barbells', margin: '12.3%', rev: '$74K', pct: 13.3, flag: false },
+              { cat: 'Power Racks', margin: '17.2%', rev: '$55K', pct: 9.8, flag: false },
+              { cat: 'Storage', margin: '18.8%', rev: '$47K', pct: 8.3, flag: false },
             ].map((m, i) => (
-              <div key={i} className="flex items-center justify-between text-xs">
-                <span className={m.flag ? 'text-amber-400 font-bold' : 'text-gray-300'}>{m.cat}</span>
-                <div className="flex gap-3">
-                  <span className="text-gray-400">{m.rev}</span>
-                  <span className={`font-bold ${m.flag ? 'text-amber-400' : 'text-green-400'}`}>{m.margin}</span>
+              <div key={i}>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className={m.flag ? 'text-amber-400 font-bold' : 'text-gray-200 font-medium'}>{m.cat}</span>
+                  <div className="flex gap-4">
+                    <span className="text-gray-400 text-xs">{m.rev} rev</span>
+                    <span className={`font-bold ${m.flag ? 'text-amber-400' : 'text-green-400'}`}>{m.margin}</span>
+                  </div>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-2">
+                  <div className={`h-full rounded-full ${m.flag ? 'bg-amber-400' : 'bg-green-400'}`} style={{ width: `${(parseFloat(m.margin) / 30) * 100}%` }}></div>
                 </div>
               </div>
             ))}
+          </div>
+          <div className="mt-4 pt-3 border-t border-white/10">
+            <p className="text-xs text-gray-400 leading-relaxed">Dumbbells are the volume driver but lowest margin category. Freight cost on heavy products compounds the margin challenge. Improving dumbbell margin by even 5 points would add ~$9K to GP.</p>
           </div>
         </div>
       </div>
@@ -571,8 +597,7 @@ const PlansSlide = ({ slideNumber, totalSlides }) => (
           { title: "Commercial Strategy", icon: DollarSign, color: "text-green-600", bgColor: "bg-green-50 border-green-100", items: [
             "Wholesale autonomy: Nike Strength operates as standalone brand with GAF as primary wholesale partner",
             "Dedicated 'Nike Fund' for discounting — decoupled from GAF sales team KPIs",
-            "Digital marketing handles B2C funnel, freeing sales team for commercial leads and B2B",
-            "Halo effect: Nike traffic drives 'over and above' visits to wider GAF site"
+            "Digital marketing handles B2C funnel, freeing sales team for commercial leads and B2B"
           ]},
         ].map((section, i) => (
           <div key={i} className={`p-4 rounded-xl border ${section.bgColor}`}>
@@ -591,21 +616,42 @@ const PlansSlide = ({ slideNumber, totalSlides }) => (
           </div>
         ))}
       </div>
-      {/* Experience Centre Image */}
-      <div className="shrink-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-        <div className="flex items-center">
-          <img src="assets/experience-centre.png" alt="GAF Experience Centre — Nike Strength Showroom" className="w-full h-32 object-cover" />
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 8: EXPERIENCE CENTRE =====
+const ExperienceCentreSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Experience Centre" subtitle="Dedicated Nike Strength showroom & content production facility" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-5">
+      <div className="flex-1 rounded-2xl overflow-hidden border-2 border-gray-200 shadow-lg relative">
+        <img src="assets/experience-centre.png" alt="GAF Experience Centre — Nike Strength Showroom" className="w-full h-full object-cover" />
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Package size={18} className="text-gaf-orange" />
+            <h3 className="text-white font-bold text-sm uppercase tracking-wide">GAF Experience Centre</h3>
+          </div>
+          <p className="text-white/90 text-xs leading-relaxed max-w-2xl">Purpose-built Nike Strength showroom located at GAF HQ — serves as a local content production studio, product showcase for B2B buyers, and immersive brand experience for athlete collaborations and influencer shoots.</p>
         </div>
-        <div className="bg-gray-50 px-4 py-2 flex items-center gap-2">
-          <Package size={14} className="text-gaf-orange" />
-          <p className="text-[10px] font-bold text-gaf-darkGrey uppercase tracking-wide">GAF Experience Centre — Dedicated Nike Strength content production facility</p>
-        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-4 shrink-0">
+        {[
+          { icon: Eye, label: "Content Studio", desc: "In-house photo & video production with full Nike Strength product lineup" },
+          { icon: Users, label: "B2B Showroom", desc: "Walk-through experience for wholesale buyers, gym owners and commercial leads" },
+          { icon: Zap, label: "Athlete Hub", desc: "Dedicated space for influencer and athlete collaboration shoots and content days" },
+        ].map((item, i) => (
+          <div key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
+            <item.icon size={24} className="text-gaf-orange mx-auto mb-2" />
+            <h4 className="font-bold text-xs uppercase tracking-wide mb-1">{item.label}</h4>
+            <p className="text-[10px] text-gray-600 leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   </SlideLayout>
 );
 
-// ===== SLIDE 7: SUPPORT NEEDED =====
+// ===== SLIDE 9: SUPPORT NEEDED =====
 const SupportSlide = ({ slideNumber, totalSlides }) => (
   <SlideLayout title="Support Needed" subtitle="Key requests for Nike Strength to accelerate ANZ growth" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
@@ -680,7 +726,7 @@ const QuestionsSlide = () => (
 );
 
 // ===== APP =====
-const SLIDES = [TitleSlide, PerformanceSlide, DepartmentSlide, GA4Slide, WinsChallengesSlide, PlansSlide, SupportSlide, QuestionsSlide];
+const SLIDES = [TitleSlide, PerformanceSlide, DepartmentSlide, GA4Slide, WinsSlide, ChallengesSlide, PlansSlide, ExperienceCentreSlide, SupportSlide, QuestionsSlide];
 
 function App() {
   const [currentSlide, setCurrentSlide] = useState(0);
