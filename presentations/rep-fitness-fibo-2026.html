@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rep Fitness — Supplier Update</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        gaf: {
+          orange: '#f26422',
+          black: '#000000',
+          darkGrey: '#424242',
+          paleGrey: '#f0f0f0',
+        },
+        rep: {
+          red: '#e63946',
+          dark: '#1d1d1d',
+        }
+      },
+      fontFamily: {
+        sans: ['Montserrat', 'sans-serif'],
+        body: ['Open Sans', 'sans-serif'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 1s ease-out forwards',
+        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+      },
+      keyframes: {
+        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+      }
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Open Sans', sans-serif; background: #111827; margin: 0; }
+h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e63946; border-radius: 10px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://esm.sh/react@19.1.0" type="module"></script>
+<script src="https://esm.sh/react-dom@19.1.0/client" type="module"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" data-type="module">
+import React, { useState, useEffect, useRef } from 'https://esm.sh/react@19.1.0';
+import { createRoot } from 'https://esm.sh/react-dom@19.1.0/client';
+
+// ===== ICONS =====
+const Icon = ({ d, size = 20, className = '' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    {Array.isArray(d) ? d.map((path, i) => <path key={i} d={path} />) : <path d={d} />}
+  </svg>
+);
+
+const ChevronLeft = (p) => <Icon {...p} d="M15 18l-6-6 6-6" />;
+const ChevronRight = (p) => <Icon {...p} d="M9 18l6-6-6-6" />;
+const DollarSign = (p) => <Icon {...p} d={["M12 2v20","M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"]} />;
+const TrendingUp = (p) => <Icon {...p} d={["M22 7l-8.5 8.5-5-5L2 17","M16 7h6v6"]} />;
+const Target = (p) => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+const Users = (p) => <Icon {...p} d={["M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2","M12 7a4 4 0 100-8 4 4 0 000 8","M22 21v-2a4 4 0 00-3-3.87","M16 3.13a4 4 0 010 7.75"]} />;
+const ShoppingCart = (p) => <Icon {...p} d={["M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"]} />;
+const CheckCircle2 = (p) => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>;
+const Zap = (p) => <Icon {...p} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />;
+const BarChart = (p) => <Icon {...p} d={["M12 20V10","M18 20V4","M6 20v-4"]} />;
+const Eye = (p) => <Icon {...p} d={["M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"]} />;
+const Globe = (p) => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>;
+const Package = (p) => <Icon {...p} d={["M16.5 9.4l-9-5.19","M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z","M3.27 6.96L12 12.01l8.73-5.05","M12 22.08V12"]} />;
+const Award = (p) => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>;
+const AlertTriangle = (p) => <Icon {...p} d={["M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z","M12 9v4","M12 17h.01"]} />;
+const ArrowRight = (p) => <Icon {...p} d={["M5 12h14","M12 5l7 7-7 7"]} />;
+const MessageCircle = (p) => <Icon {...p} d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />;
+const Percent = (p) => <Icon {...p} d={["M19 5L5 19","M6.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5","M17.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5"]} />;
+const Camera = (p) => <Icon {...p} d={["M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"]} />;
+const Wrench = (p) => <Icon {...p} d={["M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"]} />;
+
+// ===== PIE CHART COMPONENT =====
+const PieChart = ({ data, size = 200 }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  const cx = size / 2, cy = size / 2, r = size / 2 - 8;
+  let cumAngle = -Math.PI / 2;
+
+  const slices = data.map((d, i) => {
+    const angle = (d.value / total) * 2 * Math.PI;
+    const startX = cx + r * Math.cos(cumAngle);
+    const startY = cy + r * Math.sin(cumAngle);
+    const endX = cx + r * Math.cos(cumAngle + angle);
+    const endY = cy + r * Math.sin(cumAngle + angle);
+    const largeArc = angle > Math.PI ? 1 : 0;
+    const midAngle = cumAngle + angle / 2;
+    const labelR = r * 0.65;
+    const labelX = cx + labelR * Math.cos(midAngle);
+    const labelY = cy + labelR * Math.sin(midAngle);
+    const pct = ((d.value / total) * 100).toFixed(1);
+    cumAngle += angle;
+    return { ...d, startX, startY, endX, endY, largeArc, labelX, labelY, pct, angle };
+  });
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
+      {slices.map((s, i) => (
+        <g key={i}>
+          <path d={`M${cx},${cy} L${s.startX},${s.startY} A${r},${r} 0 ${s.largeArc},1 ${s.endX},${s.endY} Z`}
+            fill={s.color} stroke="white" strokeWidth="2" />
+          {s.angle > 0.3 && (
+            <text x={s.labelX} y={s.labelY} textAnchor="middle" dominantBaseline="central"
+              fill="white" fontSize="11" fontWeight="800" fontFamily="Montserrat, sans-serif">{s.pct}%</text>
+          )}
+        </g>
+      ))}
+    </svg>
+  );
+};
+
+// ===== LOGO =====
+const Logo = ({ className = "h-12" }) => (
+  <div className={`flex items-center gap-2 ${className}`}>
+    <img src="https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576" alt="Gym and Fitness Logo" className="h-full w-auto object-contain" />
+  </div>
+);
+
+// ===== SLIDE LAYOUT =====
+const SlideLayout = ({ children, title, subtitle, slideNumber, totalSlides }) => (
+  <div className="w-full h-full bg-white text-gaf-darkGrey flex flex-col relative overflow-hidden">
+    <div className="absolute top-0 right-0 w-64 h-64 bg-gaf-paleGrey transform rotate-45 translate-x-32 -translate-y-32 z-0 opacity-50"></div>
+    <div className="absolute bottom-0 left-0 w-96 h-96 bg-gaf-paleGrey transform -rotate-12 -translate-x-48 translate-y-48 z-0 opacity-50"></div>
+    <header className="flex justify-between items-center p-8 z-10 shrink-0"><Logo /></header>
+    <main className="flex-1 flex flex-col px-6 md:px-12 pb-12 z-10 overflow-hidden h-full">
+      {title && (
+        <div className="mb-6 border-l-4 border-rep-red pl-6 shrink-0">
+          <h1 className="text-3xl md:text-5xl font-extrabold uppercase text-black mb-1 leading-tight">{title}</h1>
+          {subtitle && <h2 className="text-sm md:text-lg text-gray-600 font-semibold">{subtitle}</h2>}
+        </div>
+      )}
+      <div className="flex-1 min-h-0">{children}</div>
+    </main>
+    <footer className="h-10 md:h-12 flex justify-end items-center px-12 bg-rep-dark text-white z-10 shrink-0">
+      <div className="flex gap-1">
+        <span className="text-xs font-bold text-rep-red">{slideNumber}</span>
+        <span className="text-xs text-gray-500">/</span>
+        <span className="text-xs text-gray-500">{totalSlides}</span>
+      </div>
+    </footer>
+  </div>
+);
+
+// ===== SLIDE 1: TITLE =====
+const TitleSlide = ({ slideNumber, totalSlides }) => (
+  <div className="w-full h-full bg-white relative flex flex-col items-center justify-center overflow-hidden">
+    <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-rep-red opacity-10 transform rotate-45 translate-x-1/2 -translate-y-1/2"></div>
+    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-black opacity-5 transform -rotate-12 -translate-x-1/4 translate-y-1/4"></div>
+    <div className="z-10 text-center space-y-8 animate-fade-in-up">
+      <div className="scale-150 mb-12 flex justify-center"><Logo /></div>
+      <div className="space-y-4">
+        <h2 className="text-xl md:text-2xl font-bold tracking-[0.2em] text-gray-500 uppercase">ANZ Performance Review</h2>
+        <h1 className="text-5xl md:text-8xl font-extrabold text-black uppercase leading-tight">
+          Rep<br/><span className="text-rep-red">Fitness</span>
+        </h1>
+      </div>
+      <div className="w-24 h-2 bg-black mx-auto mt-8"></div>
+      <p className="text-sm text-gray-400 font-body">April 2025 — March 2026 Performance</p>
+    </div>
+    <div className="absolute bottom-8 left-0 w-full text-center">
+      <p className="text-sm text-gray-400 font-bold tracking-widest">CONFIDENTIAL INTERNAL USE</p>
+    </div>
+  </div>
+);
+
+// ===== SLIDE 2: PERFORMANCE YTD =====
+const monthlyData = [
+  { month: "Apr '25", rev: 89734, gp: 23331 },
+  { month: "May", rev: 122684, gp: 28217 },
+  { month: "Jun", rev: 186502, gp: 35622 },
+  { month: "Jul", rev: 131075, gp: 30147 },
+  { month: "Aug", rev: 83644, gp: 22751 },
+  { month: "Sep", rev: 69445, gp: 18750 },
+  { month: "Oct", rev: 83177, gp: 18299 },
+  { month: "Nov", rev: 125919, gp: 33998 },
+  { month: "Dec", rev: 117854, gp: 27342 },
+  { month: "Jan '26", rev: 97502, gp: 26033 },
+  { month: "Feb", rev: 76343, gp: 23285 },
+  { month: "Mar", rev: 109719, gp: 35220 },
+];
+
+const PerformanceSlide = ({ slideNumber, totalSlides }) => {
+  const maxRev = Math.max(...monthlyData.map(d => d.rev));
+  return (
+  <SlideLayout title="Performance YTD" subtitle="Rep Fitness sales: April 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-4">
+      {/* Hero KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
+        <div className="bg-rep-dark text-white p-4 md:p-5 rounded-xl shadow-md border-l-4 border-rep-red">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">Total Revenue</span>
+            <DollarSign size={16} />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold">$1.29M</h3>
+          <p className="text-xs text-gray-400 mt-1">12 months trading</p>
+        </div>
+        <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Gross Profit</span>
+            <TrendingUp size={16} className="text-green-500" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">$322,689</h3>
+          <p className="text-xs text-green-600 font-bold mt-1">24.9% avg margin</p>
+        </div>
+        <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Peak Month</span>
+            <BarChart size={16} className="text-blue-500" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">$187K</h3>
+          <p className="text-xs text-blue-600 font-bold mt-1">June '25 — EOFY</p>
+        </div>
+        <div className="bg-rep-red/5 p-4 md:p-5 rounded-xl border border-rep-red/20">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">Margin Trend</span>
+            <TrendingUp size={16} className="text-rep-red" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">32.1%</h3>
+          <p className="text-xs text-rep-red font-bold mt-1">Mar GP% — up from 19% Jun</p>
+        </div>
+      </div>
+
+      {/* Monthly Revenue Chart */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex-1 min-h-0">
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart size={16} className="text-rep-red" />
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Revenue</span>
+          <span className="ml-auto text-[9px] text-gray-400 font-bold">GP% improving: 19.1% (Jun) → 32.1% (Mar)</span>
+        </div>
+        <div className="flex items-end gap-2 h-[calc(100%-32px)]">
+          {monthlyData.map((d, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
+              <span className="text-[8px] font-bold text-gaf-darkGrey mb-1">${(d.rev/1000).toFixed(0)}K</span>
+              <div className="w-full rounded-t-md bg-gradient-to-t from-rep-red to-red-300 transition-all hover:from-red-700 hover:to-red-400" style={{ height: `${(d.rev / maxRev) * 85}%`, minHeight: '4px' }}></div>
+              <span className="text-[8px] text-gray-400 mt-1 font-bold">{d.month}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Key Callout */}
+      <div className="bg-rep-dark text-white p-4 rounded-xl flex items-center gap-4 shrink-0">
+        <TrendingUp size={20} className="text-rep-red shrink-0" />
+        <p className="text-sm leading-relaxed"><strong className="text-rep-red">Margin improving steadily:</strong> GP% climbed from 19.1% (Jun EOFY sale) to 30.5% (Feb) and 32.1% (Mar) — demonstrating pricing discipline and better product mix as brand matures in AU market.</p>
+      </div>
+    </div>
+  </SlideLayout>
+  );
+};
+
+// ===== SLIDE 3: SALES BY DEPARTMENT (CATEGORY) =====
+const categoryData = [
+  { name: 'Benches', rev: 327902, gp: 25.0, color: '#e63946' },
+  { name: 'Dumbbells', rev: 306330, gp: 21.6, color: '#c1121f' },
+  { name: 'Power Rack Attachments', rev: 259772, gp: 27.1, color: '#780000' },
+  { name: 'Power Racks', rev: 186199, gp: 26.1, color: '#424242' },
+  { name: 'Barbells', rev: 61723, gp: 13.4, color: '#6b7280' },
+  { name: 'Specialty Barbells', rev: 58602, gp: 36.4, color: '#374151' },
+  { name: 'Multi-functional Trainers', rev: 48696, gp: 33.8, color: '#9ca3af' },
+  { name: 'Storage', rev: 33686, gp: 28.8, color: '#d1d5db' },
+];
+
+const departmentData = [
+  { name: 'GAF AU (Retail)', value: 863875, color: '#e63946' },
+  { name: 'GAF Online AU', value: 402612, color: '#424242' },
+  { name: 'GAF Commercial', value: 22087, color: '#6b7280' },
+  { name: 'GAF Wholesale', value: 5024, color: '#d1d5db' },
+];
+
+const CategorySlide = ({ slideNumber, totalSlides }) => {
+  const maxRev = Math.max(...categoryData.map(d => d.rev));
+  return (
+  <SlideLayout title="Sales by Category" subtitle="Revenue breakdown by product subcategory with GP%" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-5">
+      {/* Horizontal bar chart */}
+      <div className="flex-1 min-h-0 flex flex-col gap-3">
+        {categoryData.map((c, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <span className="text-[11px] font-bold text-gaf-darkGrey w-44 text-right shrink-0">{c.name}</span>
+            <div className="flex-1 flex items-center gap-3">
+              <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
+                <div className="h-full rounded-full flex items-center justify-end pr-3" style={{ width: `${(c.rev / maxRev) * 100}%`, backgroundColor: c.color }}>
+                  <span className="text-[10px] font-bold text-white">${(c.rev/1000).toFixed(0)}K</span>
+                </div>
+              </div>
+              <span className={`text-xs font-bold w-14 text-right ${c.gp >= 25 ? 'text-green-600' : c.gp >= 20 ? 'text-amber-600' : 'text-red-600'}`}>{c.gp}% GP</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Department breakdown */}
+      <div className="grid grid-cols-4 gap-3 shrink-0">
+        {departmentData.map((d, i) => (
+          <div key={i} className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
+            <div className="w-3 h-3 rounded-sm mx-auto mb-1" style={{ backgroundColor: d.color }}></div>
+            <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">{d.name}</h4>
+            <p className="text-lg font-extrabold text-gaf-darkGrey">${(d.value/1000).toFixed(0)}K</p>
+            <p className="text-[10px] text-gray-400">{((d.value / 1293598) * 100).toFixed(1)}%</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Key Insight */}
+      <div className="bg-rep-dark text-white p-4 rounded-xl shrink-0">
+        <div className="flex items-center gap-2 mb-1">
+          <BarChart size={14} className="text-rep-red" />
+          <span className="text-xs font-bold uppercase tracking-wider text-rep-red">Key Insight</span>
+        </div>
+        <p className="text-sm leading-relaxed">Benches ($328K) and Dumbbells ($306K) drive 49% of total revenue. Specialty Barbells (36.4% GP) and Multi-functional Trainers (33.8% GP) deliver the highest margins. Retail channels account for 97.9% of sales — Commercial and Wholesale represent growth opportunities.</p>
+      </div>
+    </div>
+  </SlideLayout>
+  );
+};
+
+// ===== SLIDE 4: GA4 & DIGITAL PERFORMANCE =====
+const monthlyTraffic = [
+  { month: 'May', views: 17537 },
+  { month: 'Jun', views: 22598 },
+  { month: 'Jul', views: 18787 },
+  { month: 'Aug', views: 27688 },
+  { month: 'Sep', views: 122038 },
+  { month: 'Oct', views: 168736 },
+  { month: 'Nov', views: 246465 },
+  { month: 'Dec', views: 130317 },
+  { month: "Jan '26", views: 107650 },
+  { month: 'Feb', views: 80469 },
+  { month: 'Mar', views: 81123 },
+];
+
+const GA4Slide = ({ slideNumber, totalSlides }) => {
+  const maxViews = Math.max(...monthlyTraffic.map(d => d.views));
+  return (
+  <SlideLayout title="Digital Performance" subtitle="GA4 website analytics — Rep Fitness pages | May 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-4">
+      {/* Hero KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
+        <div className="bg-rep-dark text-white p-4 rounded-xl shadow-md border-l-4 border-rep-red">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">Page Views</span>
+            <Eye size={16} />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold">1.02M</h3>
+          <p className="text-xs text-gray-400 mt-1">Rep Fitness pages</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sessions</span>
+            <Users size={16} className="text-blue-500" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">272,211</h3>
+          <p className="text-xs text-blue-600 font-bold mt-1">24,747/month avg</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Collection Page</span>
+            <Globe size={16} className="text-purple-500" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">472K</h3>
+          <p className="text-xs text-purple-600 font-bold mt-1">Views on /rep-fitness</p>
+        </div>
+        <div className="bg-rep-red/5 p-4 rounded-xl border border-rep-red/20">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">#1 Source</span>
+            <TrendingUp size={16} className="text-rep-red" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">47.1%</h3>
+          <p className="text-xs text-rep-red font-bold mt-1">Referral traffic</p>
+        </div>
+      </div>
+
+      {/* Monthly Traffic Chart */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex-1 min-h-0">
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart size={16} className="text-blue-500" />
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Page Views</span>
+          <span className="ml-auto text-[9px] text-gray-400 font-bold">Peak: Nov '25 — 246K views (BFCM)</span>
+        </div>
+        <div className="flex items-end gap-2 h-[calc(100%-32px)]">
+          {monthlyTraffic.map((d, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
+              <span className="text-[8px] font-bold text-gaf-darkGrey mb-1">{(d.views/1000).toFixed(0)}K</span>
+              <div className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-blue-300 transition-all hover:from-blue-600 hover:to-blue-400" style={{ height: `${(d.views / maxViews) * 85}%`, minHeight: '4px' }}></div>
+              <span className="text-[8px] text-gray-400 mt-1 font-bold">{d.month}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Traffic Source Pie Chart */}
+      {(() => {
+        const channels = [
+          { name: "Referral", sessions: 128518, color: "#e63946" },
+          { name: "Unassigned", sessions: 59068, color: "#d1d5db" },
+          { name: "Organic Search", sessions: 23962, color: "#06b6d4" },
+          { name: "Paid Shopping", sessions: 16476, color: "#f59e0b" },
+          { name: "Paid Search", sessions: 13489, color: "#10b981" },
+          { name: "Paid Social", sessions: 13253, color: "#3b82f6" },
+          { name: "Cross-network", sessions: 7990, color: "#f97316" },
+          { name: "Direct", sessions: 7291, color: "#6b7280" },
+          { name: "Other", sessions: 3000, color: "#9ca3af" },
+        ];
+        const total = channels.reduce((s, c) => s + c.sessions, 0);
+        let cumAngle = 0;
+        const slices = channels.map(c => {
+          const pct = c.sessions / total;
+          const startAngle = cumAngle;
+          cumAngle += pct * 360;
+          const endAngle = cumAngle;
+          const startRad = (startAngle - 90) * Math.PI / 180;
+          const endRad = (endAngle - 90) * Math.PI / 180;
+          const largeArc = pct > 0.5 ? 1 : 0;
+          const x1 = 50 + 40 * Math.cos(startRad);
+          const y1 = 50 + 40 * Math.sin(startRad);
+          const x2 = 50 + 40 * Math.cos(endRad);
+          const y2 = 50 + 40 * Math.sin(endRad);
+          return { ...c, pct, path: `M50,50 L${x1},${y1} A40,40 0 ${largeArc},1 ${x2},${y2} Z` };
+        });
+        return (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 shrink-0">
+            <div className="flex items-center gap-2 mb-3">
+              <Globe className="text-rep-red" size={14} />
+              <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Traffic Sources by Sessions (272K total)</h4>
+              <span className="ml-auto text-[9px] text-gray-400 font-bold">47% REFERRAL · 16% PAID · 9% ORGANIC · 28% OTHER</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <svg viewBox="0 0 100 100" className="w-28 h-28 shrink-0">
+                {slices.map((s, i) => <path key={i} d={s.path} fill={s.color} stroke="white" strokeWidth="0.5" />)}
+              </svg>
+              <div className="grid grid-cols-3 gap-x-6 gap-y-1.5 flex-1">
+                {slices.map((s, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{backgroundColor: s.color}}></div>
+                    <span className="text-[10px] text-gray-700"><strong>{(s.pct * 100).toFixed(0)}%</strong> {s.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  </SlideLayout>
+  );
+};
+
+// ===== SLIDE 5: WINS =====
+const WinsSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Wins" subtitle="Key highlights from the first 12 months" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full">
+      <div className="flex flex-col">
+        <div className="bg-green-50 p-5 rounded-xl border border-green-100 flex-1">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-green-100 p-2 rounded-lg"><Award size={20} className="text-green-600" /></div>
+            <h3 className="font-bold text-lg uppercase text-green-800">Wins</h3>
+          </div>
+          <div className="space-y-4">
+            {[
+              { title: "Coaches Congress Representation", desc: "GAF exhibited as Rep Fitness at the inaugural Coaches Congress event in Wollongong, with REP providing $4,237 in MDF support — strong partnership signal" },
+              { title: "1M+ page views on Rep Fitness pages", desc: "1,023,875 total page views driven by strong organic and referral traffic. Collection page alone attracted 472K views — demonstrating genuine brand demand in AU" },
+              { title: "Margin improvement trend", desc: "GP% climbing from 19.1% (Jun EOFY) to 32.1% (Mar) — showing pricing discipline, improved product mix, and reduced discounting as brand matures" },
+            ].map((w, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-green-800">{w.title}</p>
+                  <p className="text-xs text-green-700 leading-relaxed">{w.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {/* Coaches Congress image placeholder — right column */}
+      <div className="flex flex-col">
+        <div className="rounded-xl border border-green-100 shadow-sm flex-1 flex flex-col bg-white">
+          <div className="flex-1 flex items-center justify-center p-2 min-h-0">
+            <div className="w-full h-full min-h-[300px] bg-gray-800 rounded-lg flex flex-col items-center justify-center gap-4">
+              <Camera size={48} className="text-gray-500" />
+              <div className="text-center">
+                <p className="text-gray-400 font-bold text-lg">Coaches Congress</p>
+                <p className="text-gray-500 text-sm mt-1">Image Coming</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-green-50 px-4 py-1.5 shrink-0 rounded-b-xl">
+            <p className="text-xs font-bold text-green-800">Coaches Congress — Wollongong 2025</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 6: CHALLENGES =====
+const ChallengesSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Challenges" subtitle="Key areas requiring attention and support" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full">
+      <div className="flex flex-col">
+        <div className="bg-amber-50 p-5 rounded-xl border border-amber-100 flex-1">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-amber-100 p-2 rounded-lg"><AlertTriangle size={20} className="text-amber-600" /></div>
+            <h3 className="font-bold text-lg uppercase text-amber-800">Challenges</h3>
+          </div>
+          <div className="space-y-4">
+            {[
+              { title: "Online friction of rack building", desc: "Rep's rack configurator and customisation creates complexity for online buyers. Many SKUs, attachments, and compatibility questions reduce conversion rates. Customers often need hand-holding through the build process — a barrier for pure online sales." },
+              { title: "Brand awareness in AU market", desc: "Rep Fitness is well-known in the US but still building recognition in Australia. Organic search represents only 8.8% of traffic — most awareness is driven by referral from repfitness.com (47.1%). Need to build independent AU brand presence." },
+              { title: "Dumbbell margin pressure", desc: "Dumbbell category drives 24% of revenue ($306K) but only 21.6% GP due to freight costs on heavy items. Domestic delivery of 15-50kg dumbbells compresses margins — need pricing support or freight efficiencies." },
+            ].map((c, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <AlertTriangle size={16} className="text-amber-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-amber-800">{c.title}</p>
+                  <p className="text-xs text-amber-700 leading-relaxed">{c.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-4">
+        {/* Rack Builder Complexity Snapshot */}
+        <div className="bg-gaf-darkGrey text-white p-6 rounded-xl flex-1">
+          <div className="flex items-center gap-2 mb-4">
+            <Wrench size={18} className="text-rep-red" />
+            <span className="text-sm font-bold uppercase tracking-wider text-rep-red">Rack Builder Complexity</span>
+          </div>
+          <div className="space-y-3">
+            {[
+              { label: 'Power Racks (PR-4000, PR-5000)', issue: 'Multiple colour/height/config options', severity: 'high' },
+              { label: 'Rack Attachments', issue: '50+ compatible accessories', severity: 'high' },
+              { label: 'Ares 2.0 Functional Trainer', issue: 'Integrated rack + cable — complex specs', severity: 'medium' },
+              { label: 'Bench Compatibility', issue: 'Footprint matching with different racks', severity: 'low' },
+            ].map((m, i) => (
+              <div key={i} className="flex items-start gap-3 bg-white/5 p-3 rounded-lg">
+                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${m.severity === 'high' ? 'bg-red-400' : m.severity === 'medium' ? 'bg-amber-400' : 'bg-green-400'}`}></div>
+                <div>
+                  <p className="text-sm font-bold text-white">{m.label}</p>
+                  <p className="text-xs text-gray-400">{m.issue}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-3 border-t border-white/10">
+            <p className="text-xs text-gray-400 leading-relaxed">Rack Attachments ($260K, 20% of revenue) shows strong demand, but online purchase friction means many buyers need phone/in-store support to complete builds. A simplified rack builder or guided configurator would unlock conversion.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 7: PLANS & PRIORITIES =====
+const PlansSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Plans & Priorities" subtitle="Rep Fitness growth strategy — next 6 months" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-4">
+      <div className="bg-rep-dark text-white p-5 rounded-xl border-l-8 border-rep-red shadow-lg shrink-0">
+        <div className="flex items-center gap-2 mb-2"><Target size={18} className="text-rep-red" /><h3 className="text-sm font-bold uppercase tracking-wide text-rep-red">Strategic Focus: Convert Referral Traffic & Build AU Brand Independence</h3></div>
+        <p className="text-sm leading-relaxed">Leverage the strong referral pipeline from repfitness.com while investing in local brand-building to create independent AU demand. Expand commercial channel and improve online rack-buying experience.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0">
+        {[
+          { title: "Digital Strategy", icon: Zap, color: "text-rep-red", bgColor: "bg-red-50 border-red-100", items: [
+            "Leverage strong referral traffic from repfitness.com — 47% of sessions already coming via brand site",
+            "Invest in Australian paid social and content to build independent brand search volume",
+            "Improve on-site conversion for rack products — guided configurator or simplified bundles",
+            "Google Ads strategy shift: 95%+ of search terms are branded — protect brand terms, expand category terms"
+          ]},
+          { title: "Content & Experience", icon: Eye, color: "text-blue-600", bgColor: "bg-blue-50 border-blue-100", items: [
+            "Experience Centre for local content production — Rep Fitness product showcase and athlete shoots",
+            "Event activations (Coaches Congress, fitness expos) — continue building grassroots brand presence",
+            "Local AU content: product reviews, rack build guides, comparison content for SEO",
+            "UGC and influencer partnerships to build social proof in the AU fitness community"
+          ]},
+          { title: "Commercial Strategy", icon: DollarSign, color: "text-green-600", bgColor: "bg-green-50 border-green-100", items: [
+            "Build B2B/commercial channel — currently only $22K (1.7%) — significant room to grow with gym fit-outs",
+            "Rack builder UX improvement — reduce online friction for customised rack purchases",
+            "Dumbbell pricing strategy — address margin pressure on high-freight heavy products",
+            "Explore wholesale partnerships to expand Rep Fitness distribution beyond GAF direct"
+          ]},
+        ].map((section, i) => (
+          <div key={i} className={`p-4 rounded-xl border ${section.bgColor}`}>
+            <div className="flex items-center gap-2 mb-3">
+              <section.icon size={20} className={section.color} />
+              <h4 className="font-bold text-xs uppercase tracking-wide">{section.title}</h4>
+            </div>
+            <div className="space-y-2">
+              {section.items.map((item, j) => (
+                <div key={j} className="flex items-start gap-2">
+                  <ArrowRight size={12} className="text-gray-400 mt-0.5 shrink-0" />
+                  <p className="text-[11px] text-gray-700 leading-relaxed">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 8: EXPERIENCE CENTRE =====
+const ExperienceCentreSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Experience Centre" subtitle="Dedicated Rep Fitness showroom & content production facility" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-5">
+      <div className="flex-1 rounded-2xl overflow-hidden border-2 border-gray-200 shadow-lg relative">
+        <img src="assets/experience-centre.png" alt="GAF Experience Centre — Rep Fitness Showroom" className="w-full h-full object-cover" />
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Package size={18} className="text-rep-red" />
+            <h3 className="text-white font-bold text-sm uppercase tracking-wide">GAF Experience Centre</h3>
+          </div>
+          <p className="text-white/90 text-xs leading-relaxed max-w-2xl">Purpose-built Rep Fitness showroom located at GAF HQ — serves as a local content production studio, product showcase for B2B buyers, and immersive brand experience for athlete collaborations and rack configuration consultations.</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-4 shrink-0">
+        {[
+          { icon: Eye, label: "Content Studio", desc: "In-house photo & video production with full Rep Fitness product lineup — racks, benches, dumbbells" },
+          { icon: Users, label: "B2B Showroom", desc: "Walk-through experience for commercial buyers, gym owners — solve rack configuration in person" },
+          { icon: Zap, label: "Athlete Hub", desc: "Dedicated space for influencer and athlete collaboration shoots and event content capture" },
+        ].map((item, i) => (
+          <div key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
+            <item.icon size={24} className="text-rep-red mx-auto mb-2" />
+            <h4 className="font-bold text-xs uppercase tracking-wide mb-1">{item.label}</h4>
+            <p className="text-[10px] text-gray-600 leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 9: SUPPORT NEEDED =====
+const SupportSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Support Needed" subtitle="Key requests for Rep Fitness to accelerate ANZ growth" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-4">
+      {/* Priority request banner */}
+      <div className="bg-rep-red text-white p-5 rounded-xl shadow-lg shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="bg-white/20 p-2 rounded-lg"><DollarSign size={24} className="text-white" /></div>
+          <div>
+            <h3 className="font-extrabold text-lg uppercase">MDF Support — Priority Request</h3>
+            <p className="text-sm text-white/90 mt-1">Marketing Development Funds to co-invest in AU brand-building. The Coaches Congress MDF ($4,237) was a great start — looking to expand this model across digital campaigns, event activations, and content production to build independent AU demand beyond repfitness.com referral traffic.</p>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+        {[
+          { title: "Pricing & Margin Support", icon: Percent, color: "text-amber-600", bg: "bg-amber-50 border-amber-100", items: [
+            "Dumbbell pricing relief — category drives 24% of revenue at only 21.6% GP, freight on heavy items compresses margins",
+            "Volume-based pricing tiers to improve margin as AU volume grows",
+            "Competitive pricing support on key SKUs (PR-5000, Pepin dumbbells) against local competitors",
+            "Freight cost collaboration — joint strategy for heavy product domestic delivery"
+          ]},
+          { title: "Marketing & Content Assets", icon: Zap, color: "text-rep-red", bg: "bg-red-50 border-red-100", items: [
+            "Local AU marketing assets — lifestyle imagery, video content for Meta/YouTube campaigns",
+            "Rack configuration guides and visual tools to reduce online purchase friction",
+            "Co-branded creative for AU market — adapt US brand assets for local audience",
+            "Event/expo support materials — booth collateral, demo equipment for activations"
+          ]},
+          { title: "Strategic Partnership", icon: Target, color: "text-blue-600", bg: "bg-blue-50 border-blue-100", items: [
+            "Joint business plan with aligned revenue targets for ANZ market",
+            "New product roadmap visibility — first-mover on launches in AU (e.g. new rack models, bench updates)",
+            "Quarterly review cadence to track brand growth and margin improvement together",
+            "Support building B2B/commercial channel — gym fit-out reference projects and case studies"
+          ]},
+        ].map((section, i) => (
+          <div key={i} className={`p-4 rounded-xl border ${section.bg}`}>
+            <div className="flex items-center gap-2 mb-3">
+              <section.icon size={20} className={section.color} />
+              <h4 className="font-bold text-xs uppercase tracking-wide">{section.title}</h4>
+            </div>
+            <div className="space-y-2">
+              {section.items.map((item, j) => (
+                <div key={j} className="flex items-start gap-2">
+                  <MessageCircle size={12} className="text-gray-400 mt-0.5 shrink-0" />
+                  <p className="text-[11px] text-gray-700 leading-relaxed">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Financial context bar */}
+      <div className="bg-rep-dark text-white p-4 rounded-xl flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <BarChart size={14} className="text-rep-red" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">Financial Context</span>
+        </div>
+        <div className="flex gap-6 text-xs">
+          <span>12-Month Revenue: <strong className="text-rep-red">$1.29M</strong></span>
+          <span>Gross Profit: <strong className="text-green-400">$323K</strong></span>
+          <span>GP Trend: <strong className="text-white">19% → 32%</strong> (improving)</span>
+        </div>
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 10: QUESTIONS =====
+const QuestionsSlide = () => (
+  <div className="w-full h-full bg-[#3d3d3d] flex flex-col items-center justify-center p-12 overflow-hidden">
+    <h2 className="text-white text-7xl md:text-[10rem] font-black uppercase tracking-[0.1em] text-center drop-shadow-sm select-none">Questions</h2>
+  </div>
+);
+
+// ===== APP =====
+const SLIDES = [TitleSlide, PerformanceSlide, CategorySlide, GA4Slide, WinsSlide, ChallengesSlide, PlansSlide, ExperienceCentreSlide, SupportSlide, QuestionsSlide];
+
+function App() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const nextSlide = () => { if (currentSlide < SLIDES.length - 1) setCurrentSlide(c => c + 1); };
+  const prevSlide = () => { if (currentSlide > 0) setCurrentSlide(c => c - 1); };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+      else if (e.key === 'ArrowLeft') prevSlide();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentSlide]);
+
+  const CurrentSlideComponent = SLIDES[currentSlide];
+
+  return (
+    <div className="relative w-full min-h-screen bg-gray-900 flex items-center justify-center p-0 sm:p-4 lg:p-6 overflow-x-hidden">
+      <div className="w-full max-w-[1600px] h-full min-h-[650px] md:max-h-[92vh] md:aspect-video bg-white shadow-2xl relative overflow-hidden flex flex-col rounded-none sm:rounded-xl">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <CurrentSlideComponent slideNumber={currentSlide + 1} totalSlides={SLIDES.length} />
+        </div>
+        <div className="absolute bottom-16 right-12 flex gap-4 z-50">
+          <button onClick={prevSlide} disabled={currentSlide === 0} className={`p-3 rounded-full transition-all border-2 border-transparent ${currentSlide === 0 ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50' : 'bg-rep-dark text-white hover:bg-rep-red hover:shadow-lg active:scale-95'}`}>
+            <ChevronLeft size={24} />
+          </button>
+          <button onClick={nextSlide} disabled={currentSlide === SLIDES.length - 1} className={`p-3 rounded-full transition-all border-2 border-transparent ${currentSlide === SLIDES.length - 1 ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50' : 'bg-rep-dark text-white hover:bg-rep-red hover:shadow-lg active:scale-95'}`}>
+            <ChevronRight size={24} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
