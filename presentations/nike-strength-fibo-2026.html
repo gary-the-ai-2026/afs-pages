@@ -425,33 +425,58 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
         </div>
       </div>
 
-      {/* Top Pages Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden shrink-0">
-        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center gap-2">
-          <Globe className="text-gaf-orange" size={14} />
-          <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Top Nike Pages by Views (AU)</h4>
-        </div>
-        <div className="overflow-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 text-[9px] font-bold text-gray-500 uppercase border-b border-gray-100">Page</th>
-                <th className="py-2 px-4 text-[9px] font-bold text-gray-500 uppercase border-b border-gray-100 text-right">Views</th>
-                <th className="py-2 px-4 text-[9px] font-bold text-gray-500 uppercase border-b border-gray-100 text-right">Sessions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {topPages.map((p, i) => (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
-                  <td className="py-1.5 px-4 text-[10px] font-medium text-gaf-darkGrey">{p.page}</td>
-                  <td className="py-1.5 px-4 text-[10px] font-bold text-gaf-darkGrey text-right">{p.views.toLocaleString()}</td>
-                  <td className="py-1.5 px-4 text-[10px] text-gray-500 text-right">{p.sessions.toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Traffic Source Pie Chart */}
+      {(() => {
+        const channels = [
+          { name: "Paid Social", sessions: 70487, color: "#3b82f6" },
+          { name: "Direct", sessions: 21325, color: "#6b7280" },
+          { name: "Paid Shopping", sessions: 15866, color: "#f59e0b" },
+          { name: "Display", sessions: 14542, color: "#8b5cf6" },
+          { name: "Paid Search", sessions: 12123, color: "#10b981" },
+          { name: "Organic Social", sessions: 9944, color: "#ec4899" },
+          { name: "Cross-network", sessions: 6485, color: "#f97316" },
+          { name: "Organic Search", sessions: 6153, color: "#06b6d4" },
+          { name: "Other", sessions: 8562, color: "#d1d5db" },
+        ];
+        const total = channels.reduce((s, c) => s + c.sessions, 0);
+        let cumAngle = 0;
+        const slices = channels.map(c => {
+          const pct = c.sessions / total;
+          const startAngle = cumAngle;
+          cumAngle += pct * 360;
+          const endAngle = cumAngle;
+          const startRad = (startAngle - 90) * Math.PI / 180;
+          const endRad = (endAngle - 90) * Math.PI / 180;
+          const largeArc = pct > 0.5 ? 1 : 0;
+          const x1 = 50 + 40 * Math.cos(startRad);
+          const y1 = 50 + 40 * Math.sin(startRad);
+          const x2 = 50 + 40 * Math.cos(endRad);
+          const y2 = 50 + 40 * Math.sin(endRad);
+          return { ...c, pct, path: `M50,50 L${x1},${y1} A40,40 0 ${largeArc},1 ${x2},${y2} Z` };
+        });
+        return (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 shrink-0">
+            <div className="flex items-center gap-2 mb-3">
+              <Globe className="text-gaf-orange" size={14} />
+              <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Traffic Sources by Sessions (165K total)</h4>
+              <span className="ml-auto text-[9px] text-gray-400 font-bold">71% PAID · 12% ORGANIC · 12% DIRECT · 5% OTHER</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <svg viewBox="0 0 100 100" className="w-28 h-28 shrink-0">
+                {slices.map((s, i) => <path key={i} d={s.path} fill={s.color} stroke="white" strokeWidth="0.5" />)}
+              </svg>
+              <div className="grid grid-cols-3 gap-x-6 gap-y-1.5 flex-1">
+                {slices.map((s, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{backgroundColor: s.color}}></div>
+                    <span className="text-[10px] text-gray-700"><strong>{(s.pct * 100).toFixed(0)}%</strong> {s.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   </SlideLayout>
   );
@@ -472,7 +497,7 @@ const WinsSlide = ({ slideNumber, totalSlides }) => (
               { title: "Aus Fitness Expo Launch — BJ Stone Collab", desc: "Successful brand activation at Australia's largest fitness expo with strongman athlete BJ Stone driving foot traffic and brand credibility" },
               { title: "Sarah's Day Partnership (1.2M IG followers)", desc: "High-profile influencer collaboration generating organic reach and social proof for Nike Strength in the AU fitness market" },
               { title: "1,803% revenue growth in 11 months", desc: "From $4K (May '25) to $93K peak (Dec '25) — brand established rapidly with $559K total revenue" },
-              { title: "575K page views across Nike Strength pages", desc: "Strong traffic driven largely through generic gym equipment searches — validates product-market fit. Brand search awareness remains an opportunity area" },
+              { title: "575K page views across Nike Strength pages", desc: "40% driven by paid social (Meta/YouTube), validating brand investment. Organic search just 6.5% — significant runway to build brand awareness and earned traffic" },
               { title: "Bumper plates margin leader at 29.6% GP", desc: "$97K revenue on bumper plates with the strongest margin in the range — validates premium positioning" },
             ].map((w, i) => (
               <div key={i} className="flex items-start gap-3">
@@ -488,17 +513,17 @@ const WinsSlide = ({ slideNumber, totalSlides }) => (
       </div>
       {/* Collab images — right column */}
       <div className="flex flex-col gap-3">
-        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1 flex flex-col bg-gray-900">
-          <div className="flex-1 flex items-center justify-center overflow-hidden">
-            <img src="assets/bj-stone-nike.png" alt="BJ Stone — Aus Fitness Expo" className="h-full object-contain" />
+        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1 flex flex-col">
+          <div className="flex-1 overflow-hidden" style={{maxHeight: '180px'}}>
+            <img src="assets/bj-stone-nike.png" alt="BJ Stone — Aus Fitness Expo" className="w-full h-full object-cover object-top" />
           </div>
           <div className="bg-green-50 px-4 py-1.5 shrink-0">
             <p className="text-xs font-bold text-green-800">BJ Stone — Aus Fitness Expo Launch</p>
           </div>
         </div>
-        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1 flex flex-col bg-gray-900">
-          <div className="flex-1 flex items-center justify-center overflow-hidden">
-            <img src="assets/sarahs-day-nike.png" alt="Sarah's Day — Nike Strength" className="h-full object-contain" />
+        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1 flex flex-col">
+          <div className="flex-1 overflow-hidden" style={{maxHeight: '180px'}}>
+            <img src="assets/sarahs-day-nike.png" alt="Sarah's Day — Nike Strength" className="w-full h-full object-cover object-top" />
           </div>
           <div className="bg-green-50 px-4 py-1.5 shrink-0">
             <p className="text-xs font-bold text-green-800">Sarah's Day — 1.2M Instagram Followers</p>
@@ -521,7 +546,7 @@ const ChallengesSlide = ({ slideNumber, totalSlides }) => (
           </div>
           <div className="space-y-4">
             {[
-              { title: "Brand awareness — 'Nike the strength equipment brand'", desc: "Consumer confusion between Nike (apparel) and Nike Strength (equipment). Building awareness that this is a dedicated strength equipment brand requires sustained top-of-funnel investment. Current traffic is largely driven by generic gym equipment searches — brand-specific search demand needs to grow." },
+              { title: "Brand awareness — 'Nike the strength equipment brand'", desc: "Consumer confusion between Nike (apparel) and Nike Strength (equipment). 71% of Nike Strength traffic is paid — organic search is only 6.5% of sessions. We're buying attention, not yet earning it. Dedicated brand investment and MDF support needed to build organic demand and brand search volume." },
               { title: "Margin pressure on dumbbells + domestic freight", desc: "Dumbbell category drives 33% of revenue but only 7.2% GP margin. Domestic freight costs on heavy products are squeezing margins further — balancing retail price, wholesale price, and desired margin is the core tension." },
               { title: "KVD / Grind SKU margin through the chain", desc: "Need support ensuring adequate margin on KVD SKUs (Grind) across the entire distribution chain — current pricing leaves limited room for all parties to make adequate margin." },
             ].map((c, i) => (
