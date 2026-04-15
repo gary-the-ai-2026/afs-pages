@@ -187,7 +187,7 @@ const Slide = ({ children, num, total, noPad }) => {
   <div className={`w-full h-full ${th.bg} ${th.text} flex flex-col relative overflow-hidden`}>
     <div className="slash" style={{top:'30%',left:'-50%',background:`linear-gradient(90deg,transparent,${th.slashColor},transparent)`}}></div>
     <div className="slash" style={{top:'60%',left:'-30%',background:`linear-gradient(90deg,transparent,${th.slashColor},transparent)`}}></div>
-    <header className="flex justify-between items-center px-10 pt-6 pb-4 z-10 shrink-0">
+    <header className="flex justify-between items-center px-10 pt-5 pb-3 z-10 shrink-0">
       <Logo />
       <div className="flex items-center gap-3">
         <span className={`text-[14px] font-heading font-light tracking-[.3em] ${th.sub} uppercase`}>Centr x Hyrox</span>
@@ -207,7 +207,7 @@ const Slide = ({ children, num, total, noPad }) => {
 const Kpi = ({ label, value, sub, accent }) => {
   const th = useTheme();
   return (
-  <div className={`p-5 rounded-lg border ${accent ? `${th.kpiAccentBg} ${th.borderAccent}` : `${th.cardBg} ${th.cardBorder}`}`}>
+  <div className={`p-4 rounded-lg border ${accent ? `${th.kpiAccentBg} ${th.borderAccent}` : `${th.cardBg} ${th.cardBorder}`}`}>
     <p className={`text-[13px] font-heading font-medium tracking-[.25em] uppercase mb-3 ${accent ? 'text-gaf-orange' : th.sub}`}>{label}</p>
     <p className={`text-3xl font-heading font-bold ${accent ? 'text-gaf-orange' : th.text}`}>{value}</p>
     {sub && <p className={`text-[14px] ${th.sub} mt-1.5 font-body`}>{sub}</p>}
@@ -219,7 +219,7 @@ const Kpi = ({ label, value, sub, accent }) => {
 const SectionTitle = ({ pre, title, sub }) => {
   const th = useTheme();
   return (
-  <div className="mb-6 shrink-0 stagger">
+  <div className="mb-4 shrink-0 stagger">
     {pre && <p className="text-[14px] font-heading tracking-[.4em] text-gaf-orange uppercase mb-2">{pre}</p>}
     <h1 className={`font-display text-5xl md:text-7xl ${th.text} leading-[0.9] tracking-wide`}>{title}</h1>
     {sub && <p className={`text-[15px] ${th.sub} mt-3 font-body max-w-2xl leading-relaxed`}>{sub}</p>}
@@ -314,15 +314,15 @@ const PerfSlide = ({ n, t }) => {
   return (
   <Slide num={n} total={t}>
     <SectionTitle pre="Performance" title="YEAR TO DATE" sub="Centr x Hyrox sales: April 2025 — March 2026" />
-    <div className="flex flex-col flex-1 gap-5 min-h-0">
+    <div className="flex flex-col flex-1 gap-3 min-h-0">
       <div className="grid grid-cols-4 gap-4 shrink-0 stagger">
         <Kpi label="Total Revenue" value="$1.42M" sub="12 months trading" />
         <Kpi label="Gross Profit" value="$390,305" sub="27.6% average margin" />
         <Kpi label="Peak Month" value="$181K" sub="January '26" />
         <Kpi label="Revenue Growth" value="+155%" sub="Apr $62K → Jan $181K" accent />
       </div>
-      <div className={`flex-1 ${th.cardBg} rounded-lg border ${th.cardBorder} p-5 min-h-0`}>
-        <div className="flex items-center justify-between mb-4">
+      <div className={`flex-1 ${th.cardBg} rounded-lg border ${th.cardBorder} p-4 min-h-0`}>
+        <div className="flex items-center justify-between mb-3">
           <p className={`text-[13px] font-heading tracking-[.3em] ${th.sub} uppercase`}>Monthly Revenue</p>
           <p className={`text-[14px] ${th.sub} font-body`}>Peak: <span className="text-gaf-orange font-semibold">$181K</span> (Jan '26)</p>
         </div>
@@ -404,7 +404,7 @@ const DigitalSlide = ({ n, t }) => {
   return (
   <Slide num={n} total={t}>
     <SectionTitle pre="Digital" title="PERFORMANCE" sub="GA4 website analytics — Centr x Hyrox pages | May 2025 — March 2026" />
-    <div className="flex flex-col flex-1 gap-4 min-h-0">
+    <div className="flex flex-col flex-1 gap-3 min-h-0">
       <div className="grid grid-cols-4 gap-4 shrink-0 stagger">
         <Kpi label="Page Views" value="257,042" sub="Centr x Hyrox pages" />
         <Kpi label="Sessions" value="155,990" sub="14,181/month avg" />
@@ -466,7 +466,7 @@ const DigitalSlide = ({ n, t }) => {
             })}
           </div>
           <div className={`mt-3 pt-3 border-t ${th.cardBorder}`}>
-            <p className={`text-[13px] ${th.sub} font-body leading-relaxed`}><span className="text-gaf-orange font-semibold">56% paid</span> · 6% organic · 9% direct · 29% other</p>
+            <p className={`text-[13px] ${th.sub} font-body leading-snug`}><span className="text-gaf-orange font-semibold">56% paid</span> · 6% organic · 9% direct · 29% other</p>
           </div>
         </div>
       </div>
@@ -482,20 +482,20 @@ const WinsSlide = ({ n, t }) => {
   <Slide num={n} total={t}>
     <SectionTitle pre="Highlights" title="WINS" sub="Key highlights from the last 12 months" />
     <div className="flex gap-6 flex-1 min-h-0">
-      <div className="flex-1 flex flex-col gap-3 stagger">
+      <div className="flex-1 flex flex-col gap-2 stagger">
         {[
           { title: "Premium Key Account wins — Total Fusion & Virgin Active", desc: "Secured equipment sales with Total Fusion and Virgin Active — two of AU's largest fitness chains. Virgin Active 8-club deal and WGA pilot represent significant commercial validation of the brand." },
           { title: "$1.42M total revenue with 27.6% GP margin", desc: "Strong first-year performance. Revenue grew +155% from April to January peak — demonstrating accelerating demand across both retail and commercial channels." },
           { title: "Commercial channel strength — 12.8% ($182K)", desc: "12.8% of revenue from commercial accounts — significantly higher than other portfolio brands. Driven by Key Account wins with Total Fusion and Virgin Active." },
           { title: "257K page views, +157% growth", desc: "Page views nearly tripled from 11.6K (May) to 34.9K (Dec). 156K sessions across the period with strong month-on-month growth driven by paid social investment." },
         ].map((w, i) => (
-          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex items-start gap-3 ${th.greenBorder} transition-colors`}>
+          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-3 flex items-start gap-2 ${th.greenBorder} transition-colors`}>
             <div className={`w-5 h-5 rounded-full ${th.greenBg} flex items-center justify-center shrink-0 mt-0.5`}>
               <Check size={12} className={th.green} />
             </div>
             <div>
-              <p className={`text-[15px] font-heading font-semibold ${th.text} mb-1`}>{w.title}</p>
-              <p className={`text-[14px] ${th.sub} font-body leading-relaxed`}>{w.desc}</p>
+              <p className={`text-[14px] font-heading font-semibold ${th.text} mb-1`}>{w.title}</p>
+              <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{w.desc}</p>
             </div>
           </div>
         ))}
@@ -532,12 +532,12 @@ const ChallengesSlide = ({ n, t }) => {
             </div>
             <div>
               <p className={`text-[15px] font-heading font-semibold ${th.text} mb-1`}>{c.title}</p>
-              <p className={`text-[14px] ${th.sub} font-body leading-relaxed`}>{c.desc}</p>
+              <p className={`text-[14px] ${th.sub} font-body leading-snug`}>{c.desc}</p>
             </div>
           </div>
         ))}
       </div>
-      <div className={`w-[340px] shrink-0 ${th.cardBg} rounded-lg border ${th.cardBorder} p-5 flex flex-col`}>
+      <div className={`w-[340px] shrink-0 ${th.cardBg} rounded-lg border ${th.cardBorder} p-4 flex flex-col`}>
         <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase mb-5">Channel & Market Snapshot</p>
         <div className="flex-1 flex flex-col gap-4 justify-center">
           {[
@@ -560,7 +560,7 @@ const ChallengesSlide = ({ n, t }) => {
           ))}
         </div>
         <div className={`mt-5 pt-4 border-t ${th.cardBorder}`}>
-          <p className={`text-[14px] ${th.sub} font-body leading-relaxed`}>The commercial channel is a genuine strength (<span className="text-gaf-orange font-semibold">12.8% vs &lt;2%</span> for other brands). Event and digital strategy should focus on driving commercial pipeline.</p>
+          <p className={`text-[14px] ${th.sub} font-body leading-snug`}>The commercial channel is a genuine strength (<span className="text-gaf-orange font-semibold">12.8% vs &lt;2%</span> for other brands). Event and digital strategy should focus on driving commercial pipeline.</p>
         </div>
       </div>
     </div>
@@ -574,10 +574,10 @@ const PlansSlide = ({ n, t }) => {
   return (
   <Slide num={n} total={t}>
     <SectionTitle pre="Strategy" title="PLANS & PRIORITIES" sub="Scale Commercial Key Accounts & build consumer brand" />
-    <div className="flex flex-col flex-1 gap-4 min-h-0">
-      <div className={`${th.cardBg} border-l-2 border-gaf-orange rounded-lg p-5 shrink-0`}>
+    <div className="flex flex-col flex-1 gap-3 min-h-0">
+      <div className={`${th.cardBg} border-l-2 border-gaf-orange rounded-lg p-4 shrink-0`}>
         <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase mb-2">Strategic Focus</p>
-        <p className={`text-[15px] font-body ${th.text} leading-relaxed`}>Double down on the commercial channel advantage with Total Fusion, Virgin Active, and WGA. Simultaneously invest in building consumer brand awareness through Hyrox event activations and dedicated content to unlock the home fitness segment.</p>
+        <p className={`text-[15px] font-body ${th.text} leading-snug`}>Double down on the commercial channel advantage with Total Fusion, Virgin Active, and WGA. Simultaneously invest in building consumer brand awareness through Hyrox event activations and dedicated content to unlock the home fitness segment.</p>
       </div>
       <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 stagger">
         {[
@@ -600,16 +600,16 @@ const PlansSlide = ({ n, t }) => {
             "Expand product page content — Wall Ball, Sandbag, Kettlebell pages already driving interest"
           ]},
         ].map((s, i) => (
-          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col`}>
-            <div className="flex items-center gap-2 mb-4">
+          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex flex-col`}>
+            <div className="flex items-center gap-2 mb-3">
               <s.icon size={16} className="text-gaf-orange" />
               <h4 className={`text-[14px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>{s.title}</h4>
             </div>
-            <div className="space-y-3 flex-1">
+            <div className="space-y-2 flex-1">
               {s.items.map((item, j) => (
                 <div key={j} className="flex items-start gap-2">
                   <div className="w-1 h-1 rounded-full bg-gaf-orange mt-1.5 shrink-0"></div>
-                  <p className={`text-[14px] ${th.sub} font-body leading-relaxed`}>{item}</p>
+                  <p className={`text-[14px] ${th.sub} font-body leading-snug`}>{item}</p>
                 </div>
               ))}
             </div>
@@ -630,20 +630,20 @@ const ExpSlide = ({ n, t }) => {
       <img src="assets/experience-centre.png" alt="GAF Experience Centre" className="w-full h-full object-cover" />
       <div className={`absolute inset-0 bg-gradient-to-t ${th.expOverlay}`}></div>
       <div className={`absolute inset-0 bg-gradient-to-r ${th.expOverlayR}`}></div>
-      <div className="absolute bottom-0 left-0 right-0 p-10">
+      <div className="absolute bottom-0 left-0 right-0 p-8 pb-6">
         <p className="text-[14px] font-heading tracking-[.4em] text-gaf-orange uppercase mb-3">Facility</p>
         <h2 className={`font-display text-5xl md:text-7xl ${th.expText} tracking-wide mb-4`}>EXPERIENCE<br/>CENTRE</h2>
-        <p className={`text-[15px] ${th.expSub} font-body max-w-xl leading-relaxed mb-8`}>Purpose-built Centr x Hyrox functional training zone at GAF HQ — serves as a product showcase for commercial buyers (Total Fusion, Virgin Active, WGA), content production studio for athlete and event content, and demonstration space for functional training equipment.</p>
-        <div className="flex gap-6">
+        <p className={`text-[15px] ${th.expSub} font-body max-w-xl leading-snug mb-8`}>Purpose-built Centr x Hyrox functional training zone at GAF HQ — serves as a product showcase for commercial buyers (Total Fusion, Virgin Active, WGA), content production studio for athlete and event content, and demonstration space for functional training equipment.</p>
+        <div className="flex gap-3">
           {[
             { icon: Users, label: "Commercial Showroom", desc: "Walk-through experience for gym operators and facility managers" },
             { icon: Cam, label: "Content Studio", desc: "In-house photo & video with complete Centr x Hyrox range" },
             { icon: Bolt, label: "Training Hub", desc: "Athlete and influencer collaboration space for Hyrox training content" },
           ].map((item, i) => (
-            <div key={i} className={`backdrop-blur-sm border rounded-lg p-4 flex-1 ${th.expCard}`}>
+            <div key={i} className={`backdrop-blur-sm border rounded-lg px-4 py-3 flex-1 ${th.expCard}`}>
               <item.icon size={16} className="text-gaf-orange mb-2" />
               <h4 className={`text-[14px] font-heading font-semibold tracking-wider uppercase mb-1 ${th.expText}`}>{item.label}</h4>
-              <p className={`text-[14px] ${th.expSub} font-body leading-relaxed opacity-70`}>{item.desc}</p>
+              <p className={`text-[14px] ${th.expSub} font-body leading-snug opacity-70`}>{item.desc}</p>
             </div>
           ))}
         </div>
@@ -659,12 +659,12 @@ const SupportSlide = ({ n, t }) => {
   return (
   <Slide num={n} total={t}>
     <SectionTitle pre="Partnership" title="SUPPORT NEEDED" sub="Key requests to accelerate ANZ growth" />
-    <div className="flex flex-col flex-1 gap-4 min-h-0">
-      <div className="bg-gaf-orange rounded-lg p-5 flex items-center gap-4 shrink-0">
+    <div className="flex flex-col flex-1 gap-3 min-h-0">
+      <div className="bg-gaf-orange rounded-lg p-4 flex items-center gap-4 shrink-0">
         <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0"><Users size={20} className="text-white" /></div>
         <div>
           <h3 className="font-heading font-bold text-white uppercase tracking-wider text-[15px]">Local Support — Jay Clarke</h3>
-          <p className="text-[14px] text-white/90 font-body mt-1 leading-relaxed">Local support through Jay Clarke for direct customer conversations with Key Accounts. The commercial channel is our strongest growth lever (12.8% of revenue) and having local Centr representation to support GAF in Total Fusion, Virgin Active, and WGA discussions would accelerate deal velocity and account expansion.</p>
+          <p className="text-[14px] text-white/90 font-body mt-1 leading-snug">Local support through Jay Clarke for direct customer conversations with Key Accounts. The commercial channel is our strongest growth lever (12.8% of revenue) and having local Centr representation to support GAF in Total Fusion, Virgin Active, and WGA discussions would accelerate deal velocity and account expansion.</p>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 stagger">
@@ -686,23 +686,23 @@ const SupportSlide = ({ n, t }) => {
             "Quarterly review cadence to track commercial pipeline and brand growth together"
           ]},
         ].map((s, i) => (
-          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col`}>
-            <div className="flex items-center gap-2 mb-4">
+          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex flex-col`}>
+            <div className="flex items-center gap-2 mb-3">
               <s.icon size={16} className="text-gaf-orange" />
               <h4 className={`text-[14px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>{s.title}</h4>
             </div>
-            <div className="space-y-3 flex-1">
+            <div className="space-y-2 flex-1">
               {s.items.map((item, j) => (
                 <div key={j} className="flex items-start gap-2">
                   <Msg size={10} className={`${th.muted} mt-1 shrink-0`} />
-                  <p className={`text-[14px] ${th.sub} font-body leading-relaxed`}>{item}</p>
+                  <p className={`text-[14px] ${th.sub} font-body leading-snug`}>{item}</p>
                 </div>
               ))}
             </div>
           </div>
         ))}
       </div>
-      <div className={`flex items-center justify-between ${th.cardBg} border ${th.cardBorder} rounded-lg px-5 py-3 shrink-0`}>
+      <div className={`flex items-center justify-between ${th.cardBg} border ${th.cardBorder} rounded-lg px-5 py-2 shrink-0`}>
         <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase">Financial Context</p>
         <div className={`flex gap-8 text-[14px] font-body ${th.sub}`}>
           <span>Revenue: <span className="text-gaf-orange font-semibold">$1.42M</span></span>
@@ -776,8 +776,8 @@ function App() {
   const C = SLIDES[idx];
   return (
     <ThemeCtx.Provider value={th}>
-      <div className={`w-screen h-screen flex items-center justify-center overflow-hidden`} style={{background: th.bodyBg}}>
-        <div key={key} className="relative overflow-hidden slide-enter rounded-lg" style={{width: 1600, height: 900, transform: `scale(${scale})`, transformOrigin: 'center center', boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
+      <div className="w-screen h-screen overflow-hidden relative" style={{background: th.bodyBg}}>
+        <div key={key} className="absolute overflow-hidden slide-enter rounded-lg" style={{width: 1600, height: 900, transform: `scale(${scale})`, transformOrigin: 'center center', left: '50%', top: '50%', marginLeft: -800, marginTop: -450, boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
           <C n={idx + 1} t={SLIDES.length} />
           {/* Nav + theme toggle */}
           <div className="absolute bottom-6 right-8 flex gap-2 z-50">

@@ -187,7 +187,7 @@ const Slide = ({ children, num, total, noPad }) => {
   <div className={`w-full h-full ${th.bg} ${th.text} flex flex-col relative overflow-hidden`}>
     <div className="slash" style={{top:'30%',left:'-50%',background:`linear-gradient(90deg,transparent,${th.slashColor},transparent)`}}></div>
     <div className="slash" style={{top:'60%',left:'-30%',background:`linear-gradient(90deg,transparent,${th.slashColor},transparent)`}}></div>
-    <header className="flex justify-between items-center px-10 pt-6 pb-4 z-10 shrink-0">
+    <header className="flex justify-between items-center px-10 pt-5 pb-3 z-10 shrink-0">
       <Logo />
       <div className="flex items-center gap-3">
         <span className={`text-[14px] font-heading font-light tracking-[.3em] ${th.sub} uppercase`}>Nike Strength</span>
@@ -219,7 +219,7 @@ const Kpi = ({ label, value, sub, accent }) => {
 const SectionTitle = ({ pre, title, sub }) => {
   const th = useTheme();
   return (
-  <div className="mb-6 shrink-0 stagger">
+  <div className="mb-4 shrink-0 stagger">
     {pre && <p className="text-[14px] font-heading tracking-[.4em] text-gaf-orange uppercase mb-2">{pre}</p>}
     <h1 className={`font-display text-5xl md:text-7xl ${th.text} leading-[0.9] tracking-wide`}>{title}</h1>
     {sub && <p className={`text-[15px] ${th.sub} mt-3 font-body max-w-2xl leading-relaxed`}>{sub}</p>}
@@ -453,7 +453,7 @@ const WinsSlide = ({ n, t }) => {
   <Slide num={n} total={t}>
     <SectionTitle pre="Highlights" title="WINS" sub="Key highlights from the last 11 months" />
     <div className="flex gap-6 flex-1 min-h-0">
-      <div className="flex-1 flex flex-col gap-3 stagger">
+      <div className="flex-1 flex flex-col gap-2 stagger">
         {[
           { title: "Aus Fitness Expo Launch — BJ Stone Collab", desc: "Successful brand activation at Australia's largest fitness expo with strongman athlete BJ Stone driving foot traffic and brand credibility" },
           { title: "Sarah's Day Partnership (1.2M IG followers)", desc: "High-profile influencer collaboration generating organic reach and social proof for Nike Strength in the AU fitness market" },
@@ -461,13 +461,13 @@ const WinsSlide = ({ n, t }) => {
           { title: "575K page views across Nike Strength pages", desc: "40% driven by paid social (Meta/YouTube), validating brand investment. Organic search at 6.5% — runway to build earned traffic" },
           { title: "Bumper plates margin leader at 29.6% GP", desc: "$97K revenue with the strongest margin in the range — validates premium positioning" },
         ].map((w, i) => (
-          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex items-start gap-3 ${th.greenBorder} transition-colors`}>
+          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-3 flex items-start gap-3 ${th.greenBorder} transition-colors`}>
             <div className={`w-5 h-5 rounded-full ${th.greenBg} flex items-center justify-center shrink-0 mt-0.5`}>
               <Check size={12} className={th.green} />
             </div>
             <div>
-              <p className={`text-[15px] font-heading font-semibold ${th.text} mb-1`}>{w.title}</p>
-              <p className={`text-[14px] ${th.sub} font-body leading-relaxed`}>{w.desc}</p>
+              <p className={`text-[14px] font-heading font-semibold ${th.text} mb-0.5`}>{w.title}</p>
+              <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{w.desc}</p>
             </div>
           </div>
         ))}
@@ -543,12 +543,12 @@ const PlansSlide = ({ n, t }) => {
   return (
   <Slide num={n} total={t}>
     <SectionTitle pre="Strategy" title="PLANS & PRIORITIES" sub="Nike Strength growth strategy — next 6 months" />
-    <div className="flex flex-col flex-1 gap-4 min-h-0">
-      <div className={`${th.cardBg} border-l-2 border-gaf-orange rounded-lg p-5 shrink-0`}>
-        <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase mb-2">Strategic Focus</p>
-        <p className={`text-[15px] font-body ${th.text} leading-relaxed`}>Shift from conversion-only to brand building — investing in impressions, awareness, and digital presence to establish Nike Strength as a standalone destination brand in AU.</p>
+    <div className="flex flex-col flex-1 gap-3 min-h-0">
+      <div className={`${th.cardBg} border-l-2 border-gaf-orange rounded-lg p-4 shrink-0`}>
+        <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase mb-1">Strategic Focus</p>
+        <p className={`text-[14px] font-body ${th.text} leading-snug`}>Shift from conversion-only to brand building — investing in impressions, awareness, and digital presence to establish Nike Strength as a standalone destination brand in AU.</p>
       </div>
-      <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 stagger">
+      <div className="grid grid-cols-3 gap-3 flex-1 min-h-0 stagger">
         {[
           { title: "Digital-First", icon: Bolt, items: [
             "Dedicated $200K annual brand budget — 3x uplift from $6.5K/month",
@@ -568,16 +568,16 @@ const PlansSlide = ({ n, t }) => {
             "Digital marketing handles B2C, freeing sales for commercial/B2B"
           ]},
         ].map((s, i) => (
-          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col`}>
-            <div className="flex items-center gap-2 mb-4">
-              <s.icon size={16} className="text-gaf-orange" />
-              <h4 className={`text-[14px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>{s.title}</h4>
+          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex flex-col`}>
+            <div className="flex items-center gap-2 mb-3">
+              <s.icon size={14} className="text-gaf-orange" />
+              <h4 className={`text-[13px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>{s.title}</h4>
             </div>
-            <div className="space-y-3 flex-1">
+            <div className="space-y-2 flex-1">
               {s.items.map((item, j) => (
                 <div key={j} className="flex items-start gap-2">
                   <div className="w-1 h-1 rounded-full bg-gaf-orange mt-1.5 shrink-0"></div>
-                  <p className={`text-[14px] ${th.sub} font-body leading-relaxed`}>{item}</p>
+                  <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{item}</p>
                 </div>
               ))}
             </div>
@@ -598,20 +598,20 @@ const ExpSlide = ({ n, t }) => {
       <img src="assets/experience-centre.png" alt="GAF Experience Centre" className="w-full h-full object-cover" />
       <div className={`absolute inset-0 bg-gradient-to-t ${th.expOverlay}`}></div>
       <div className={`absolute inset-0 bg-gradient-to-r ${th.expOverlayR}`}></div>
-      <div className="absolute bottom-0 left-0 right-0 p-10">
-        <p className="text-[14px] font-heading tracking-[.4em] text-gaf-orange uppercase mb-3">Facility</p>
-        <h2 className={`font-display text-5xl md:text-7xl ${th.expText} tracking-wide mb-4`}>EXPERIENCE<br/>CENTRE</h2>
-        <p className={`text-[15px] ${th.expSub} font-body max-w-xl leading-relaxed mb-8`}>Purpose-built Nike Strength showroom at GAF HQ — local content production studio, B2B product showcase, and immersive brand experience for athlete collaborations.</p>
-        <div className="flex gap-6">
+      <div className="absolute bottom-0 left-0 right-0 p-8 pb-6">
+        <p className="text-[14px] font-heading tracking-[.4em] text-gaf-orange uppercase mb-2">Facility</p>
+        <h2 className={`font-display text-5xl md:text-7xl ${th.expText} tracking-wide mb-2`}>EXPERIENCE<br/>CENTRE</h2>
+        <p className={`text-[14px] ${th.expSub} font-body max-w-xl leading-relaxed mb-4`}>Purpose-built Nike Strength showroom at GAF HQ — local content production studio, B2B product showcase, and immersive brand experience for athlete collaborations.</p>
+        <div className="flex gap-3">
           {[
             { icon: Cam, label: "Content Studio", desc: "In-house photo & video with full product lineup" },
             { icon: Users, label: "B2B Showroom", desc: "Walk-through for wholesale buyers and gym owners" },
             { icon: Bolt, label: "Athlete Hub", desc: "Dedicated space for influencer collaborations" },
           ].map((item, i) => (
-            <div key={i} className={`backdrop-blur-sm border rounded-lg p-4 flex-1 ${th.expCard}`}>
-              <item.icon size={16} className="text-gaf-orange mb-2" />
-              <h4 className={`text-[14px] font-heading font-semibold tracking-wider uppercase mb-1 ${th.expText}`}>{item.label}</h4>
-              <p className={`text-[14px] ${th.expSub} font-body leading-relaxed opacity-70`}>{item.desc}</p>
+            <div key={i} className={`backdrop-blur-sm border rounded-lg px-4 py-3 flex-1 ${th.expCard}`}>
+              <item.icon size={14} className="text-gaf-orange mb-1" />
+              <h4 className={`text-[13px] font-heading font-semibold tracking-wider uppercase mb-0.5 ${th.expText}`}>{item.label}</h4>
+              <p className={`text-[13px] ${th.expSub} font-body leading-snug opacity-70`}>{item.desc}</p>
             </div>
           ))}
         </div>
@@ -627,15 +627,15 @@ const SupportSlide = ({ n, t }) => {
   return (
   <Slide num={n} total={t}>
     <SectionTitle pre="Partnership" title="SUPPORT NEEDED" sub="Key requests to accelerate ANZ growth" />
-    <div className="flex flex-col flex-1 gap-4 min-h-0">
-      <div className="bg-gaf-orange rounded-lg p-5 flex items-center gap-4 shrink-0">
-        <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0"><Dollar size={20} className="text-white" /></div>
+    <div className="flex flex-col flex-1 gap-3 min-h-0">
+      <div className="bg-gaf-orange rounded-lg p-4 flex items-center gap-4 shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0"><Dollar size={18} className="text-white" /></div>
         <div>
           <h3 className="font-heading font-bold text-white uppercase tracking-wider text-[15px]">MDF Support — Priority Request</h3>
-          <p className="text-[14px] text-white/90 font-body mt-1 leading-relaxed">Co-invest in $200K annual digital strategy. GAF committing significant budget to build Nike Strength as a top-of-funnel destination brand — MDF accelerates the 180-day awareness-to-conversion pipeline.</p>
+          <p className="text-[13px] text-white/90 font-body mt-1 leading-snug">Co-invest in $200K annual digital strategy. GAF committing significant budget to build Nike Strength as a top-of-funnel destination brand — MDF accelerates the 180-day awareness-to-conversion pipeline.</p>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 stagger">
+      <div className="grid grid-cols-3 gap-3 flex-1 min-h-0 stagger">
         {[
           { title: "Pricing & Margin", icon: Pct, items: [
             "KVD / Grind SKU margin review across distribution chain",
@@ -656,25 +656,25 @@ const SupportSlide = ({ n, t }) => {
             "Support building Nike Strength as a 'pull' brand for retailers"
           ]},
         ].map((s, i) => (
-          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col`}>
-            <div className="flex items-center gap-2 mb-4">
-              <s.icon size={16} className="text-gaf-orange" />
-              <h4 className={`text-[14px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>{s.title}</h4>
+          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex flex-col`}>
+            <div className="flex items-center gap-2 mb-3">
+              <s.icon size={14} className="text-gaf-orange" />
+              <h4 className={`text-[13px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>{s.title}</h4>
             </div>
-            <div className="space-y-3 flex-1">
+            <div className="space-y-2 flex-1">
               {s.items.map((item, j) => (
                 <div key={j} className="flex items-start gap-2">
                   <Msg size={10} className={`${th.muted} mt-1 shrink-0`} />
-                  <p className={`text-[14px] ${th.sub} font-body leading-relaxed`}>{item}</p>
+                  <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{item}</p>
                 </div>
               ))}
             </div>
           </div>
         ))}
       </div>
-      <div className={`flex items-center justify-between ${th.cardBg} border ${th.cardBorder} rounded-lg px-5 py-3 shrink-0`}>
+      <div className={`flex items-center justify-between ${th.cardBg} border ${th.cardBorder} rounded-lg px-5 py-2 shrink-0`}>
         <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase">Financial Context</p>
-        <div className={`flex gap-8 text-[14px] font-body ${th.sub}`}>
+        <div className={`flex gap-8 text-[13px] font-body ${th.sub}`}>
           <span>Projected Sales: <span className="text-gaf-orange font-semibold">$1.75M</span></span>
           <span>Projected GP: <span className={`${th.green} font-semibold`}>$400K</span></span>
           <span>Brand Spend: <span className={`${th.text} font-semibold`}>$200K</span> (50% of GP reinvested)</span>
@@ -746,8 +746,8 @@ function App() {
   const C = SLIDES[idx];
   return (
     <ThemeCtx.Provider value={th}>
-      <div className={`w-screen h-screen flex items-center justify-center overflow-hidden`} style={{background: th.bodyBg}}>
-        <div key={key} className="relative overflow-hidden slide-enter rounded-lg" style={{width: 1600, height: 900, transform: `scale(${scale})`, transformOrigin: 'center center', boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
+      <div className="w-screen h-screen overflow-hidden relative" style={{background: th.bodyBg}}>
+        <div key={key} className="absolute overflow-hidden slide-enter rounded-lg" style={{width: 1600, height: 900, transform: `scale(${scale})`, transformOrigin: 'center center', left: '50%', top: '50%', marginLeft: -800, marginTop: -450, boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
           <C n={idx + 1} t={SLIDES.length} />
           {/* Nav + theme toggle */}
           <div className="absolute bottom-6 right-8 flex gap-2 z-50">
