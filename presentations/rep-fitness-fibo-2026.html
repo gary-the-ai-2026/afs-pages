@@ -16,10 +16,6 @@ tailwind.config = {
           darkGrey: '#424242',
           paleGrey: '#f0f0f0',
         },
-        rep: {
-          red: '#e63946',
-          dark: '#1d1d1d',
-        }
       },
       fontFamily: {
         sans: ['Montserrat', 'sans-serif'],
@@ -43,7 +39,7 @@ body { font-family: 'Open Sans', sans-serif; background: #111827; margin: 0; }
 h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #e63946; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #f26422; border-radius: 10px; }
 </style>
 </head>
 <body>
@@ -136,16 +132,16 @@ const SlideLayout = ({ children, title, subtitle, slideNumber, totalSlides }) =>
     <header className="flex justify-between items-center p-8 z-10 shrink-0"><Logo /></header>
     <main className="flex-1 flex flex-col px-6 md:px-12 pb-12 z-10 overflow-hidden h-full">
       {title && (
-        <div className="mb-6 border-l-4 border-rep-red pl-6 shrink-0">
+        <div className="mb-6 border-l-4 border-gaf-orange pl-6 shrink-0">
           <h1 className="text-3xl md:text-5xl font-extrabold uppercase text-black mb-1 leading-tight">{title}</h1>
           {subtitle && <h2 className="text-sm md:text-lg text-gray-600 font-semibold">{subtitle}</h2>}
         </div>
       )}
       <div className="flex-1 min-h-0">{children}</div>
     </main>
-    <footer className="h-10 md:h-12 flex justify-end items-center px-12 bg-rep-dark text-white z-10 shrink-0">
+    <footer className="h-10 md:h-12 flex justify-end items-center px-12 bg-gaf-darkGrey text-white z-10 shrink-0">
       <div className="flex gap-1">
-        <span className="text-xs font-bold text-rep-red">{slideNumber}</span>
+        <span className="text-xs font-bold text-gaf-orange">{slideNumber}</span>
         <span className="text-xs text-gray-500">/</span>
         <span className="text-xs text-gray-500">{totalSlides}</span>
       </div>
@@ -156,14 +152,14 @@ const SlideLayout = ({ children, title, subtitle, slideNumber, totalSlides }) =>
 // ===== SLIDE 1: TITLE =====
 const TitleSlide = ({ slideNumber, totalSlides }) => (
   <div className="w-full h-full bg-white relative flex flex-col items-center justify-center overflow-hidden">
-    <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-rep-red opacity-10 transform rotate-45 translate-x-1/2 -translate-y-1/2"></div>
+    <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gaf-orange opacity-10 transform rotate-45 translate-x-1/2 -translate-y-1/2"></div>
     <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-black opacity-5 transform -rotate-12 -translate-x-1/4 translate-y-1/4"></div>
     <div className="z-10 text-center space-y-8 animate-fade-in-up">
       <div className="scale-150 mb-12 flex justify-center"><Logo /></div>
       <div className="space-y-4">
         <h2 className="text-xl md:text-2xl font-bold tracking-[0.2em] text-gray-500 uppercase">ANZ Performance Review</h2>
         <h1 className="text-5xl md:text-8xl font-extrabold text-black uppercase leading-tight">
-          Rep<br/><span className="text-rep-red">Fitness</span>
+          Rep<br/><span className="text-gaf-orange">Fitness</span>
         </h1>
       </div>
       <div className="w-24 h-2 bg-black mx-auto mt-8"></div>
@@ -198,9 +194,9 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
     <div className="flex flex-col h-full gap-4">
       {/* Hero KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
-        <div className="bg-rep-dark text-white p-4 md:p-5 rounded-xl shadow-md border-l-4 border-rep-red">
+        <div className="bg-gaf-darkGrey text-white p-4 md:p-5 rounded-xl shadow-md border-l-4 border-gaf-orange">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">Total Revenue</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Total Revenue</span>
             <DollarSign size={16} />
           </div>
           <h3 className="text-2xl md:text-3xl font-extrabold">$1.29M</h3>
@@ -222,20 +218,20 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
           <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">$187K</h3>
           <p className="text-xs text-blue-600 font-bold mt-1">June '25 — EOFY</p>
         </div>
-        <div className="bg-rep-red/5 p-4 md:p-5 rounded-xl border border-rep-red/20">
+        <div className="bg-gaf-orange/5 p-4 md:p-5 rounded-xl border border-gaf-orange/20">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">Margin Trend</span>
-            <TrendingUp size={16} className="text-rep-red" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Margin Trend</span>
+            <TrendingUp size={16} className="text-gaf-orange" />
           </div>
           <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">32.1%</h3>
-          <p className="text-xs text-rep-red font-bold mt-1">Mar GP% — up from 19% Jun</p>
+          <p className="text-xs text-gaf-orange font-bold mt-1">Mar GP% — up from 19% Jun</p>
         </div>
       </div>
 
       {/* Monthly Revenue Chart */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex-1 min-h-0">
         <div className="flex items-center gap-2 mb-3">
-          <BarChart size={16} className="text-rep-red" />
+          <BarChart size={16} className="text-gaf-orange" />
           <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Revenue</span>
           <span className="ml-auto text-[9px] text-gray-400 font-bold">GP% improving: 19.1% (Jun) → 32.1% (Mar)</span>
         </div>
@@ -243,7 +239,7 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
           {monthlyData.map((d, i) => (
             <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
               <span className="text-[8px] font-bold text-gaf-darkGrey mb-1">${(d.rev/1000).toFixed(0)}K</span>
-              <div className="w-full rounded-t-md bg-gradient-to-t from-rep-red to-red-300 transition-all hover:from-red-700 hover:to-red-400" style={{ height: `${(d.rev / maxRev) * 85}%`, minHeight: '4px' }}></div>
+              <div className="w-full rounded-t-md bg-gradient-to-t from-gaf-orange to-orange-300 transition-all hover:from-orange-700 hover:to-orange-400" style={{ height: `${(d.rev / maxRev) * 85}%`, minHeight: '4px' }}></div>
               <span className="text-[8px] text-gray-400 mt-1 font-bold">{d.month}</span>
             </div>
           ))}
@@ -251,9 +247,9 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
       </div>
 
       {/* Key Callout */}
-      <div className="bg-rep-dark text-white p-4 rounded-xl flex items-center gap-4 shrink-0">
-        <TrendingUp size={20} className="text-rep-red shrink-0" />
-        <p className="text-sm leading-relaxed"><strong className="text-rep-red">Margin improving steadily:</strong> GP% climbed from 19.1% (Jun EOFY sale) to 30.5% (Feb) and 32.1% (Mar) — demonstrating pricing discipline and better product mix as brand matures in AU market.</p>
+      <div className="bg-gaf-darkGrey text-white p-4 rounded-xl flex items-center gap-4 shrink-0">
+        <TrendingUp size={20} className="text-gaf-orange shrink-0" />
+        <p className="text-sm leading-relaxed"><strong className="text-gaf-orange">Margin improving steadily:</strong> GP% climbed from 19.1% (Jun EOFY sale) to 30.5% (Feb) and 32.1% (Mar) — demonstrating pricing discipline and better product mix as brand matures in AU market.</p>
       </div>
     </div>
   </SlideLayout>
@@ -262,9 +258,9 @@ const PerformanceSlide = ({ slideNumber, totalSlides }) => {
 
 // ===== SLIDE 3: SALES BY DEPARTMENT (CATEGORY) =====
 const categoryData = [
-  { name: 'Benches', rev: 327902, gp: 25.0, color: '#e63946' },
-  { name: 'Dumbbells', rev: 306330, gp: 21.6, color: '#c1121f' },
-  { name: 'Power Rack Attachments', rev: 259772, gp: 27.1, color: '#780000' },
+  { name: 'Benches', rev: 327902, gp: 25.0, color: '#f26422' },
+  { name: 'Dumbbells', rev: 306330, gp: 21.6, color: '#d4510e' },
+  { name: 'Power Rack Attachments', rev: 259772, gp: 27.1, color: '#a03d0a' },
   { name: 'Power Racks', rev: 186199, gp: 26.1, color: '#424242' },
   { name: 'Barbells', rev: 61723, gp: 13.4, color: '#6b7280' },
   { name: 'Specialty Barbells', rev: 58602, gp: 36.4, color: '#374151' },
@@ -273,8 +269,7 @@ const categoryData = [
 ];
 
 const departmentData = [
-  { name: 'GAF AU (Retail)', value: 863875, color: '#e63946' },
-  { name: 'GAF Online AU', value: 402612, color: '#424242' },
+  { name: 'GAF Retail + Online', value: 1266487, color: '#f26422' },
   { name: 'GAF Commercial', value: 22087, color: '#6b7280' },
   { name: 'GAF Wholesale', value: 5024, color: '#d1d5db' },
 ];
@@ -302,7 +297,7 @@ const CategorySlide = ({ slideNumber, totalSlides }) => {
       </div>
 
       {/* Department breakdown */}
-      <div className="grid grid-cols-4 gap-3 shrink-0">
+      <div className="grid grid-cols-3 gap-3 shrink-0">
         {departmentData.map((d, i) => (
           <div key={i} className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
             <div className="w-3 h-3 rounded-sm mx-auto mb-1" style={{ backgroundColor: d.color }}></div>
@@ -314,10 +309,10 @@ const CategorySlide = ({ slideNumber, totalSlides }) => {
       </div>
 
       {/* Key Insight */}
-      <div className="bg-rep-dark text-white p-4 rounded-xl shrink-0">
+      <div className="bg-gaf-darkGrey text-white p-4 rounded-xl shrink-0">
         <div className="flex items-center gap-2 mb-1">
-          <BarChart size={14} className="text-rep-red" />
-          <span className="text-xs font-bold uppercase tracking-wider text-rep-red">Key Insight</span>
+          <BarChart size={14} className="text-gaf-orange" />
+          <span className="text-xs font-bold uppercase tracking-wider text-gaf-orange">Key Insight</span>
         </div>
         <p className="text-sm leading-relaxed">Benches ($328K) and Dumbbells ($306K) drive 49% of total revenue. Specialty Barbells (36.4% GP) and Multi-functional Trainers (33.8% GP) deliver the highest margins. Retail channels account for 97.9% of sales — Commercial and Wholesale represent growth opportunities.</p>
       </div>
@@ -328,57 +323,57 @@ const CategorySlide = ({ slideNumber, totalSlides }) => {
 
 // ===== SLIDE 4: GA4 & DIGITAL PERFORMANCE =====
 const monthlyTraffic = [
-  { month: 'May', views: 17537 },
-  { month: 'Jun', views: 22598 },
-  { month: 'Jul', views: 18787 },
-  { month: 'Aug', views: 27688 },
-  { month: 'Sep', views: 122038 },
-  { month: 'Oct', views: 168736 },
-  { month: 'Nov', views: 246465 },
-  { month: 'Dec', views: 130317 },
-  { month: "Jan '26", views: 107650 },
-  { month: 'Feb', views: 80469 },
-  { month: 'Mar', views: 81123 },
+  { month: "May '25", views: 15995 },
+  { month: 'Jun', views: 20999 },
+  { month: 'Jul', views: 16996 },
+  { month: 'Aug', views: 25409 },
+  { month: 'Sep', views: 24098 },
+  { month: 'Oct', views: 30360 },
+  { month: 'Nov', views: 43061 },
+  { month: 'Dec', views: 32863 },
+  { month: "Jan '26", views: 34645 },
+  { month: 'Feb', views: 27114 },
+  { month: 'Mar', views: 30149 },
 ];
 
 const GA4Slide = ({ slideNumber, totalSlides }) => {
   const maxViews = Math.max(...monthlyTraffic.map(d => d.views));
   return (
-  <SlideLayout title="Digital Performance" subtitle="GA4 website analytics — Rep Fitness pages | May 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
+  <SlideLayout title="Digital Performance" subtitle="GA4 website analytics — Rep Fitness pages | Australian traffic only | May 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
       {/* Hero KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
-        <div className="bg-rep-dark text-white p-4 rounded-xl shadow-md border-l-4 border-rep-red">
+        <div className="bg-gaf-darkGrey text-white p-4 rounded-xl shadow-md border-l-4 border-gaf-orange">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">Page Views</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Page Views</span>
             <Eye size={16} />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold">1.02M</h3>
-          <p className="text-xs text-gray-400 mt-1">Rep Fitness pages</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold">301,689</h3>
+          <p className="text-xs text-gray-400 mt-1">AU only</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sessions</span>
             <Users size={16} className="text-blue-500" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">272,211</h3>
-          <p className="text-xs text-blue-600 font-bold mt-1">24,747/month avg</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">76,036</h3>
+          <p className="text-xs text-blue-600 font-bold mt-1">6,912/month avg</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Collection Page</span>
             <Globe size={16} className="text-purple-500" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">472K</h3>
-          <p className="text-xs text-purple-600 font-bold mt-1">Views on /rep-fitness</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">33,558</h3>
+          <p className="text-xs text-purple-600 font-bold mt-1">Views on /collections/rep-fitness</p>
         </div>
-        <div className="bg-rep-red/5 p-4 rounded-xl border border-rep-red/20">
+        <div className="bg-gaf-orange/5 p-4 rounded-xl border border-gaf-orange/20">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">#1 Source</span>
-            <TrendingUp size={16} className="text-rep-red" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Session Growth</span>
+            <TrendingUp size={16} className="text-gaf-orange" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">47.1%</h3>
-          <p className="text-xs text-rep-red font-bold mt-1">Referral traffic</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">+9%</h3>
+          <p className="text-xs text-gaf-orange font-bold mt-1">May 6.2K → Mar 6.8K</p>
         </div>
       </div>
 
@@ -386,8 +381,8 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex-1 min-h-0">
         <div className="flex items-center gap-2 mb-3">
           <BarChart size={16} className="text-blue-500" />
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Page Views</span>
-          <span className="ml-auto text-[9px] text-gray-400 font-bold">Peak: Nov '25 — 246K views (BFCM)</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Page Views (AU Only)</span>
+          <span className="ml-auto text-[9px] text-gray-400 font-bold">Peak: Nov '25 — 43K views (BFCM)</span>
         </div>
         <div className="flex items-end gap-2 h-[calc(100%-32px)]">
           {monthlyTraffic.map((d, i) => (
@@ -400,18 +395,40 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
         </div>
       </div>
 
+      {/* Top Pages */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 shrink-0">
+        <div className="flex items-center gap-2 mb-3">
+          <Eye className="text-gaf-orange" size={14} />
+          <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Top Pages — AU Traffic</h4>
+        </div>
+        <div className="grid grid-cols-5 gap-3">
+          {[
+            { page: "Rep x Pepin Adjustable Dumbbell", views: "41,426" },
+            { page: "/collections/rep-fitness", views: "33,558" },
+            { page: "Ares 2.0 5000 Series 6-Post", views: "15,325" },
+            { page: "PR-5000 Power Rack", views: "12,401" },
+            { page: "AB-4100 Adjustable Bench", views: "8,821" },
+          ].map((p, i) => (
+            <div key={i} className="bg-gray-50 p-2 rounded-lg text-center">
+              <p className="text-[9px] font-bold text-gaf-darkGrey leading-tight mb-1">{p.page}</p>
+              <p className="text-sm font-extrabold text-gaf-orange">{p.views}</p>
+              <p className="text-[8px] text-gray-400">views</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Traffic Source Pie Chart */}
       {(() => {
         const channels = [
-          { name: "Referral", sessions: 128518, color: "#e63946" },
-          { name: "Unassigned", sessions: 59068, color: "#d1d5db" },
-          { name: "Organic Search", sessions: 23962, color: "#06b6d4" },
-          { name: "Paid Shopping", sessions: 16476, color: "#f59e0b" },
-          { name: "Paid Search", sessions: 13489, color: "#10b981" },
-          { name: "Paid Social", sessions: 13253, color: "#3b82f6" },
-          { name: "Cross-network", sessions: 7990, color: "#f97316" },
-          { name: "Direct", sessions: 7291, color: "#6b7280" },
-          { name: "Other", sessions: 3000, color: "#9ca3af" },
+          { name: "Paid Shopping", sessions: 16361, color: "#f59e0b" },
+          { name: "Paid Search", sessions: 13156, color: "#10b981" },
+          { name: "Paid Social", sessions: 13032, color: "#3b82f6" },
+          { name: "Organic Search", sessions: 11516, color: "#06b6d4" },
+          { name: "Cross-network", sessions: 7511, color: "#f97316" },
+          { name: "Direct", sessions: 5265, color: "#6b7280" },
+          { name: "Referral", sessions: 4011, color: "#8b5cf6" },
+          { name: "Other", sessions: 9184, color: "#d1d5db" },
         ];
         const total = channels.reduce((s, c) => s + c.sessions, 0);
         let cumAngle = 0;
@@ -432,9 +449,9 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
         return (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 shrink-0">
             <div className="flex items-center gap-2 mb-3">
-              <Globe className="text-rep-red" size={14} />
-              <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Traffic Sources by Sessions (272K total)</h4>
-              <span className="ml-auto text-[9px] text-gray-400 font-bold">47% REFERRAL · 16% PAID · 9% ORGANIC · 28% OTHER</span>
+              <Globe className="text-gaf-orange" size={14} />
+              <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Traffic Sources by Sessions (76K total — AU only)</h4>
+              <span className="ml-auto text-[9px] text-gray-400 font-bold">66% PAID · 17% ORGANIC · 7% DIRECT · 10% OTHER</span>
             </div>
             <div className="flex items-center gap-6">
               <svg viewBox="0 0 100 100" className="w-28 h-28 shrink-0">
@@ -449,6 +466,7 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
                 ))}
               </div>
             </div>
+            <p className="text-[10px] text-gray-500 mt-3 leading-relaxed"><strong>Key insight:</strong> Well-balanced paid media mix across Shopping, Search and Social. Organic search at 15% shows stronger brand recognition than Nike (6.5%), but still room to grow.</p>
           </div>
         );
       })()}
@@ -470,7 +488,7 @@ const WinsSlide = ({ slideNumber, totalSlides }) => (
           <div className="space-y-4">
             {[
               { title: "Coaches Congress Representation", desc: "GAF exhibited as Rep Fitness at the inaugural Coaches Congress event in Wollongong, with REP providing $4,237 in MDF support — strong partnership signal" },
-              { title: "1M+ page views on Rep Fitness pages", desc: "1,023,875 total page views driven by strong organic and referral traffic. Collection page alone attracted 472K views — demonstrating genuine brand demand in AU" },
+              { title: "302K page views (AU)", desc: "Strong organic search presence at 15% of sessions — better brand recognition than some peer brands in the portfolio" },
               { title: "Margin improvement trend", desc: "GP% climbing from 19.1% (Jun EOFY) to 32.1% (Mar) — showing pricing discipline, improved product mix, and reduced discounting as brand matures" },
             ].map((w, i) => (
               <div key={i} className="flex items-start gap-3">
@@ -484,20 +502,14 @@ const WinsSlide = ({ slideNumber, totalSlides }) => (
           </div>
         </div>
       </div>
-      {/* Coaches Congress image placeholder — right column */}
+      {/* Coaches Congress image — right column */}
       <div className="flex flex-col">
         <div className="rounded-xl border border-green-100 shadow-sm flex-1 flex flex-col bg-white">
           <div className="flex-1 flex items-center justify-center p-2 min-h-0">
-            <div className="w-full h-full min-h-[300px] bg-gray-800 rounded-lg flex flex-col items-center justify-center gap-4">
-              <Camera size={48} className="text-gray-500" />
-              <div className="text-center">
-                <p className="text-gray-400 font-bold text-lg">Coaches Congress</p>
-                <p className="text-gray-500 text-sm mt-1">Image Coming</p>
-              </div>
-            </div>
+            <img src="assets/coaches-congress-rep.jpeg" alt="Rep Fitness — Coaches Congress Exhibition" style={{maxHeight: '450px', maxWidth: '100%', objectFit: 'contain', borderRadius: '8px'}} />
           </div>
           <div className="bg-green-50 px-4 py-1.5 shrink-0 rounded-b-xl">
-            <p className="text-xs font-bold text-green-800">Coaches Congress — Wollongong 2025</p>
+            <p className="text-xs font-bold text-green-800">Coaches Congress — Wollongong, NSW</p>
           </div>
         </div>
       </div>
@@ -518,7 +530,7 @@ const ChallengesSlide = ({ slideNumber, totalSlides }) => (
           <div className="space-y-4">
             {[
               { title: "Online friction of rack building", desc: "Rep's rack configurator and customisation creates complexity for online buyers. Many SKUs, attachments, and compatibility questions reduce conversion rates. Customers often need hand-holding through the build process — a barrier for pure online sales." },
-              { title: "Brand awareness in AU market", desc: "Rep Fitness is well-known in the US but still building recognition in Australia. Organic search represents only 8.8% of traffic — most awareness is driven by referral from repfitness.com (47.1%). Need to build independent AU brand presence." },
+              { title: "Brand awareness in AU market", desc: "While organic search (15%) is healthier than some portfolio brands, paid channels still drive 66% of AU traffic. Continued brand investment needed to shift mix toward earned traffic." },
               { title: "Dumbbell margin pressure", desc: "Dumbbell category drives 24% of revenue ($306K) but only 21.6% GP due to freight costs on heavy items. Domestic delivery of 15-50kg dumbbells compresses margins — need pricing support or freight efficiencies." },
             ].map((c, i) => (
               <div key={i} className="flex items-start gap-3">
@@ -536,8 +548,8 @@ const ChallengesSlide = ({ slideNumber, totalSlides }) => (
         {/* Rack Builder Complexity Snapshot */}
         <div className="bg-gaf-darkGrey text-white p-6 rounded-xl flex-1">
           <div className="flex items-center gap-2 mb-4">
-            <Wrench size={18} className="text-rep-red" />
-            <span className="text-sm font-bold uppercase tracking-wider text-rep-red">Rack Builder Complexity</span>
+            <Wrench size={18} className="text-gaf-orange" />
+            <span className="text-sm font-bold uppercase tracking-wider text-gaf-orange">Rack Builder Complexity</span>
           </div>
           <div className="space-y-3">
             {[
@@ -568,13 +580,13 @@ const ChallengesSlide = ({ slideNumber, totalSlides }) => (
 const PlansSlide = ({ slideNumber, totalSlides }) => (
   <SlideLayout title="Plans & Priorities" subtitle="Rep Fitness growth strategy — next 6 months" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
-      <div className="bg-rep-dark text-white p-5 rounded-xl border-l-8 border-rep-red shadow-lg shrink-0">
-        <div className="flex items-center gap-2 mb-2"><Target size={18} className="text-rep-red" /><h3 className="text-sm font-bold uppercase tracking-wide text-rep-red">Strategic Focus: Convert Referral Traffic & Build AU Brand Independence</h3></div>
+      <div className="bg-gaf-darkGrey text-white p-5 rounded-xl border-l-8 border-gaf-orange shadow-lg shrink-0">
+        <div className="flex items-center gap-2 mb-2"><Target size={18} className="text-gaf-orange" /><h3 className="text-sm font-bold uppercase tracking-wide text-gaf-orange">Strategic Focus: Convert Referral Traffic & Build AU Brand Independence</h3></div>
         <p className="text-sm leading-relaxed">Leverage the strong referral pipeline from repfitness.com while investing in local brand-building to create independent AU demand. Expand commercial channel and improve online rack-buying experience.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0">
         {[
-          { title: "Digital Strategy", icon: Zap, color: "text-rep-red", bgColor: "bg-red-50 border-red-100", items: [
+          { title: "Digital Strategy", icon: Zap, color: "text-gaf-orange", bgColor: "bg-orange-50 border-orange-100", items: [
             "Leverage strong referral traffic from repfitness.com — 47% of sessions already coming via brand site",
             "Invest in Australian paid social and content to build independent brand search volume",
             "Improve on-site conversion for rack products — guided configurator or simplified bundles",
@@ -621,7 +633,7 @@ const ExperienceCentreSlide = ({ slideNumber, totalSlides }) => (
         <img src="assets/experience-centre.png" alt="GAF Experience Centre — Rep Fitness Showroom" className="w-full h-full object-cover" />
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6">
           <div className="flex items-center gap-2 mb-2">
-            <Package size={18} className="text-rep-red" />
+            <Package size={18} className="text-gaf-orange" />
             <h3 className="text-white font-bold text-sm uppercase tracking-wide">GAF Experience Centre</h3>
           </div>
           <p className="text-white/90 text-xs leading-relaxed max-w-2xl">Purpose-built Rep Fitness showroom located at GAF HQ — serves as a local content production studio, product showcase for B2B buyers, and immersive brand experience for athlete collaborations and rack configuration consultations.</p>
@@ -634,7 +646,7 @@ const ExperienceCentreSlide = ({ slideNumber, totalSlides }) => (
           { icon: Zap, label: "Athlete Hub", desc: "Dedicated space for influencer and athlete collaboration shoots and event content capture" },
         ].map((item, i) => (
           <div key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
-            <item.icon size={24} className="text-rep-red mx-auto mb-2" />
+            <item.icon size={24} className="text-gaf-orange mx-auto mb-2" />
             <h4 className="font-bold text-xs uppercase tracking-wide mb-1">{item.label}</h4>
             <p className="text-[10px] text-gray-600 leading-relaxed">{item.desc}</p>
           </div>
@@ -649,7 +661,7 @@ const SupportSlide = ({ slideNumber, totalSlides }) => (
   <SlideLayout title="Support Needed" subtitle="Key requests for Rep Fitness to accelerate ANZ growth" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
       {/* Priority request banner */}
-      <div className="bg-rep-red text-white p-5 rounded-xl shadow-lg shrink-0">
+      <div className="bg-gaf-orange text-white p-5 rounded-xl shadow-lg shrink-0">
         <div className="flex items-center gap-3">
           <div className="bg-white/20 p-2 rounded-lg"><DollarSign size={24} className="text-white" /></div>
           <div>
@@ -666,7 +678,7 @@ const SupportSlide = ({ slideNumber, totalSlides }) => (
             "Competitive pricing support on key SKUs (PR-5000, Pepin dumbbells) against local competitors",
             "Freight cost collaboration — joint strategy for heavy product domestic delivery"
           ]},
-          { title: "Marketing & Content Assets", icon: Zap, color: "text-rep-red", bg: "bg-red-50 border-red-100", items: [
+          { title: "Marketing & Content Assets", icon: Zap, color: "text-gaf-orange", bg: "bg-orange-50 border-orange-100", items: [
             "Local AU marketing assets — lifestyle imagery, video content for Meta/YouTube campaigns",
             "Rack configuration guides and visual tools to reduce online purchase friction",
             "Co-branded creative for AU market — adapt US brand assets for local audience",
@@ -696,13 +708,13 @@ const SupportSlide = ({ slideNumber, totalSlides }) => (
         ))}
       </div>
       {/* Financial context bar */}
-      <div className="bg-rep-dark text-white p-4 rounded-xl flex items-center justify-between shrink-0">
+      <div className="bg-gaf-darkGrey text-white p-4 rounded-xl flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
-          <BarChart size={14} className="text-rep-red" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-rep-red">Financial Context</span>
+          <BarChart size={14} className="text-gaf-orange" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Financial Context</span>
         </div>
         <div className="flex gap-6 text-xs">
-          <span>12-Month Revenue: <strong className="text-rep-red">$1.29M</strong></span>
+          <span>12-Month Revenue: <strong className="text-gaf-orange">$1.29M</strong></span>
           <span>Gross Profit: <strong className="text-green-400">$323K</strong></span>
           <span>GP Trend: <strong className="text-white">19% → 32%</strong> (improving)</span>
         </div>
@@ -744,10 +756,10 @@ function App() {
           <CurrentSlideComponent slideNumber={currentSlide + 1} totalSlides={SLIDES.length} />
         </div>
         <div className="absolute bottom-16 right-12 flex gap-4 z-50">
-          <button onClick={prevSlide} disabled={currentSlide === 0} className={`p-3 rounded-full transition-all border-2 border-transparent ${currentSlide === 0 ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50' : 'bg-rep-dark text-white hover:bg-rep-red hover:shadow-lg active:scale-95'}`}>
+          <button onClick={prevSlide} disabled={currentSlide === 0} className={`p-3 rounded-full transition-all border-2 border-transparent ${currentSlide === 0 ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50' : 'bg-gaf-darkGrey text-white hover:bg-gaf-orange hover:shadow-lg active:scale-95'}`}>
             <ChevronLeft size={24} />
           </button>
-          <button onClick={nextSlide} disabled={currentSlide === SLIDES.length - 1} className={`p-3 rounded-full transition-all border-2 border-transparent ${currentSlide === SLIDES.length - 1 ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50' : 'bg-rep-dark text-white hover:bg-rep-red hover:shadow-lg active:scale-95'}`}>
+          <button onClick={nextSlide} disabled={currentSlide === SLIDES.length - 1} className={`p-3 rounded-full transition-all border-2 border-transparent ${currentSlide === SLIDES.length - 1 ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50' : 'bg-gaf-darkGrey text-white hover:bg-gaf-orange hover:shadow-lg active:scale-95'}`}>
             <ChevronRight size={24} />
           </button>
         </div>
