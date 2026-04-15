@@ -282,7 +282,22 @@ const CategorySlide = ({ slideNumber, totalSlides }) => {
 };
 
 // ===== SLIDE 4: GA4 & DIGITAL PERFORMANCE =====
+const monthlyTraffic = [
+  { month: "May '25", views: 11578 },
+  { month: "Jun", views: 14798 },
+  { month: "Jul", views: 16508 },
+  { month: "Aug", views: 20255 },
+  { month: "Sep", views: 22834 },
+  { month: "Oct", views: 23537 },
+  { month: "Nov", views: 32387 },
+  { month: "Dec", views: 34871 },
+  { month: "Jan '26", views: 29926 },
+  { month: "Feb", views: 20552 },
+  { month: "Mar", views: 29796 },
+];
+
 const GA4Slide = ({ slideNumber, totalSlides }) => {
+  const maxViews = Math.max(...monthlyTraffic.map(d => d.views));
   return (
   <SlideLayout title="Digital Performance" subtitle="GA4 website analytics — Centr x Hyrox pages | May 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
@@ -293,7 +308,7 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
             <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Page Views</span>
             <Eye size={16} />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold">257,000</h3>
+          <h3 className="text-2xl md:text-3xl font-extrabold">257,042</h3>
           <p className="text-xs text-gray-400 mt-1">Centr x Hyrox pages</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
@@ -301,24 +316,42 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sessions</span>
             <Users size={16} className="text-blue-500" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">82,000</h3>
-          <p className="text-xs text-blue-600 font-bold mt-1">7,455/month avg</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">155,990</h3>
+          <p className="text-xs text-blue-600 font-bold mt-1">14,181/month avg</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Top Page</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Peak Month</span>
             <Globe size={16} className="text-purple-500" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">21,000</h3>
-          <p className="text-xs text-purple-600 font-bold mt-1">Collection page views</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">34,871</h3>
+          <p className="text-xs text-purple-600 font-bold mt-1">Dec '25 page views</p>
         </div>
         <div className="bg-gaf-orange/5 p-4 rounded-xl border border-gaf-orange/20">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Session Growth</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">View Growth</span>
             <TrendingUp size={16} className="text-gaf-orange" />
           </div>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">+32%</h3>
-          <p className="text-xs text-gaf-orange font-bold mt-1">May → Mar sessions</p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">+157%</h3>
+          <p className="text-xs text-gaf-orange font-bold mt-1">May 11.6K → Dec 34.9K</p>
+        </div>
+      </div>
+
+      {/* Monthly Page Views Chart */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 shrink-0">
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart size={16} className="text-gaf-orange" />
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Page Views</span>
+          <span className="ml-auto text-[9px] text-gray-400 font-bold">Views tripled May → Dec, seasonal dip Jan/Feb, strong Mar recovery</span>
+        </div>
+        <div className="flex items-end gap-2 h-[100px]">
+          {monthlyTraffic.map((d, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
+              <span className="text-[7px] font-bold text-gaf-darkGrey mb-1">{(d.views/1000).toFixed(1)}K</span>
+              <div className="w-full rounded-t-md bg-gradient-to-t from-gaf-orange to-orange-300 transition-all hover:from-orange-700 hover:to-orange-400" style={{ height: `${(d.views / maxViews) * 85}%`, minHeight: '4px' }}></div>
+              <span className="text-[7px] text-gray-400 mt-1 font-bold">{d.month}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -348,14 +381,14 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
       {/* Traffic Source Pie Chart */}
       {(() => {
         const channels = [
-          { name: "Paid Social", sessions: 23780, color: "#3b82f6" },
-          { name: "Paid Shopping", sessions: 17220, color: "#f59e0b" },
-          { name: "Direct", sessions: 9020, color: "#6b7280" },
-          { name: "Cross-network", sessions: 7380, color: "#f97316" },
-          { name: "Referral", sessions: 6560, color: "#8b5cf6" },
-          { name: "Paid Search", sessions: 6560, color: "#10b981" },
-          { name: "Organic Search", sessions: 4674, color: "#06b6d4" },
-          { name: "Other", sessions: 6806, color: "#d1d5db" },
+          { name: "Paid Social", sessions: 44126, color: "#3b82f6" },
+          { name: "Paid Shopping", sessions: 29552, color: "#f59e0b" },
+          { name: "Cross-network", sessions: 16318, color: "#f97316" },
+          { name: "Referral", sessions: 15301, color: "#8b5cf6" },
+          { name: "Direct", sessions: 14642, color: "#6b7280" },
+          { name: "Paid Search", sessions: 13565, color: "#10b981" },
+          { name: "Organic Search", sessions: 9893, color: "#06b6d4" },
+          { name: "Other", sessions: 12588, color: "#d1d5db" },
         ];
         const total = channels.reduce((s, c) => s + c.sessions, 0);
         let cumAngle = 0;
@@ -377,8 +410,8 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 shrink-0">
             <div className="flex items-center gap-2 mb-3">
               <Globe className="text-gaf-orange" size={14} />
-              <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Traffic Sources by Sessions (82K total)</h4>
-              <span className="ml-auto text-[9px] text-gray-400 font-bold">67% PAID · 6% ORGANIC · 11% DIRECT · 16% OTHER</span>
+              <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Traffic Sources by Sessions (156K total)</h4>
+              <span className="ml-auto text-[9px] text-gray-400 font-bold">56% PAID · 6% ORGANIC · 9% DIRECT · 29% OTHER</span>
             </div>
             <div className="flex items-center gap-6">
               <svg viewBox="0 0 100 100" className="w-28 h-28 shrink-0">
@@ -393,7 +426,7 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
                 ))}
               </div>
             </div>
-            <p className="text-[10px] text-gray-500 mt-3 leading-relaxed"><strong>Key insight:</strong> Paid Social (29%) is the dominant channel — strong alignment with the Hyrox community-driven brand. Organic search at 6% highlights the need for continued brand-building investment to grow earned traffic.</p>
+            <p className="text-[10px] text-gray-500 mt-3 leading-relaxed"><strong>Key insight:</strong> Paid Social (28%) is the dominant channel — strong alignment with the Hyrox community-driven brand. Organic search at 6% highlights the need for continued brand-building investment to grow earned traffic.</p>
           </div>
         );
       })()}
@@ -417,7 +450,7 @@ const WinsSlide = ({ slideNumber, totalSlides }) => (
               { title: "Premium Key Account wins", desc: "Secured equipment sales with Total Fusion and Virgin Active — two of AU's largest fitness chains. Virgin Active 8-club deal and WGA pilot represent significant commercial validation of the brand." },
               { title: "$1.42M total revenue", desc: "Strong first-year performance with 27.6% average GP margin. Revenue grew +155% from April to January peak — demonstrating accelerating demand across both retail and commercial channels." },
               { title: "Commercial channel strength", desc: "12.8% of revenue from commercial accounts ($182K) — significantly higher than other portfolio brands. Proves the Centr x Hyrox brand resonates with facility operators, not just consumers." },
-              { title: "257K page views, +32% session growth", desc: "Consistent digital growth with sessions climbing month-on-month. Wall Ball, Sandbag, and Kettlebell pages driving strong product interest." },
+              { title: "257K page views, +157% growth", desc: "Page views nearly tripled from 11.6K (May) to 34.9K (Dec). 156K sessions across the period with strong month-on-month growth driven by paid social investment." },
             ].map((w, i) => (
               <div key={i} className="flex items-start gap-3">
                 <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
@@ -459,7 +492,7 @@ const ChallengesSlide = ({ slideNumber, totalSlides }) => (
             {[
               { title: "Limited home/consumer equipment sales", desc: "Very little equipment sales to competitors or home users. The brand is heavily indexed toward commercial/facility buyers. Expanding to the home fitness segment requires a different go-to-market approach and product positioning." },
               { title: "Hyrox event attendance ROI", desc: "Poor return on investment from Hyrox event attendance to date. High cost of activation (equipment freight, staffing, sponsorship) relative to direct sales generated. Need to shift event strategy from direct sales to brand awareness and lead generation." },
-              { title: "Organic search at 6%", desc: "Organic search represents only 6% of traffic — heavy reliance on paid channels (67% of sessions). Brand awareness outside the Hyrox community is limited. Need to invest in content and SEO to build sustainable organic demand." },
+              { title: "Organic search at 6%", desc: "Organic search represents only 6% of traffic — reliance on paid channels (56% of sessions). Brand awareness outside the Hyrox community is limited. Need to invest in content and SEO to build sustainable organic demand." },
             ].map((c, i) => (
               <div key={i} className="flex items-start gap-3">
                 <AlertTriangle size={16} className="text-amber-500 mt-0.5 shrink-0" />
@@ -481,10 +514,10 @@ const ChallengesSlide = ({ slideNumber, totalSlides }) => (
           </div>
           <div className="space-y-3">
             {[
-              { label: 'Paid channel dependency', issue: '67% of all sessions from paid media', severity: 'high' },
+              { label: 'Paid channel dependency', issue: '56% of all sessions from paid media', severity: 'high' },
               { label: 'Home consumer segment', issue: 'Minimal sales outside commercial/facility buyers', severity: 'high' },
               { label: 'Event ROI', issue: 'High activation costs vs direct sales returns', severity: 'medium' },
-              { label: 'Brand search volume', issue: 'Organic search only 6% — low brand awareness outside Hyrox community', severity: 'medium' },
+              { label: 'Brand search volume', issue: 'Organic search 6% — low unaided brand awareness outside Hyrox community', severity: 'medium' },
             ].map((m, i) => (
               <div key={i} className="flex items-start gap-3 bg-white/5 p-3 rounded-lg">
                 <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${m.severity === 'high' ? 'bg-red-400' : m.severity === 'medium' ? 'bg-amber-400' : 'bg-green-400'}`}></div>
