@@ -161,7 +161,7 @@ const TitleSlide = ({ slideNumber, totalSlides }) => (
         </h1>
       </div>
       <div className="w-24 h-2 bg-black mx-auto mt-8"></div>
-      <p className="text-sm text-gray-400 font-body">May 2025 — March 2026 Performance</p>
+      <p className="text-sm text-gray-400 font-body">FIBO 2026 — Prepared for Steven Goltman</p>
     </div>
     <div className="absolute bottom-8 left-0 w-full text-center">
       <p className="text-sm text-gray-400 font-bold tracking-widest">CONFIDENTIAL INTERNAL USE</p>
@@ -459,21 +459,21 @@ const GA4Slide = ({ slideNumber, totalSlides }) => {
 
 // ===== SLIDE 5: WINS & CHALLENGES =====
 const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
-  <SlideLayout title="Wins & Challenges" subtitle="Key highlights and areas for discussion" slideNumber={slideNumber} totalSlides={totalSlides}>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+  <SlideLayout title="Wins & Challenges" subtitle="Key highlights and areas requiring support" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full">
       <div className="flex flex-col gap-4">
         <div className="bg-green-50 p-5 rounded-xl border border-green-100 flex-1">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-3">
             <div className="bg-green-100 p-2 rounded-lg"><Award size={20} className="text-green-600" /></div>
             <h3 className="font-bold text-lg uppercase text-green-800">Wins</h3>
           </div>
           <div className="space-y-3">
             {[
-              { title: "Explosive growth trajectory", desc: "Revenue grew from $4K to $93K/month peak in 8 months — brand established rapidly" },
-              { title: "Strong organic brand traffic", desc: "152K views on collection page (AU only) — Nike Strength is a destination, not just a product listing" },
-              { title: "Multi-channel traction", desc: "Retail (52%), online (37%), wholesale (8%), commercial (3%) — healthy distribution" },
-              { title: "Bumper plates margin leader", desc: "29.6% GP margin on bumper plates ($97K rev) — strongest margin in the range" },
-              { title: "Consistent session growth", desc: "AU sessions up 73% from launch — organic demand building momentum" },
+              { title: "Aus Fitness Expo Launch — BJ Stone Collab", desc: "Successful brand activation at Australia's largest fitness expo with strongman athlete BJ Stone driving foot traffic and brand credibility" },
+              { title: "Sarah's Day Partnership (1.2M IG followers)", desc: "High-profile influencer collaboration generating organic reach and social proof for Nike Strength in the AU fitness market" },
+              { title: "1,803% revenue growth in 11 months", desc: "From $4K (May '25) to $93K peak (Dec '25) — brand established rapidly with $559K total revenue" },
+              { title: "575K page views — destination brand status", desc: "152K views on collection page alone. Nike Strength is a search destination, not just a product listing on GAF" },
+              { title: "Bumper plates margin leader at 29.6% GP", desc: "$97K revenue on bumper plates with the strongest margin in the range — validates premium positioning" },
             ].map((w, i) => (
               <div key={i} className="flex items-start gap-3">
                 <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
@@ -485,26 +485,57 @@ const WinsChallengesSlide = ({ slideNumber, totalSlides }) => (
             ))}
           </div>
         </div>
+        {/* Collab images */}
+        <div className="grid grid-cols-2 gap-3 shrink-0">
+          <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm">
+            <img src="assets/bj-stone-nike.png" alt="BJ Stone — Aus Fitness Expo" className="w-full h-24 object-cover" />
+            <div className="bg-green-50 px-3 py-1.5"><p className="text-[9px] font-bold text-green-800">BJ Stone — Expo Launch</p></div>
+          </div>
+          <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm">
+            <img src="assets/sarahs-day-nike.png" alt="Sarah's Day — Nike Strength" className="w-full h-24 object-cover" />
+            <div className="bg-green-50 px-3 py-1.5"><p className="text-[9px] font-bold text-green-800">Sarah's Day — 1.2M followers</p></div>
+          </div>
+        </div>
       </div>
       <div className="flex flex-col gap-4">
         <div className="bg-amber-50 p-5 rounded-xl border border-amber-100 flex-1">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-3">
             <div className="bg-amber-100 p-2 rounded-lg"><AlertTriangle size={20} className="text-amber-600" /></div>
             <h3 className="font-bold text-lg uppercase text-amber-800">Challenges</h3>
           </div>
           <div className="space-y-3">
             {[
-              { title: "[Placeholder — discuss]", desc: "Add specific challenges relating to supply, logistics, or product quality" },
-              { title: "[Placeholder — margin pressure]", desc: "Dumbbell category at 7.2% margin drives 33% of revenue — discuss pricing strategy" },
-              { title: "[Placeholder — competitor landscape]", desc: "Key competitors and how Nike Strength is positioned in AU market" },
-              { title: "[Placeholder — stock availability]", desc: "Any stock-out or lead time issues impacting sales" },
-              { title: "[Placeholder — marketing support]", desc: "What co-marketing assets or support would accelerate growth" },
+              { title: "Brand awareness — 'Nike the strength equipment brand'", desc: "Consumer confusion between Nike (apparel) and Nike Strength (equipment). Building awareness that this is a dedicated strength equipment brand requires sustained top-of-funnel investment" },
+              { title: "Margin pressure on dumbbells + domestic freight", desc: "Dumbbell category drives 33% of revenue but only 7.2% GP margin. Domestic freight costs are squeezing margins further — balancing retail price, wholesale price, and desired margin is the core tension" },
+              { title: "KVD / Grind SKU margin through the chain", desc: "Need support ensuring adequate margin on KVD SKUs (Grind) across the entire distribution chain — current pricing leaves limited room for all parties" },
             ].map((c, i) => (
               <div key={i} className="flex items-start gap-3">
                 <AlertTriangle size={16} className="text-amber-500 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm font-bold text-amber-800">{c.title}</p>
                   <p className="text-xs text-amber-700 leading-relaxed">{c.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-gaf-darkGrey text-white p-4 rounded-xl">
+          <div className="flex items-center gap-2 mb-2">
+            <Percent size={16} className="text-gaf-orange" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Margin Snapshot</span>
+          </div>
+          <div className="space-y-1.5">
+            {[
+              { cat: 'Dumbbells', margin: '7.2%', rev: '$182K', flag: true },
+              { cat: 'Bumper Plates', margin: '29.6%', rev: '$97K', flag: false },
+              { cat: 'Barbells', margin: '12.3%', rev: '$74K', flag: false },
+              { cat: 'Power Racks', margin: '17.2%', rev: '$55K', flag: false },
+            ].map((m, i) => (
+              <div key={i} className="flex items-center justify-between text-xs">
+                <span className={m.flag ? 'text-amber-400 font-bold' : 'text-gray-300'}>{m.cat}</span>
+                <div className="flex gap-3">
+                  <span className="text-gray-400">{m.rev}</span>
+                  <span className={`font-bold ${m.flag ? 'text-amber-400' : 'text-green-400'}`}>{m.margin}</span>
                 </div>
               </div>
             ))}
@@ -520,45 +551,55 @@ const PlansSlide = ({ slideNumber, totalSlides }) => (
   <SlideLayout title="Plans & Priorities" subtitle="Nike Strength growth strategy — next 6 months" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
       <div className="bg-gaf-darkGrey text-white p-5 rounded-xl border-l-8 border-gaf-orange shadow-lg shrink-0">
-        <div className="flex items-center gap-2 mb-2"><Target size={18} className="text-gaf-orange" /><h3 className="text-sm font-bold uppercase tracking-wide text-gaf-orange">Growth Objective</h3></div>
-        <p className="text-lg font-bold">[Placeholder — define revenue target for next 6 months]</p>
+        <div className="flex items-center gap-2 mb-2"><Target size={18} className="text-gaf-orange" /><h3 className="text-sm font-bold uppercase tracking-wide text-gaf-orange">Strategic Focus: Build Impressions & Top-of-Funnel Awareness</h3></div>
+        <p className="text-sm leading-relaxed">Main focus for Q4+ is shifting from conversion-only to brand building — investing in impressions, awareness, and digital presence to establish Nike Strength as a standalone destination brand in the AU market.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0">
         {[
-          { title: "Product & Range", icon: Package, color: "text-blue-600", bgColor: "bg-blue-50 border-blue-100", items: [
-            "[Placeholder] New SKUs or range extensions",
-            "[Placeholder] Pricing adjustments or promotions",
-            "[Placeholder] Bundle opportunities",
-            "[Placeholder] Seasonal product planning"
+          { title: "Digital-First Strategy", icon: Zap, color: "text-gaf-orange", bgColor: "bg-orange-50 border-orange-100", items: [
+            "Dedicated $200K annual brand budget ($16K/month) — 3x uplift from previous $6.5K/month",
+            "70% Social Channels (Meta 70% / YouTube 30%) for awareness + consideration",
+            "30% Product Seeding at landed cost — social proof through influencer and UGC content",
+            "10 new content pieces per month: Nike-sourced assets, UGC, and in-house GAF production"
           ]},
-          { title: "Marketing & Brand", icon: Zap, color: "text-gaf-orange", bgColor: "bg-orange-50 border-orange-100", items: [
-            "[Placeholder] Campaign calendar alignment",
-            "[Placeholder] Co-branded content & assets",
-            "[Placeholder] Influencer or ambassador programs",
-            "[Placeholder] Email marketing cadence"
+          { title: "Content & Experience", icon: Eye, color: "text-blue-600", bgColor: "bg-blue-50 border-blue-100", items: [
+            "Experience Centre — dedicated Nike Strength showroom for local content production (see image)",
+            "Continue high-profile collabs: BJ Stone, Sarah's Day, and new athlete partnerships",
+            "Aus Fitness Expo activations and event-driven content capture",
+            "180-day measurement window to track awareness-to-conversion pipeline"
           ]},
-          { title: "Operations & Support", icon: ShoppingCart, color: "text-green-600", bgColor: "bg-green-50 border-green-100", items: [
-            "[Placeholder] Stock planning & forecasting",
-            "[Placeholder] Lead time improvements",
-            "[Placeholder] Training & product knowledge",
-            "[Placeholder] Warranty & returns process"
+          { title: "Commercial Strategy", icon: DollarSign, color: "text-green-600", bgColor: "bg-green-50 border-green-100", items: [
+            "Wholesale autonomy: Nike Strength operates as standalone brand with GAF as primary wholesale partner",
+            "Dedicated 'Nike Fund' for discounting — decoupled from GAF sales team KPIs",
+            "Digital marketing handles B2C funnel, freeing sales team for commercial leads and B2B",
+            "Halo effect: Nike traffic drives 'over and above' visits to wider GAF site"
           ]},
         ].map((section, i) => (
-          <div key={i} className={`p-5 rounded-xl border ${section.bgColor}`}>
-            <div className="flex items-center gap-2 mb-4">
+          <div key={i} className={`p-4 rounded-xl border ${section.bgColor}`}>
+            <div className="flex items-center gap-2 mb-3">
               <section.icon size={20} className={section.color} />
-              <h4 className="font-bold text-sm uppercase tracking-wide">{section.title}</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wide">{section.title}</h4>
             </div>
             <div className="space-y-2">
               {section.items.map((item, j) => (
                 <div key={j} className="flex items-start gap-2">
                   <ArrowRight size={12} className="text-gray-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-gray-700">{item}</p>
+                  <p className="text-[11px] text-gray-700 leading-relaxed">{item}</p>
                 </div>
               ))}
             </div>
           </div>
         ))}
+      </div>
+      {/* Experience Centre Image */}
+      <div className="shrink-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+        <div className="flex items-center">
+          <img src="assets/experience-centre.png" alt="GAF Experience Centre — Nike Strength Showroom" className="w-full h-32 object-cover" />
+        </div>
+        <div className="bg-gray-50 px-4 py-2 flex items-center gap-2">
+          <Package size={14} className="text-gaf-orange" />
+          <p className="text-[10px] font-bold text-gaf-darkGrey uppercase tracking-wide">GAF Experience Centre — Dedicated Nike Strength content production facility</p>
+        </div>
       </div>
     </div>
   </SlideLayout>
@@ -566,53 +607,66 @@ const PlansSlide = ({ slideNumber, totalSlides }) => (
 
 // ===== SLIDE 7: SUPPORT NEEDED =====
 const SupportSlide = ({ slideNumber, totalSlides }) => (
-  <SlideLayout title="Support Needed" subtitle="Requests and discussion points for Nike" slideNumber={slideNumber} totalSlides={totalSlides}>
+  <SlideLayout title="Support Needed" subtitle="Key requests for Nike Strength to accelerate ANZ growth" slideNumber={slideNumber} totalSlides={totalSlides}>
     <div className="flex flex-col h-full gap-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+      {/* Priority request banner */}
+      <div className="bg-gaf-orange text-white p-5 rounded-xl shadow-lg shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="bg-white/20 p-2 rounded-lg"><DollarSign size={24} className="text-white" /></div>
+          <div>
+            <h3 className="font-extrabold text-lg uppercase">MDF Support — Priority Request</h3>
+            <p className="text-sm text-white/90 mt-1">Marketing Development Funds to co-invest in the $200K annual digital strategy. GAF is committing significant budget to build Nike Strength as a top-of-funnel destination brand in ANZ — MDF co-investment would accelerate the 180-day awareness-to-conversion pipeline.</p>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
         {[
-          { title: "Marketing Assets", icon: Zap, color: "text-gaf-orange", bg: "bg-orange-50 border-orange-100", items: [
-            "[Placeholder] High-res lifestyle imagery for campaigns",
-            "[Placeholder] Video content for social & EDMs",
-            "[Placeholder] Co-branded creative templates",
-            "[Placeholder] Athlete/ambassador content rights"
+          { title: "Pricing & Margin Support", icon: Percent, color: "text-amber-600", bg: "bg-amber-50 border-amber-100", items: [
+            "KVD / Grind SKU margin review — current pricing leaves limited room across the distribution chain",
+            "Domestic freight cost relief — heavy products (dumbbells, plates) squeezing margins significantly",
+            "Dumbbell category pricing strategy — 33% of revenue at only 7.2% GP needs addressing",
+            "Volume-based pricing tiers to improve margin at scale"
           ]},
-          { title: "Pricing & Commercials", icon: DollarSign, color: "text-green-600", bg: "bg-green-50 border-green-100", items: [
-            "[Placeholder] Margin improvement on key categories",
-            "[Placeholder] Volume-based pricing tiers",
-            "[Placeholder] Promotional pricing calendar",
-            "[Placeholder] Exclusive SKU opportunities"
+          { title: "Marketing & Content Assets", icon: Zap, color: "text-gaf-orange", bg: "bg-orange-50 border-orange-100", items: [
+            "Global Nike Strength brand assets for local AU campaigns (lifestyle imagery, video)",
+            "Product seeding budget at landed cost — critical for UGC and influencer social proof",
+            "Co-branded creative templates for Meta and YouTube ad production",
+            "Athlete/ambassador content rights for AU market activations"
           ]},
-          { title: "Product & Supply", icon: Package, color: "text-blue-600", bg: "bg-blue-50 border-blue-100", items: [
-            "[Placeholder] New product roadmap visibility",
-            "[Placeholder] Stock commitment & allocation",
-            "[Placeholder] Lead time guarantees",
-            "[Placeholder] Quality control feedback loop"
-          ]},
-          { title: "Strategic Alignment", icon: Target, color: "text-purple-600", bg: "bg-purple-50 border-purple-100", items: [
-            "[Placeholder] Joint business plan targets",
-            "[Placeholder] Quarterly review cadence",
-            "[Placeholder] Market intelligence sharing",
-            "[Placeholder] Exclusivity or first-mover on new launches"
+          { title: "Strategic Partnership", icon: Target, color: "text-blue-600", bg: "bg-blue-50 border-blue-100", items: [
+            "Joint business plan with aligned revenue targets for ANZ",
+            "New product roadmap visibility — first-mover on launches in AU market",
+            "Quarterly review cadence to track 180-day measurement window together",
+            "Support building Nike Strength as a 'pull' brand to attract third-party retailers"
           ]},
         ].map((section, i) => (
-          <div key={i} className={`p-5 rounded-xl border ${section.bg}`}>
-            <div className="flex items-center gap-2 mb-4">
+          <div key={i} className={`p-4 rounded-xl border ${section.bg}`}>
+            <div className="flex items-center gap-2 mb-3">
               <section.icon size={20} className={section.color} />
-              <h4 className="font-bold text-sm uppercase tracking-wide">{section.title}</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wide">{section.title}</h4>
             </div>
             <div className="space-y-2">
               {section.items.map((item, j) => (
                 <div key={j} className="flex items-start gap-2">
                   <MessageCircle size={12} className="text-gray-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-gray-700">{item}</p>
+                  <p className="text-[11px] text-gray-700 leading-relaxed">{item}</p>
                 </div>
               ))}
             </div>
           </div>
         ))}
       </div>
-      <div className="bg-gray-100 p-4 rounded-xl flex items-center gap-2 text-gray-500 italic text-xs shrink-0">
-        <MessageCircle size={14} /><span>Slides 1–4 use live sales and GA4 data. Slides 5–7 are placeholder frameworks to populate prior to the meeting.</span>
+      {/* Financial context bar */}
+      <div className="bg-gaf-darkGrey text-white p-4 rounded-xl flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <BarChart size={14} className="text-gaf-orange" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Financial Context</span>
+        </div>
+        <div className="flex gap-6 text-xs">
+          <span>Projected Sales: <strong className="text-gaf-orange">$1.75M</strong></span>
+          <span>Projected GP: <strong className="text-green-400">$400K</strong></span>
+          <span>Brand Spend: <strong className="text-white">$200K</strong> (50% of GP reinvested)</span>
+        </div>
       </div>
     </div>
   </SlideLayout>
