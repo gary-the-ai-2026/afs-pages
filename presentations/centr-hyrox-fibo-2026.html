@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centr x Hyrox — Supplier Update</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        gaf: {
+          orange: '#f26422',
+          black: '#000000',
+          darkGrey: '#424242',
+          paleGrey: '#f0f0f0',
+        },
+      },
+      fontFamily: {
+        sans: ['Montserrat', 'sans-serif'],
+        body: ['Open Sans', 'sans-serif'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 1s ease-out forwards',
+        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+      },
+      keyframes: {
+        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+      }
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Open Sans', sans-serif; background: #111827; margin: 0; }
+h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #f26422; border-radius: 10px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://esm.sh/react@19.1.0" type="module"></script>
+<script src="https://esm.sh/react-dom@19.1.0/client" type="module"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" data-type="module">
+import React, { useState, useEffect, useRef } from 'https://esm.sh/react@19.1.0';
+import { createRoot } from 'https://esm.sh/react-dom@19.1.0/client';
+
+// ===== ICONS =====
+const Icon = ({ d, size = 20, className = '' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    {Array.isArray(d) ? d.map((path, i) => <path key={i} d={path} />) : <path d={d} />}
+  </svg>
+);
+
+const ChevronLeft = (p) => <Icon {...p} d="M15 18l-6-6 6-6" />;
+const ChevronRight = (p) => <Icon {...p} d="M9 18l6-6-6-6" />;
+const DollarSign = (p) => <Icon {...p} d={["M12 2v20","M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"]} />;
+const TrendingUp = (p) => <Icon {...p} d={["M22 7l-8.5 8.5-5-5L2 17","M16 7h6v6"]} />;
+const Target = (p) => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+const Users = (p) => <Icon {...p} d={["M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2","M12 7a4 4 0 100-8 4 4 0 000 8","M22 21v-2a4 4 0 00-3-3.87","M16 3.13a4 4 0 010 7.75"]} />;
+const ShoppingCart = (p) => <Icon {...p} d={["M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"]} />;
+const CheckCircle2 = (p) => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>;
+const Zap = (p) => <Icon {...p} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />;
+const BarChart = (p) => <Icon {...p} d={["M12 20V10","M18 20V4","M6 20v-4"]} />;
+const Eye = (p) => <Icon {...p} d={["M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"]} />;
+const Globe = (p) => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>;
+const Package = (p) => <Icon {...p} d={["M16.5 9.4l-9-5.19","M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z","M3.27 6.96L12 12.01l8.73-5.05","M12 22.08V12"]} />;
+const Award = (p) => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>;
+const AlertTriangle = (p) => <Icon {...p} d={["M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z","M12 9v4","M12 17h.01"]} />;
+const ArrowRight = (p) => <Icon {...p} d={["M5 12h14","M12 5l7 7-7 7"]} />;
+const MessageCircle = (p) => <Icon {...p} d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />;
+const Percent = (p) => <Icon {...p} d={["M19 5L5 19","M6.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5","M17.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5"]} />;
+const Camera = (p) => <Icon {...p} d={["M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"]} />;
+const Wrench = (p) => <Icon {...p} d={["M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"]} />;
+
+// ===== LOGO =====
+const Logo = ({ className = "h-12" }) => (
+  <div className={`flex items-center gap-2 ${className}`}>
+    <img src="https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576" alt="Gym and Fitness Logo" className="h-full w-auto object-contain" />
+  </div>
+);
+
+// ===== SLIDE LAYOUT =====
+const SlideLayout = ({ children, title, subtitle, slideNumber, totalSlides }) => (
+  <div className="w-full h-full bg-white text-gaf-darkGrey flex flex-col relative overflow-hidden">
+    <div className="absolute top-0 right-0 w-64 h-64 bg-gaf-paleGrey transform rotate-45 translate-x-32 -translate-y-32 z-0 opacity-50"></div>
+    <div className="absolute bottom-0 left-0 w-96 h-96 bg-gaf-paleGrey transform -rotate-12 -translate-x-48 translate-y-48 z-0 opacity-50"></div>
+    <header className="flex justify-between items-center p-8 z-10 shrink-0"><Logo /></header>
+    <main className="flex-1 flex flex-col px-6 md:px-12 pb-12 z-10 overflow-hidden h-full">
+      {title && (
+        <div className="mb-6 border-l-4 border-gaf-orange pl-6 shrink-0">
+          <h1 className="text-3xl md:text-5xl font-extrabold uppercase text-black mb-1 leading-tight">{title}</h1>
+          {subtitle && <h2 className="text-sm md:text-lg text-gray-600 font-semibold">{subtitle}</h2>}
+        </div>
+      )}
+      <div className="flex-1 min-h-0">{children}</div>
+    </main>
+    <footer className="h-10 md:h-12 flex justify-end items-center px-12 bg-gaf-darkGrey text-white z-10 shrink-0">
+      <div className="flex gap-1">
+        <span className="text-xs font-bold text-gaf-orange">{slideNumber}</span>
+        <span className="text-xs text-gray-500">/</span>
+        <span className="text-xs text-gray-500">{totalSlides}</span>
+      </div>
+    </footer>
+  </div>
+);
+
+// ===== SLIDE 1: TITLE =====
+const TitleSlide = ({ slideNumber, totalSlides }) => (
+  <div className="w-full h-full bg-white relative flex flex-col items-center justify-center overflow-hidden">
+    <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gaf-orange opacity-10 transform rotate-45 translate-x-1/2 -translate-y-1/2"></div>
+    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-black opacity-5 transform -rotate-12 -translate-x-1/4 translate-y-1/4"></div>
+    <div className="z-10 text-center space-y-8 animate-fade-in-up">
+      <div className="scale-150 mb-12 flex justify-center"><Logo /></div>
+      <div className="space-y-4">
+        <h2 className="text-xl md:text-2xl font-bold tracking-[0.2em] text-gray-500 uppercase">ANZ Performance Review</h2>
+        <h1 className="text-5xl md:text-8xl font-extrabold text-black uppercase leading-tight">
+          Centr x<br/><span className="text-gaf-orange">Hyrox</span>
+        </h1>
+      </div>
+      <div className="w-24 h-2 bg-black mx-auto mt-8"></div>
+      <p className="text-sm text-gray-400 font-body">April 2025 — March 2026 Performance</p>
+    </div>
+    <div className="absolute bottom-8 left-0 w-full text-center">
+      <p className="text-sm text-gray-400 font-bold tracking-widest">CONFIDENTIAL INTERNAL USE</p>
+    </div>
+  </div>
+);
+
+// ===== SLIDE 2: PERFORMANCE YTD =====
+const monthlyData = [
+  { month: "Apr '25", rev: 62000, gp: 15500 },
+  { month: "May", rev: 75000, gp: 19500 },
+  { month: "Jun", rev: 95000, gp: 23750 },
+  { month: "Jul", rev: 85000, gp: 22100 },
+  { month: "Aug", rev: 90000, gp: 24300 },
+  { month: "Sep", rev: 100000, gp: 28000 },
+  { month: "Oct", rev: 120000, gp: 33600 },
+  { month: "Nov", rev: 155000, gp: 42780 },
+  { month: "Dec", rev: 145000, gp: 37700 },
+  { month: "Jan '26", rev: 181000, gp: 50680 },
+  { month: "Feb", rev: 150000, gp: 43500 },
+  { month: "Mar", rev: 158369, gp: 48895 },
+];
+
+const PerformanceSlide = ({ slideNumber, totalSlides }) => {
+  const maxRev = Math.max(...monthlyData.map(d => d.rev));
+  return (
+  <SlideLayout title="Performance YTD" subtitle="Centr x Hyrox sales: April 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-4">
+      {/* Hero KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
+        <div className="bg-gaf-darkGrey text-white p-4 md:p-5 rounded-xl shadow-md border-l-4 border-gaf-orange">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Total Revenue</span>
+            <DollarSign size={16} />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold">$1.42M</h3>
+          <p className="text-xs text-gray-400 mt-1">12 months trading</p>
+        </div>
+        <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Gross Profit</span>
+            <TrendingUp size={16} className="text-green-500" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">$390,305</h3>
+          <p className="text-xs text-green-600 font-bold mt-1">27.6% avg margin</p>
+        </div>
+        <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Peak Month</span>
+            <BarChart size={16} className="text-blue-500" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">$181K</h3>
+          <p className="text-xs text-blue-600 font-bold mt-1">January '26</p>
+        </div>
+        <div className="bg-gaf-orange/5 p-4 md:p-5 rounded-xl border border-gaf-orange/20">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Revenue Growth</span>
+            <TrendingUp size={16} className="text-gaf-orange" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">+155%</h3>
+          <p className="text-xs text-gaf-orange font-bold mt-1">Apr $62K → Jan $181K</p>
+        </div>
+      </div>
+
+      {/* Monthly Revenue Chart */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex-1 min-h-0">
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart size={16} className="text-gaf-orange" />
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Revenue</span>
+          <span className="ml-auto text-[9px] text-gray-400 font-bold">Strong upward trajectory — consistent month-on-month growth</span>
+        </div>
+        <div className="flex items-end gap-2 h-[calc(100%-32px)]">
+          {monthlyData.map((d, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
+              <span className="text-[8px] font-bold text-gaf-darkGrey mb-1">${(d.rev/1000).toFixed(0)}K</span>
+              <div className="w-full rounded-t-md bg-gradient-to-t from-gaf-orange to-orange-300 transition-all hover:from-orange-700 hover:to-orange-400" style={{ height: `${(d.rev / maxRev) * 85}%`, minHeight: '4px' }}></div>
+              <span className="text-[8px] text-gray-400 mt-1 font-bold">{d.month}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Key Callout */}
+      <div className="bg-gaf-darkGrey text-white p-4 rounded-xl flex items-center gap-4 shrink-0">
+        <TrendingUp size={20} className="text-gaf-orange shrink-0" />
+        <p className="text-sm leading-relaxed"><strong className="text-gaf-orange">Strong growth trajectory:</strong> Revenue grew from $62K (Apr) to a peak of $181K (Jan), driven by increasing commercial Key Account wins (Total Fusion, Virgin Active) and growing functional training category demand across AU.</p>
+      </div>
+    </div>
+  </SlideLayout>
+  );
+};
+
+// ===== SLIDE 3: SALES BY CATEGORY =====
+const categoryData = [
+  { name: 'Functional Training', rev: 727000, gp: 30.4, color: '#f26422' },
+  { name: 'Treadmills', rev: 217000, gp: 26.5, color: '#d4510e' },
+  { name: 'Home Gyms', rev: 211000, gp: 28.2, color: '#a03d0a' },
+  { name: 'Kettlebells', rev: 118000, gp: 31.0, color: '#424242' },
+  { name: 'Weight Plates', rev: 61000, gp: 24.8, color: '#6b7280' },
+  { name: 'Other Equipment', rev: 82369, gp: 25.3, color: '#9ca3af' },
+];
+
+const departmentData = [
+  { name: 'GAF Retail + Online', value: 1186230, color: '#f26422' },
+  { name: 'GAF Commercial', value: 181927, color: '#424242' },
+  { name: 'GAF Wholesale', value: 48212, color: '#d1d5db' },
+];
+
+const CategorySlide = ({ slideNumber, totalSlides }) => {
+  const maxRev = Math.max(...categoryData.map(d => d.rev));
+  return (
+  <SlideLayout title="Sales by Category" subtitle="Revenue breakdown by product category with GP%" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-5">
+      {/* Horizontal bar chart */}
+      <div className="flex-1 min-h-0 flex flex-col gap-3">
+        {categoryData.map((c, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <span className="text-[11px] font-bold text-gaf-darkGrey w-40 text-right shrink-0">{c.name}</span>
+            <div className="flex-1 flex items-center gap-3">
+              <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
+                <div className="h-full rounded-full flex items-center justify-end pr-3" style={{ width: `${(c.rev / maxRev) * 100}%`, backgroundColor: c.color }}>
+                  <span className="text-[10px] font-bold text-white">${(c.rev/1000).toFixed(0)}K</span>
+                </div>
+              </div>
+              <span className={`text-xs font-bold w-14 text-right ${c.gp >= 28 ? 'text-green-600' : c.gp >= 25 ? 'text-amber-600' : 'text-red-600'}`}>{c.gp}% GP</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Department breakdown */}
+      <div className="grid grid-cols-3 gap-3 shrink-0">
+        {departmentData.map((d, i) => (
+          <div key={i} className={`bg-gray-50 p-3 rounded-xl border border-gray-100 text-center ${i === 1 ? 'ring-2 ring-gaf-orange/30' : ''}`}>
+            <div className="w-3 h-3 rounded-sm mx-auto mb-1" style={{ backgroundColor: d.color }}></div>
+            <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">{d.name}</h4>
+            <p className="text-lg font-extrabold text-gaf-darkGrey">${(d.value/1000).toFixed(0)}K</p>
+            <p className="text-[10px] text-gray-400">{((d.value / 1416369) * 100).toFixed(1)}%</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Key Insight */}
+      <div className="bg-gaf-darkGrey text-white p-4 rounded-xl shrink-0">
+        <div className="flex items-center gap-2 mb-1">
+          <BarChart size={14} className="text-gaf-orange" />
+          <span className="text-xs font-bold uppercase tracking-wider text-gaf-orange">Key Insight</span>
+        </div>
+        <p className="text-sm leading-relaxed">Functional Training ($727K) dominates at 51% of revenue with a strong 30.4% GP. Notably, Commercial accounts for 12.8% of sales ($182K) — significantly higher than other portfolio brands — driven by Key Account wins with Total Fusion and Virgin Active. This commercial channel is the brand's competitive advantage in AU.</p>
+      </div>
+    </div>
+  </SlideLayout>
+  );
+};
+
+// ===== SLIDE 4: GA4 & DIGITAL PERFORMANCE =====
+const GA4Slide = ({ slideNumber, totalSlides }) => {
+  return (
+  <SlideLayout title="Digital Performance" subtitle="GA4 website analytics — Centr x Hyrox pages | May 2025 — March 2026" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-4">
+      {/* Hero KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
+        <div className="bg-gaf-darkGrey text-white p-4 rounded-xl shadow-md border-l-4 border-gaf-orange">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Page Views</span>
+            <Eye size={16} />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold">257,000</h3>
+          <p className="text-xs text-gray-400 mt-1">Centr x Hyrox pages</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sessions</span>
+            <Users size={16} className="text-blue-500" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">82,000</h3>
+          <p className="text-xs text-blue-600 font-bold mt-1">7,455/month avg</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Top Page</span>
+            <Globe size={16} className="text-purple-500" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">21,000</h3>
+          <p className="text-xs text-purple-600 font-bold mt-1">Collection page views</p>
+        </div>
+        <div className="bg-gaf-orange/5 p-4 rounded-xl border border-gaf-orange/20">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Session Growth</span>
+            <TrendingUp size={16} className="text-gaf-orange" />
+          </div>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gaf-darkGrey">+32%</h3>
+          <p className="text-xs text-gaf-orange font-bold mt-1">May → Mar sessions</p>
+        </div>
+      </div>
+
+      {/* Top Pages */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 shrink-0">
+        <div className="flex items-center gap-2 mb-3">
+          <Eye className="text-gaf-orange" size={14} />
+          <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Top Pages by Views</h4>
+        </div>
+        <div className="grid grid-cols-5 gap-3">
+          {[
+            { page: "Centr x Hyrox Collection", views: "21,000" },
+            { page: "Wall Ball", views: "18,000" },
+            { page: "Sandbag", views: "15,000" },
+            { page: "Kettlebell Competition", views: "15,000" },
+            { page: "Sled", views: "11,000" },
+          ].map((p, i) => (
+            <div key={i} className="bg-gray-50 p-2 rounded-lg text-center">
+              <p className="text-[9px] font-bold text-gaf-darkGrey leading-tight mb-1">{p.page}</p>
+              <p className="text-sm font-extrabold text-gaf-orange">{p.views}</p>
+              <p className="text-[8px] text-gray-400">views</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Traffic Source Pie Chart */}
+      {(() => {
+        const channels = [
+          { name: "Paid Social", sessions: 23780, color: "#3b82f6" },
+          { name: "Paid Shopping", sessions: 17220, color: "#f59e0b" },
+          { name: "Direct", sessions: 9020, color: "#6b7280" },
+          { name: "Cross-network", sessions: 7380, color: "#f97316" },
+          { name: "Referral", sessions: 6560, color: "#8b5cf6" },
+          { name: "Paid Search", sessions: 6560, color: "#10b981" },
+          { name: "Organic Search", sessions: 4674, color: "#06b6d4" },
+          { name: "Other", sessions: 6806, color: "#d1d5db" },
+        ];
+        const total = channels.reduce((s, c) => s + c.sessions, 0);
+        let cumAngle = 0;
+        const slices = channels.map(c => {
+          const pct = c.sessions / total;
+          const startAngle = cumAngle;
+          cumAngle += pct * 360;
+          const endAngle = cumAngle;
+          const startRad = (startAngle - 90) * Math.PI / 180;
+          const endRad = (endAngle - 90) * Math.PI / 180;
+          const largeArc = pct > 0.5 ? 1 : 0;
+          const x1 = 50 + 40 * Math.cos(startRad);
+          const y1 = 50 + 40 * Math.sin(startRad);
+          const x2 = 50 + 40 * Math.cos(endRad);
+          const y2 = 50 + 40 * Math.sin(endRad);
+          return { ...c, pct, path: `M50,50 L${x1},${y1} A40,40 0 ${largeArc},1 ${x2},${y2} Z` };
+        });
+        return (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 shrink-0">
+            <div className="flex items-center gap-2 mb-3">
+              <Globe className="text-gaf-orange" size={14} />
+              <h4 className="font-bold text-gaf-darkGrey uppercase tracking-wide text-[10px]">Traffic Sources by Sessions (82K total)</h4>
+              <span className="ml-auto text-[9px] text-gray-400 font-bold">67% PAID · 6% ORGANIC · 11% DIRECT · 16% OTHER</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <svg viewBox="0 0 100 100" className="w-28 h-28 shrink-0">
+                {slices.map((s, i) => <path key={i} d={s.path} fill={s.color} stroke="white" strokeWidth="0.5" />)}
+              </svg>
+              <div className="grid grid-cols-3 gap-x-6 gap-y-1.5 flex-1">
+                {slices.map((s, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{backgroundColor: s.color}}></div>
+                    <span className="text-[10px] text-gray-700"><strong>{(s.pct * 100).toFixed(0)}%</strong> {s.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-500 mt-3 leading-relaxed"><strong>Key insight:</strong> Paid Social (29%) is the dominant channel — strong alignment with the Hyrox community-driven brand. Organic search at 6% highlights the need for continued brand-building investment to grow earned traffic.</p>
+          </div>
+        );
+      })()}
+    </div>
+  </SlideLayout>
+  );
+};
+
+// ===== SLIDE 5: WINS =====
+const WinsSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Wins" subtitle="Key highlights from the first 12 months" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full">
+      <div className="flex flex-col">
+        <div className="bg-green-50 p-5 rounded-xl border border-green-100 flex-1">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-green-100 p-2 rounded-lg"><Award size={20} className="text-green-600" /></div>
+            <h3 className="font-bold text-lg uppercase text-green-800">Wins</h3>
+          </div>
+          <div className="space-y-4">
+            {[
+              { title: "Premium Key Account wins", desc: "Secured equipment sales with Total Fusion and Virgin Active — two of AU's largest fitness chains. Virgin Active 8-club deal and WGA pilot represent significant commercial validation of the brand." },
+              { title: "$1.42M total revenue", desc: "Strong first-year performance with 27.6% average GP margin. Revenue grew +155% from April to January peak — demonstrating accelerating demand across both retail and commercial channels." },
+              { title: "Commercial channel strength", desc: "12.8% of revenue from commercial accounts ($182K) — significantly higher than other portfolio brands. Proves the Centr x Hyrox brand resonates with facility operators, not just consumers." },
+              { title: "257K page views, +32% session growth", desc: "Consistent digital growth with sessions climbing month-on-month. Wall Ball, Sandbag, and Kettlebell pages driving strong product interest." },
+            ].map((w, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-green-800">{w.title}</p>
+                  <p className="text-xs text-green-700 leading-relaxed">{w.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {/* Hyrox Hang Challenge image — right column */}
+      <div className="flex flex-col">
+        <div className="rounded-xl border border-green-100 shadow-sm flex-1 flex flex-col bg-white">
+          <div className="flex-1 flex items-center justify-center p-2 min-h-0">
+            <img src="assets/hyrox-hang-challenge.png" alt="Hyrox Hang Challenge — Brisbane" style={{maxHeight: '450px', maxWidth: '100%', objectFit: 'contain', borderRadius: '8px'}} />
+          </div>
+          <div className="bg-green-50 px-4 py-1.5 shrink-0 rounded-b-xl">
+            <p className="text-xs font-bold text-green-800">Hyrox Hang Challenge — Brisbane</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 6: CHALLENGES =====
+const ChallengesSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Challenges" subtitle="Key areas requiring attention and support" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full">
+      <div className="flex flex-col">
+        <div className="bg-amber-50 p-5 rounded-xl border border-amber-100 flex-1">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-amber-100 p-2 rounded-lg"><AlertTriangle size={20} className="text-amber-600" /></div>
+            <h3 className="font-bold text-lg uppercase text-amber-800">Challenges</h3>
+          </div>
+          <div className="space-y-4">
+            {[
+              { title: "Limited home/consumer equipment sales", desc: "Very little equipment sales to competitors or home users. The brand is heavily indexed toward commercial/facility buyers. Expanding to the home fitness segment requires a different go-to-market approach and product positioning." },
+              { title: "Hyrox event attendance ROI", desc: "Poor return on investment from Hyrox event attendance to date. High cost of activation (equipment freight, staffing, sponsorship) relative to direct sales generated. Need to shift event strategy from direct sales to brand awareness and lead generation." },
+              { title: "Organic search at 6%", desc: "Organic search represents only 6% of traffic — heavy reliance on paid channels (67% of sessions). Brand awareness outside the Hyrox community is limited. Need to invest in content and SEO to build sustainable organic demand." },
+            ].map((c, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <AlertTriangle size={16} className="text-amber-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-amber-800">{c.title}</p>
+                  <p className="text-xs text-amber-700 leading-relaxed">{c.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-4">
+        {/* Channel Mix Snapshot */}
+        <div className="bg-gaf-darkGrey text-white p-6 rounded-xl flex-1">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart size={18} className="text-gaf-orange" />
+            <span className="text-sm font-bold uppercase tracking-wider text-gaf-orange">Channel & Market Snapshot</span>
+          </div>
+          <div className="space-y-3">
+            {[
+              { label: 'Paid channel dependency', issue: '67% of all sessions from paid media', severity: 'high' },
+              { label: 'Home consumer segment', issue: 'Minimal sales outside commercial/facility buyers', severity: 'high' },
+              { label: 'Event ROI', issue: 'High activation costs vs direct sales returns', severity: 'medium' },
+              { label: 'Brand search volume', issue: 'Organic search only 6% — low brand awareness outside Hyrox community', severity: 'medium' },
+            ].map((m, i) => (
+              <div key={i} className="flex items-start gap-3 bg-white/5 p-3 rounded-lg">
+                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${m.severity === 'high' ? 'bg-red-400' : m.severity === 'medium' ? 'bg-amber-400' : 'bg-green-400'}`}></div>
+                <div>
+                  <p className="text-sm font-bold text-white">{m.label}</p>
+                  <p className="text-xs text-gray-400">{m.issue}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-3 border-t border-white/10">
+            <p className="text-xs text-gray-400 leading-relaxed">The commercial channel is a genuine strength (12.8% vs &lt;2% for other brands), but the consumer segment remains underdeveloped. Shifting event strategy from direct sales toward lead gen and brand awareness could improve ROI and build the pipeline.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 7: PLANS & PRIORITIES =====
+const PlansSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Plans & Priorities" subtitle="Centr x Hyrox growth strategy — next 6 months" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-4">
+      <div className="bg-gaf-darkGrey text-white p-5 rounded-xl border-l-8 border-gaf-orange shadow-lg shrink-0">
+        <div className="flex items-center gap-2 mb-2"><Target size={18} className="text-gaf-orange" /><h3 className="text-sm font-bold uppercase tracking-wide text-gaf-orange">Strategic Focus: Scale Commercial Key Accounts & Build Consumer Brand</h3></div>
+        <p className="text-sm leading-relaxed">Double down on the commercial channel advantage with Total Fusion, Virgin Active, and WGA. Simultaneously invest in building consumer brand awareness through Hyrox event activations and dedicated content to unlock the home fitness segment.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0">
+        {[
+          { title: "Commercial Strategy", icon: DollarSign, color: "text-green-600", bgColor: "bg-green-50 border-green-100", items: [
+            "Expand Total Fusion relationship — equipment refresh and new club openings",
+            "Execute Virgin Active 8-club deal — standardise Centr x Hyrox functional zones",
+            "WGA pilot program — prove model then scale nationally",
+            "Build commercial sales collateral: case studies, 3D renders, fit-out proposals"
+          ]},
+          { title: "Events & Activation", icon: Zap, color: "text-gaf-orange", bgColor: "bg-orange-50 border-orange-100", items: [
+            "Activate at all AU Hyrox events — shift from direct sales to brand awareness and lead capture",
+            "Experience Centre for product demos, athlete shoots, and commercial buyer walk-throughs",
+            "Leverage Hang Challenge format — high engagement, low cost activation at events",
+            "Post-event nurture sequences to convert attendee interest into pipeline"
+          ]},
+          { title: "Digital & Brand", icon: Eye, color: "text-blue-600", bgColor: "bg-blue-50 border-blue-100", items: [
+            "Increase paid social investment — already the #1 traffic driver at 29% of sessions",
+            "Build Hyrox training content for SEO — workout guides, race prep, functional training tips",
+            "Partner with Hyrox athletes and community influencers for UGC and social proof",
+            "Expand product page content — Wall Ball, Sandbag, Kettlebell pages already driving interest"
+          ]},
+        ].map((section, i) => (
+          <div key={i} className={`p-4 rounded-xl border ${section.bgColor}`}>
+            <div className="flex items-center gap-2 mb-3">
+              <section.icon size={20} className={section.color} />
+              <h4 className="font-bold text-xs uppercase tracking-wide">{section.title}</h4>
+            </div>
+            <div className="space-y-2">
+              {section.items.map((item, j) => (
+                <div key={j} className="flex items-start gap-2">
+                  <ArrowRight size={12} className="text-gray-400 mt-0.5 shrink-0" />
+                  <p className="text-[11px] text-gray-700 leading-relaxed">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 8: EXPERIENCE CENTRE =====
+const ExperienceCentreSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Experience Centre" subtitle="Dedicated Centr x Hyrox showroom & content production facility" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-5">
+      <div className="flex-1 rounded-2xl overflow-hidden border-2 border-gray-200 shadow-lg relative">
+        <img src="assets/experience-centre.png" alt="GAF Experience Centre — Centr x Hyrox Showroom" className="w-full h-full object-cover" />
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Package size={18} className="text-gaf-orange" />
+            <h3 className="text-white font-bold text-sm uppercase tracking-wide">GAF Experience Centre</h3>
+          </div>
+          <p className="text-white/90 text-xs leading-relaxed max-w-2xl">Purpose-built Centr x Hyrox functional training zone at GAF HQ — serves as a product showcase for commercial buyers (Total Fusion, Virgin Active, WGA), content production studio for athlete and event content, and demonstration space for functional training equipment.</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-4 shrink-0">
+        {[
+          { icon: Users, label: "Commercial Showroom", desc: "Walk-through experience for gym operators and facility managers — demonstrate full Hyrox functional training zones" },
+          { icon: Eye, label: "Content Studio", desc: "In-house photo & video production with complete Centr x Hyrox range — wall balls, sleds, sandbags, kettlebells" },
+          { icon: Zap, label: "Training Hub", desc: "Athlete and influencer collaboration space for Hyrox training content, product testing, and community events" },
+        ].map((item, i) => (
+          <div key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
+            <item.icon size={24} className="text-gaf-orange mx-auto mb-2" />
+            <h4 className="font-bold text-xs uppercase tracking-wide mb-1">{item.label}</h4>
+            <p className="text-[10px] text-gray-600 leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 9: SUPPORT NEEDED =====
+const SupportSlide = ({ slideNumber, totalSlides }) => (
+  <SlideLayout title="Support Needed" subtitle="Key requests for Centr x Hyrox to accelerate ANZ growth" slideNumber={slideNumber} totalSlides={totalSlides}>
+    <div className="flex flex-col h-full gap-4">
+      {/* Priority request banner */}
+      <div className="bg-gaf-orange text-white p-5 rounded-xl shadow-lg shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="bg-white/20 p-2 rounded-lg"><Users size={24} className="text-white" /></div>
+          <div>
+            <h3 className="font-extrabold text-lg uppercase">Local Support — Jay Clarke</h3>
+            <p className="text-sm text-white/90 mt-1">Local support through Jay Clarke for direct customer conversations with Key Accounts. The commercial channel is our strongest growth lever (12.8% of revenue) and having local Centr representation to support GAF in Total Fusion, Virgin Active, and WGA discussions would accelerate deal velocity and account expansion.</p>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+        {[
+          { title: "3D Renders & Assets", icon: Camera, color: "text-blue-600", bg: "bg-blue-50 border-blue-100", items: [
+            "Head office support with 3D renders for commercial proposals — gym operators need visual fit-out plans before committing",
+            "CAD files and space planning tools for Hyrox functional zones in different facility sizes",
+            "High-quality product photography and lifestyle imagery for AU marketing campaigns",
+            "Co-branded content assets adapted for AU market — event collateral, social content, POS materials"
+          ]},
+          { title: "MDF & Product Seeding", icon: DollarSign, color: "text-gaf-orange", bg: "bg-orange-50 border-orange-100", items: [
+            "Continued Marketing Development Fund support for AU brand-building — paid social, event activations, content production",
+            "Product seeding for Key Account demonstrations — sample equipment for Total Fusion and Virgin Active trials",
+            "Event equipment support — freight and logistics for Hyrox activations across AU (Hang Challenge format proven)",
+            "Influencer/athlete product seeding — build grassroots advocacy in the Hyrox community"
+          ]},
+          { title: "Strategic Partnership", icon: Target, color: "text-green-600", bg: "bg-green-50 border-green-100", items: [
+            "Joint Key Account strategy — aligned approach to Total Fusion, Virgin Active, WGA with clear roles and commercial terms",
+            "New product roadmap visibility — first-mover on AU launches to maintain competitive advantage in commercial channel",
+            "Quarterly review cadence to track commercial pipeline and brand growth together",
+            "Hyrox event partnership model — define joint activation strategy for all AU Hyrox events"
+          ]},
+        ].map((section, i) => (
+          <div key={i} className={`p-4 rounded-xl border ${section.bg}`}>
+            <div className="flex items-center gap-2 mb-3">
+              <section.icon size={20} className={section.color} />
+              <h4 className="font-bold text-xs uppercase tracking-wide">{section.title}</h4>
+            </div>
+            <div className="space-y-2">
+              {section.items.map((item, j) => (
+                <div key={j} className="flex items-start gap-2">
+                  <MessageCircle size={12} className="text-gray-400 mt-0.5 shrink-0" />
+                  <p className="text-[11px] text-gray-700 leading-relaxed">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Financial context bar */}
+      <div className="bg-gaf-darkGrey text-white p-4 rounded-xl flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <BarChart size={14} className="text-gaf-orange" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gaf-orange">Financial Context</span>
+        </div>
+        <div className="flex gap-6 text-xs">
+          <span>12-Month Revenue: <strong className="text-gaf-orange">$1.42M</strong></span>
+          <span>Gross Profit: <strong className="text-green-400">$390K</strong></span>
+          <span>Commercial: <strong className="text-white">$182K (12.8%)</strong></span>
+        </div>
+      </div>
+    </div>
+  </SlideLayout>
+);
+
+// ===== SLIDE 10: QUESTIONS =====
+const QuestionsSlide = () => (
+  <div className="w-full h-full bg-[#3d3d3d] flex flex-col items-center justify-center p-12 overflow-hidden">
+    <h2 className="text-white text-7xl md:text-[10rem] font-black uppercase tracking-[0.1em] text-center drop-shadow-sm select-none">Questions</h2>
+  </div>
+);
+
+// ===== APP =====
+const SLIDES = [TitleSlide, PerformanceSlide, CategorySlide, GA4Slide, WinsSlide, ChallengesSlide, PlansSlide, ExperienceCentreSlide, SupportSlide, QuestionsSlide];
+
+function App() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const nextSlide = () => { if (currentSlide < SLIDES.length - 1) setCurrentSlide(c => c + 1); };
+  const prevSlide = () => { if (currentSlide > 0) setCurrentSlide(c => c - 1); };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+      else if (e.key === 'ArrowLeft') prevSlide();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentSlide]);
+
+  const CurrentSlideComponent = SLIDES[currentSlide];
+
+  return (
+    <div className="relative w-full min-h-screen bg-gray-900 flex items-center justify-center p-0 sm:p-4 lg:p-6 overflow-x-hidden">
+      <div className="w-full max-w-[1600px] h-full min-h-[650px] md:max-h-[92vh] md:aspect-video bg-white shadow-2xl relative overflow-hidden flex flex-col rounded-none sm:rounded-xl">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <CurrentSlideComponent slideNumber={currentSlide + 1} totalSlides={SLIDES.length} />
+        </div>
+        <div className="absolute bottom-16 right-12 flex gap-4 z-50">
+          <button onClick={prevSlide} disabled={currentSlide === 0} className={`p-3 rounded-full transition-all border-2 border-transparent ${currentSlide === 0 ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50' : 'bg-gaf-darkGrey text-white hover:bg-gaf-orange hover:shadow-lg active:scale-95'}`}>
+            <ChevronLeft size={24} />
+          </button>
+          <button onClick={nextSlide} disabled={currentSlide === SLIDES.length - 1} className={`p-3 rounded-full transition-all border-2 border-transparent ${currentSlide === SLIDES.length - 1 ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50' : 'bg-gaf-darkGrey text-white hover:bg-gaf-orange hover:shadow-lg active:scale-95'}`}>
+            <ChevronRight size={24} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
