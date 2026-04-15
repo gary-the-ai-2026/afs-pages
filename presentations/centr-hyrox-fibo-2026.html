@@ -739,7 +739,7 @@ function App() {
   const [idx, setIdx] = useState(0);
   const [key, setKey] = useState(0);
   const [dark, setDark] = useState(false);
-  const [scale, setScale] = useState(1);
+  const [layout, setLayout] = useState({ s: 1, tx: 0, ty: 0 });
   const th = dark ? themes.dark : themes.light;
 
   const go = useCallback((dir) => {
@@ -748,14 +748,15 @@ function App() {
   }, [idx]);
 
   useEffect(() => {
-    const calcScale = () => {
-      const sw = window.innerWidth / 1600;
-      const sh = window.innerHeight / 900;
-      setScale(Math.min(sw, sh, 1));
+    const calc = () => {
+      const s = Math.min(window.innerWidth / 1600, window.innerHeight / 900, 1);
+      const tx = (window.innerWidth - 1600 * s) / 2;
+      const ty = (window.innerHeight - 900 * s) / 2;
+      setLayout({ s, tx, ty });
     };
-    calcScale();
-    window.addEventListener('resize', calcScale);
-    return () => window.removeEventListener('resize', calcScale);
+    calc();
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
   }, []);
 
   useEffect(() => {
@@ -777,7 +778,7 @@ function App() {
   return (
     <ThemeCtx.Provider value={th}>
       <div className="w-screen h-screen overflow-hidden relative" style={{background: th.bodyBg}}>
-        <div key={key} className="absolute overflow-hidden slide-enter rounded-lg" style={{width: 1600, height: 900, transform: `scale(${scale})`, transformOrigin: 'center center', left: '50%', top: '50%', marginLeft: -800, marginTop: -450, boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
+        <div key={key} className="absolute overflow-hidden slide-enter rounded-lg" style={{width: 1600, height: 900, transform: `translate(${layout.tx}px,${layout.ty}px) scale(${layout.s})`, transformOrigin: '0 0', left: 0, top: 0, boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
           <C n={idx + 1} t={SLIDES.length} />
           {/* Nav + theme toggle */}
           <div className="absolute bottom-6 right-8 flex gap-2 z-50">
