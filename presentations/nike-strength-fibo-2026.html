@@ -487,19 +487,21 @@ const WinsSlide = ({ slideNumber, totalSlides }) => (
         </div>
       </div>
       {/* Collab images — right column */}
-      <div className="flex flex-col gap-4">
-        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1">
-          <img src="assets/bj-stone-nike.png" alt="BJ Stone — Aus Fitness Expo" className="w-full h-full object-cover" style={{minHeight: '200px'}} />
-          <div className="bg-green-50 px-4 py-2">
+      <div className="flex flex-col gap-3">
+        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1 flex flex-col bg-gray-900">
+          <div className="flex-1 flex items-center justify-center overflow-hidden">
+            <img src="assets/bj-stone-nike.png" alt="BJ Stone — Aus Fitness Expo" className="h-full object-contain" />
+          </div>
+          <div className="bg-green-50 px-4 py-1.5 shrink-0">
             <p className="text-xs font-bold text-green-800">BJ Stone — Aus Fitness Expo Launch</p>
-            <p className="text-[10px] text-green-700">Strongman athlete collab driving brand credibility and foot traffic</p>
           </div>
         </div>
-        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1">
-          <img src="assets/sarahs-day-nike.png" alt="Sarah's Day — Nike Strength" className="w-full h-full object-cover" style={{minHeight: '200px'}} />
-          <div className="bg-green-50 px-4 py-2">
+        <div className="rounded-xl overflow-hidden border border-green-100 shadow-sm flex-1 flex flex-col bg-gray-900">
+          <div className="flex-1 flex items-center justify-center overflow-hidden">
+            <img src="assets/sarahs-day-nike.png" alt="Sarah's Day — Nike Strength" className="h-full object-contain" />
+          </div>
+          <div className="bg-green-50 px-4 py-1.5 shrink-0">
             <p className="text-xs font-bold text-green-800">Sarah's Day — 1.2M Instagram Followers</p>
-            <p className="text-[10px] text-green-700">High-profile influencer partnership for organic reach and social proof</p>
           </div>
         </div>
       </div>
