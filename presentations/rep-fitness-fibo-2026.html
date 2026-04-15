@@ -737,7 +737,7 @@ function App() {
   const [idx, setIdx] = useState(0);
   const [key, setKey] = useState(0);
   const [dark, setDark] = useState(false);
-  const [layout, setLayout] = useState({ s: 1, tx: 0, ty: 0 });
+  const [zoom, setZoom] = useState(() => Math.min(window.innerWidth / 1600, window.innerHeight / 900, 1));
   const th = dark ? themes.dark : themes.light;
 
   const go = useCallback((dir) => {
@@ -746,13 +746,7 @@ function App() {
   }, [idx]);
 
   useEffect(() => {
-    const calc = () => {
-      const s = Math.min(window.innerWidth / 1600, window.innerHeight / 900, 1);
-      const tx = (window.innerWidth - 1600 * s) / 2;
-      const ty = (window.innerHeight - 900 * s) / 2;
-      setLayout({ s, tx, ty });
-    };
-    calc();
+    const calc = () => setZoom(Math.min(window.innerWidth / 1600, window.innerHeight / 900, 1));
     window.addEventListener('resize', calc);
     return () => window.removeEventListener('resize', calc);
   }, []);
@@ -775,8 +769,8 @@ function App() {
   const C = SLIDES[idx];
   return (
     <ThemeCtx.Provider value={th}>
-      <div className="w-screen h-screen overflow-hidden relative" style={{background: th.bodyBg}}>
-        <div key={key} className="absolute overflow-hidden slide-enter rounded-lg" style={{width: 1600, height: 900, transform: `translate(${layout.tx}px,${layout.ty}px) scale(${layout.s})`, transformOrigin: '0 0', left: 0, top: 0, boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
+      <div className="w-screen h-screen overflow-hidden flex items-center justify-center" style={{background: th.bodyBg}}>
+        <div key={key} className="overflow-hidden slide-enter rounded-lg shrink-0" style={{width: 1600, height: 900, zoom, boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
           <C n={idx + 1} t={SLIDES.length} />
           {/* Nav + theme toggle */}
           <div className="absolute bottom-6 right-8 flex gap-2 z-50">
