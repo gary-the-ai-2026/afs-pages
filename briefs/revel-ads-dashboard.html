@@ -730,7 +730,7 @@
                   </div>
                   <div>
                     <div style="height:1px;background:rgba(0,0,0,0.05);margin-bottom:12px;"></div>
-                    ${top['Media Preview URL'] ? `<a href="${top['Media Preview URL']}" target="_blank" rel="noopener noreferrer" class="view-creative">View Ad Creative <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
+                    ${top['Ad ID'] ? `<a href="https://www.facebook.com/ads/library/?id=${top['Ad ID']}" target="_blank" rel="noopener noreferrer" class="view-creative">View Ad Creative <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
                   </div>
                 </div>
               </div>
@@ -775,7 +775,7 @@
                           <div class="stat-item"><p class="stat-label">Purchases</p><p class="stat-value">${fmt(num(ad['Purchases']))}</p></div>
                           <div class="stat-item"><p class="stat-label">ROAS</p><p class="stat-value">${num(ad['Purchase ROAS']).toFixed(2)}x</p></div>
                           <div class="stat-item"><p class="stat-label">CPA</p><p class="stat-value">${fmtCurrency(num(ad['Cost per Result']))}</p></div>
-                          ${ad['Media Preview URL'] ? `<a href="${ad['Media Preview URL']}" target="_blank" rel="noopener noreferrer" class="runner-detail-link" onclick="event.stopPropagation()">View Ad Creative <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
+                          ${ad['Ad ID'] ? `<a href="https://www.facebook.com/ads/library/?id=${ad['Ad ID']}" target="_blank" rel="noopener noreferrer" class="runner-detail-link" onclick="event.stopPropagation()">View Ad Creative <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>` : ''}
                         </div>
                       </div>
                     </div>
