@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AU Gym Equipment Market Sizing</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@19/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        gaf: { orange: '#f26422', black: '#0a0a0a', dark: '#141414', mid: '#1e1e1e', steel: '#2a2a2a', ash: '#8a8a8a' },
+        lt: { bg: '#ffffff', card: '#f7f7f8', card2: '#eeeef0', border: '#e0e0e2', text: '#1a1a1a', sub: '#6b6b6b', muted: '#b0b0b0' },
+      },
+      fontFamily: {
+        display: ['"Bebas Neue"', 'sans-serif'],
+        heading: ['"Outfit"', 'sans-serif'],
+        body: ['"DM Sans"', 'sans-serif'],
+      },
+    }
+  }
+}
+</script>
+<style>
+  body { margin: 0; background: #0a0a0a; display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 40px 20px; }
+  .slide-wrap { width: 100%; max-width: 1600px; aspect-ratio: 16/9; position: relative; overflow: hidden; border-radius: 12px; }
+  @keyframes growBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes countUp { from { opacity: 0; } to { opacity: 1; } }
+  .bar-animate { animation: growBar 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; transform-origin: left; }
+  .fade-up { animation: fadeUp 0.6s ease-out forwards; opacity: 0; }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+  .delay-5 { animation-delay: 0.5s; }
+  .delay-6 { animation-delay: 0.6s; }
+  .delay-7 { animation-delay: 0.7s; }
+  .delay-8 { animation-delay: 0.8s; }
+  .grain::before { content: ''; position: absolute; inset: 0; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); pointer-events: none; z-index: 1; }
+  .diagonal-lines { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .diagonal-lines::before, .diagonal-lines::after { content: ''; position: absolute; background: rgba(242, 100, 34, 0.04); }
+  .diagonal-lines::before { width: 200%; height: 1px; top: 30%; left: -50%; transform: rotate(-8deg); }
+  .diagonal-lines::after { width: 200%; height: 1px; top: 65%; left: -50%; transform: rotate(-8deg); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const GAFLogo = () => (
+  <img src="https://gary-afs.github.io/afs-pages/assets/gaf-logo.svg" alt="GAF" className="h-6 opacity-60" onError={(e) => { e.target.style.display = 'none'; }} />
+);
+
+/* ── SLIDE 1: Market Sizing Overview ── */
+const Slide1 = () => {
+  const segments = [
+    {
+      label: 'B2C Home Gyms',
+      tam: '$300M',
+      tamNum: 300,
+      color: '#f26422',
+      stats: [
+        { label: 'AU Households', value: '10.5M' },
+        { label: 'Equipment Ownership', value: '92%' },
+        { label: 'CAGR (2025-32)', value: '5-7%' },
+      ],
+      drivers: ['WFH culture driving home gym adoption', 'Functional trainer segment growing 8.6% globally', 'Only 6% own a power rack -- massive upgrade headroom'],
+      barWidth: '100%',
+    },
+    {
+      label: 'B2B Mining (FIFO)',
+      tam: '$4.5M',
+      tamNum: 4.5,
+      color: '#3b82f6',
+      stats: [
+        { label: 'FIFO Camps w/ Gyms', value: '~250' },
+        { label: 'Avg Fitout Value', value: '$80K' },
+        { label: 'Refresh Cycle', value: '5-7 yrs' },
+      ],
+      drivers: ['Lithium & rare earth expansion creating new camps', 'Resort-style upgrades (MinRes, BHP raising the bar)', '80,000+ FIFO workers expect gym as standard amenity'],
+      barWidth: '1.5%',
+    },
+    {
+      label: 'B2B Defence (ADF)',
+      tam: '$1.5M',
+      tamNum: 1.5,
+      color: '#6366f1',
+      stats: [
+        { label: 'ADF Bases', value: '65' },
+        { label: 'Personnel', value: '94,500' },
+        { label: 'Refresh Cycle', value: '5-7 yrs' },
+      ],
+      drivers: ['$50B+ defence investment pipeline (AUKUS)', 'Standing procurement panel (SON3489273)', 'Structured tender process favours established suppliers'],
+      barWidth: '0.5%',
+    },
+  ];
+
+  return (
+    <div className="slide-wrap bg-gaf-dark grain relative">
+      <div className="diagonal-lines" />
+      <div className="relative z-10 h-full flex flex-col p-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-2 fade-up">
+          <div className="flex items-center gap-4">
+            <GAFLogo />
+            <span className="text-lt-muted font-body text-xs tracking-widest uppercase">Market Intelligence</span>
+          </div>
+          <span className="text-lt-muted font-body text-xs">April 2026 | Confidential</span>
+        </div>
+
+        {/* Title */}
+        <div className="mb-6 fade-up delay-1">
+          <h1 className="font-display text-white text-5xl tracking-wide leading-none">
+            Australian Gym Equipment
+          </h1>
+          <div className="flex items-center gap-3 mt-1">
+            <div className="w-12 h-1 bg-gaf-orange rounded-full" />
+            <h2 className="font-heading text-gaf-ash text-lg font-light tracking-wide uppercase">
+              Total Addressable Market by Segment
+            </h2>
+          </div>
+        </div>
+
+        {/* Total TAM callout */}
+        <div className="flex items-center gap-4 mb-6 fade-up delay-2">
+          <div className="bg-gaf-orange/10 border border-gaf-orange/20 rounded-lg px-5 py-2.5 flex items-center gap-3">
+            <span className="font-heading text-gaf-orange text-sm font-semibold uppercase tracking-wider">Combined Annual TAM</span>
+            <span className="font-display text-white text-4xl">$306M</span>
+          </div>
+          <div className="bg-gaf-steel/50 rounded-lg px-4 py-2.5">
+            <span className="font-body text-gaf-ash text-sm">Projected 2030: <span className="text-white font-semibold">$430M+</span></span>
+          </div>
+        </div>
+
+        {/* Segment Cards */}
+        <div className="grid grid-cols-3 gap-5 flex-1">
+          {segments.map((seg, i) => (
+            <div key={seg.label} className={`bg-gaf-mid/80 border border-gaf-steel/50 rounded-xl p-5 flex flex-col fade-up delay-${i + 3}`}>
+              {/* Segment header */}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ background: seg.color }} />
+                <span className="font-heading text-white text-sm font-semibold uppercase tracking-wider">{seg.label}</span>
+              </div>
+
+              {/* TAM value */}
+              <div className="mb-4">
+                <span className="font-display text-4xl" style={{ color: seg.color }}>{seg.tam}</span>
+                <span className="font-body text-gaf-ash text-xs ml-2">/year</span>
+              </div>
+
+              {/* Stat pills */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {seg.stats.map((s) => (
+                  <div key={s.label} className="bg-gaf-steel/60 rounded-md px-2.5 py-1">
+                    <span className="font-body text-gaf-ash text-xs">{s.label}: </span>
+                    <span className="font-heading text-white text-xs font-semibold">{s.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Growth drivers */}
+              <div className="flex-1">
+                <span className="font-heading text-gaf-ash text-xs uppercase tracking-wider mb-2 block">Growth Drivers</span>
+                <ul className="space-y-1.5">
+                  {seg.drivers.map((d, j) => (
+                    <li key={j} className="flex items-start gap-2">
+                      <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ background: seg.color }} />
+                      <span className="font-body text-lt-muted text-xs leading-relaxed">{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-4 flex items-center justify-between">
+          <span className="font-body text-gaf-steel text-xs">Sources: FBI Global Report (2024), ABS, AusTender, Geoscience AU, AFS Consumer Study (2021), GAF Sales Intelligence (2026)</span>
+          <div className="h-0.5 w-16 bg-gaf-orange rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+/* ── SLIDE 2: Strategic Opportunity - GAF Position ── */
+const Slide2 = () => {
+  const rows = [
+    {
+      segment: 'B2C Home Gyms',
+      color: '#f26422',
+      tam: '$300M',
+      gafAov: '$2,609',
+      gafCac: '$186',
+      ltv: '~$3,200',
+      competition: 'High',
+      compColor: '#ef4444',
+      gafEdge: 'All-in-one range, showroom network, finance options',
+      opportunity: 'Power rack penetration at 6% -- 94% of home trainers yet to upgrade',
+    },
+    {
+      segment: 'B2B Mining',
+      color: '#3b82f6',
+      tam: '$4.5M',
+      gafAov: '$4,770',
+      gafCac: '$126',
+      ltv: '~$15K+',
+      competition: 'Low',
+      compColor: '#22c55e',
+      gafEdge: 'Existing commercial sales capability, install service, bulk pricing',
+      opportunity: 'Resort-style camp upgrades creating premium replacement cycle',
+    },
+    {
+      segment: 'B2B Defence',
+      color: '#6366f1',
+      tam: '$1.5M',
+      gafAov: '$20,297',
+      gafCac: '$126',
+      ltv: '~$60K+',
+      competition: 'Low',
+      compColor: '#22c55e',
+      gafEdge: 'Already winning orders ($20K AOV), ADF procurement panel exists',
+      opportunity: 'AUKUS spend + new base builds; one order = 8 home gym sales',
+    },
+  ];
+
+  return (
+    <div className="slide-wrap bg-gaf-dark grain relative">
+      <div className="diagonal-lines" />
+      <div className="relative z-10 h-full flex flex-col p-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-2 fade-up">
+          <div className="flex items-center gap-4">
+            <GAFLogo />
+            <span className="text-lt-muted font-body text-xs tracking-widest uppercase">Strategic Assessment</span>
+          </div>
+          <span className="text-lt-muted font-body text-xs">April 2026 | Confidential</span>
+        </div>
+
+        {/* Title */}
+        <div className="mb-6 fade-up delay-1">
+          <h1 className="font-display text-white text-5xl tracking-wide leading-none">
+            GAF Competitive Position
+          </h1>
+          <div className="flex items-center gap-3 mt-1">
+            <div className="w-12 h-1 bg-gaf-orange rounded-full" />
+            <h2 className="font-heading text-gaf-ash text-lg font-light tracking-wide uppercase">
+              Unit Economics & Strategic Advantage by Segment
+            </h2>
+          </div>
+        </div>
+
+        {/* Key insight callout */}
+        <div className="bg-gaf-orange/8 border border-gaf-orange/15 rounded-lg px-5 py-3 mb-6 fade-up delay-2">
+          <div className="flex items-center gap-2 mb-1">
+            <svg className="w-4 h-4 text-gaf-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <span className="font-heading text-gaf-orange text-sm font-semibold uppercase tracking-wider">Key Insight</span>
+          </div>
+          <span className="font-body text-lt-muted text-sm">B2B segments deliver <span className="text-white font-semibold">7.8x higher AOV</span> at <span className="text-white font-semibold">32% lower CAC</span> than B2C. Defence alone produces orders equivalent to 8 home gym sales each.</span>
+        </div>
+
+        {/* Data Table */}
+        <div className="flex-1 bg-gaf-mid/60 border border-gaf-steel/30 rounded-xl overflow-hidden fade-up delay-3">
+          {/* Table header */}
+          <div className="grid grid-cols-[180px_90px_100px_80px_90px_80px_1fr_1fr] gap-0 bg-gaf-steel/40 px-5 py-3">
+            {['Segment', 'Annual TAM', 'GAF AOV', 'GAF CAC', 'Est. LTV', 'Competition', 'GAF Edge', 'Opportunity'].map((h) => (
+              <span key={h} className="font-heading text-gaf-ash text-xs font-semibold uppercase tracking-wider">{h}</span>
+            ))}
+          </div>
+
+          {/* Table rows */}
+          {rows.map((r, i) => (
+            <div key={r.segment} className={`grid grid-cols-[180px_90px_100px_80px_90px_80px_1fr_1fr] gap-0 px-5 py-4 border-t border-gaf-steel/20 fade-up delay-${i + 4} hover:bg-gaf-steel/10 transition-colors`}>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: r.color }} />
+                <span className="font-heading text-white text-sm font-semibold">{r.segment}</span>
+              </div>
+              <span className="font-heading text-white text-sm font-bold">{r.tam}</span>
+              <span className="font-heading text-sm font-bold" style={{ color: r.color }}>{r.gafAov}</span>
+              <span className="font-body text-lt-muted text-sm">{r.gafCac}</span>
+              <span className="font-body text-lt-muted text-sm">{r.ltv}</span>
+              <span className="font-heading text-xs font-semibold uppercase px-2 py-0.5 rounded-full inline-flex items-center justify-center" style={{ color: r.compColor, background: r.compColor + '15' }}>{r.competition}</span>
+              <span className="font-body text-lt-muted text-xs leading-relaxed pr-3">{r.gafEdge}</span>
+              <span className="font-body text-lt-muted text-xs leading-relaxed">{r.opportunity}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom insight bar */}
+        <div className="mt-5 grid grid-cols-3 gap-4 fade-up delay-7">
+          <div className="bg-gaf-steel/30 rounded-lg px-4 py-3 text-center">
+            <span className="font-display text-gaf-orange text-3xl block">$126</span>
+            <span className="font-body text-gaf-ash text-xs">B2B CAC (lowest segment)</span>
+          </div>
+          <div className="bg-gaf-steel/30 rounded-lg px-4 py-3 text-center">
+            <span className="font-display text-gaf-orange text-3xl block">$20,297</span>
+            <span className="font-body text-gaf-ash text-xs">Defence AOV (highest segment)</span>
+          </div>
+          <div className="bg-gaf-steel/30 rounded-lg px-4 py-3 text-center">
+            <span className="font-display text-gaf-orange text-3xl block">161:1</span>
+            <span className="font-body text-gaf-ash text-xs">Defence AOV:CAC ratio</span>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-3 flex items-center justify-between">
+          <span className="font-body text-gaf-steel text-xs">Sources: GAF Sales Intelligence (1,619 calls, $5.9M revenue), Profit Per X CAC Model (12,078 customers), FBI Global (2024)</span>
+          <div className="h-0.5 w-16 bg-gaf-orange rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+const App = () => {
+  return (
+    <div>
+      <Slide1 />
+      <Slide2 />
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
