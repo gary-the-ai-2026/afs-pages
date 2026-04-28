@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GAF Archetype Deep Dive — Jobs To Be Done</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #000000;
+    --white: #ffffff;
+    --grey-900: #1a1a1a;
+    --grey-700: #424242;
+    --grey-500: #6e6e6e;
+    --grey-300: #b8b8b8;
+    --grey-100: #f0f0f0;
+    --grey-50: #f8f8f8;
+    --orange: #f26422;
+    --hg-builder: #f26422;
+    --p-optimiser: #000000;
+    --bc-seeker: #424242;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    font-family: 'Open Sans', Arial, sans-serif;
+    color: var(--black);
+    background: var(--white);
+    line-height: 1.55;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5 { font-family: 'Montserrat', 'Arial Black', sans-serif; font-weight: 700; letter-spacing: -0.01em; }
+  a { color: inherit; }
+
+  /* ─── Triangle / angular motif ─── */
+  .tri-clip-tr { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%); }
+  .tri-clip-tl { clip-path: polygon(24px 0, 100% 0, 100% 100%, 0 100%, 0 24px); }
+
+  /* ─── Top bar ─── */
+  header.topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--black); color: var(--white);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid var(--orange);
+  }
+  header.topbar .brand { display: flex; align-items: center; gap: 14px; }
+  header.topbar img.logo { height: 26px; filter: brightness(0) invert(1); }
+  header.topbar .brand .pipe { width: 1px; height: 22px; background: rgba(255,255,255,0.2); }
+  header.topbar .brand h1 { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  header.topbar .brand .meta { font-size: 11px; color: var(--grey-300); letter-spacing: 0.04em; text-transform: uppercase; margin-top: 2px; }
+  header.topbar nav { display: flex; gap: 18px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  header.topbar nav a { text-decoration: none; padding: 6px 0; border-bottom: 2px solid transparent; transition: 0.2s; }
+  header.topbar nav a:hover { border-bottom-color: var(--orange); color: var(--orange); }
+
+  /* ─── Hero ─── */
+  .hero {
+    background: var(--black); color: var(--white);
+    padding: 100px 64px 110px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 220px; height: 220px;
+    background: var(--orange);
+    clip-path: polygon(100% 0, 100% 100%, 0 0);
+    opacity: 0.95;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -40px; left: 30%;
+    width: 80px; height: 80px;
+    background: var(--orange);
+    clip-path: polygon(0 100%, 100% 100%, 50% 0);
+    opacity: 0.4;
+  }
+  .hero .eyebrow {
+    font-family: 'Montserrat', sans-serif; font-weight: 700;
+    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 22px;
+  }
+  .hero h2 {
+    font-size: clamp(38px, 5.5vw, 78px);
+    line-height: 0.96; font-weight: 900;
+    max-width: 1100px; letter-spacing: -0.02em;
+  }
+  .hero h2 .accent { color: var(--orange); }
+  .hero .lede {
+    margin-top: 28px; max-width: 760px;
+    font-size: 18px; color: var(--grey-300); font-weight: 300;
+  }
+  .hero .meta-row {
+    margin-top: 48px; display: flex; gap: 48px; flex-wrap: wrap;
+    border-top: 1px solid rgba(255,255,255,0.15); padding-top: 32px;
+  }
+  .hero .meta-cell { font-family: 'Montserrat', sans-serif; }
+  .hero .meta-cell .k { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--grey-500); }
+  .hero .meta-cell .v { font-size: 22px; font-weight: 700; margin-top: 4px; color: var(--white); }
+
+  /* ─── Section frame ─── */
+  section {
+    padding: 90px 64px;
+    max-width: 1400px; margin: 0 auto;
+  }
+  section.dark {
+    background: var(--black); color: var(--white); max-width: none;
+    margin: 0; padding: 90px 64px;
+  }
+  section.grey { background: var(--grey-50); max-width: none; padding: 90px 64px; }
+  section.grey .inner, section.dark .inner { max-width: 1400px; margin: 0 auto; }
+
+  .section-head { margin-bottom: 56px; max-width: 900px; }
+  .section-head .num {
+    font-family: 'Montserrat', sans-serif; font-weight: 900;
+    font-size: 14px; color: var(--orange); letter-spacing: 0.2em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .section-head .num::before {
+    content: ''; width: 28px; height: 2px; background: var(--orange);
+  }
+  .section-head h3 { font-size: clamp(30px, 3.5vw, 48px); line-height: 1.05; font-weight: 800; }
+  .section-head .sub { margin-top: 18px; font-size: 17px; color: var(--grey-700); max-width: 720px; }
+
+  /* ─── Stat strip ─── */
+  .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--grey-100); }
+  .stat-strip .cell { padding: 32px 28px; border-right: 1px solid var(--grey-100); }
+  .stat-strip .cell:last-child { border-right: none; }
+  .stat-strip .v { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 38px; line-height: 1; }
+  .stat-strip .k { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey-500); margin-top: 10px; font-weight: 600; }
+  .stat-strip.dark { border-color: rgba(255,255,255,0.1); }
+  .stat-strip.dark .cell { border-color: rgba(255,255,255,0.1); }
+  .stat-strip.dark .k { color: var(--grey-500); }
+  .stat-strip.dark .v.accent { color: var(--orange); }
+
+  /* ─── Archetype card hub ─── */
+  .archetype-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 16px; }
+  .archetype-card {
+    position: relative;
+    background: var(--white); border: 1px solid var(--grey-100);
+    padding: 38px 30px; text-decoration: none; color: var(--black);
+    transition: 0.25s; overflow: hidden;
+  }
+  .archetype-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 0; height: 6px; background: var(--orange);
+    transition: width 0.4s ease;
+  }
+  .archetype-card:hover::before { width: 100%; }
+  .archetype-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0,0,0,0.08); }
+  .archetype-card .label {
+    font-family: 'Montserrat', sans-serif; font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--grey-500); font-weight: 700;
+  }
+  .archetype-card h4 { font-size: 26px; line-height: 1.1; margin-top: 8px; }
+  .archetype-card .tag { display: inline-block; margin-top: 10px; font-size: 12px; padding: 3px 10px; background: var(--grey-100); color: var(--grey-700); font-weight: 600; }
+  .archetype-card .tag.hot { background: var(--orange); color: var(--white); }
+  .archetype-card .tag.cold { background: var(--grey-700); color: var(--white); }
+  .archetype-card .quote {
+    margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--grey-100);
+    font-style: italic; color: var(--grey-700); font-size: 14px; line-height: 1.5;
+    min-height: 60px;
+  }
+  .archetype-card .meta-row { margin-top: 22px; display: flex; gap: 22px; }
+  .archetype-card .meta-row .m { font-family: 'Montserrat', sans-serif; }
+  .archetype-card .meta-row .m .k { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey-500); font-weight: 700; }
+  .archetype-card .meta-row .m .v { font-size: 22px; font-weight: 800; margin-top: 4px; }
+
+  /* ─── Archetype deep section ─── */
+  .archetype-section { padding: 120px 64px; max-width: 1400px; margin: 0 auto; border-top: 1px solid var(--grey-100); }
+  .archetype-section.spotlight { background: var(--black); color: var(--white); max-width: none; margin: 0; padding: 120px 64px; border-top: none; position: relative; overflow: hidden; }
+  .archetype-section.spotlight::before {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 180px; height: 180px;
+    background: var(--orange);
+    clip-path: polygon(100% 0, 100% 100%, 0 0);
+  }
+  .archetype-section.spotlight .inner { max-width: 1400px; margin: 0 auto; position: relative; }
+
+  .arch-header {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: end;
+    border-bottom: 2px solid var(--grey-100); padding-bottom: 36px; margin-bottom: 48px;
+  }
+  .archetype-section.spotlight .arch-header { border-bottom-color: rgba(255,255,255,0.15); }
+  .arch-header .label-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .arch-header .label-row .badge {
+    font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 5px 12px; background: var(--orange); color: var(--white);
+  }
+  .arch-header .label-row .pos { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--grey-500); font-weight: 700; }
+  .arch-header h3 { font-size: clamp(40px, 5vw, 70px); line-height: 0.95; font-weight: 900; letter-spacing: -0.02em; }
+  .arch-header .tagline { font-style: italic; font-size: 19px; color: var(--grey-700); margin-top: 14px; max-width: 540px; font-weight: 300; }
+  .archetype-section.spotlight .tagline { color: var(--grey-300); }
+  .arch-header .right-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .arch-header .right-stats .cell { padding: 18px 16px; border: 1px solid var(--grey-100); }
+  .archetype-section.spotlight .right-stats .cell { border-color: rgba(255,255,255,0.15); }
+  .arch-header .right-stats .v { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 26px; }
+  .arch-header .right-stats .v.accent { color: var(--orange); }
+  .arch-header .right-stats .k { font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--grey-500); font-weight: 700; margin-top: 6px; }
+
+  /* ─── JTBD blocks ─── */
+  .jtbd-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; margin-top: 28px; }
+  .jtbd-block {
+    border-left: 4px solid var(--orange);
+    padding: 4px 0 4px 22px;
+  }
+  .archetype-section.spotlight .jtbd-block { border-left-color: var(--orange); }
+  .jtbd-block .label { font-family: 'Montserrat', sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey-500); font-weight: 800; }
+  .jtbd-block h4 { font-size: 18px; margin-top: 6px; margin-bottom: 18px; line-height: 1.2; }
+
+  .bar-row { margin-bottom: 12px; }
+  .bar-row .lbl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; font-weight: 600; gap: 12px; }
+  .bar-row .lbl .name { color: inherit; flex: 1; }
+  .bar-row .lbl .pct { color: var(--orange); font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 12px; white-space: nowrap; }
+  .bar-row .track { width: 100%; height: 7px; background: var(--grey-100); position: relative; }
+  .archetype-section.spotlight .bar-row .track { background: rgba(255,255,255,0.1); }
+  .bar-row .fill { height: 100%; background: var(--black); }
+  .bar-row .fill.accent { background: var(--orange); }
+  .archetype-section.spotlight .bar-row .fill { background: var(--white); }
+  .archetype-section.spotlight .bar-row .fill.accent { background: var(--orange); }
+  .bar-row .fill.faded { opacity: 0.65; }
+
+  .double-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 56px; }
+
+  .panel {
+    padding: 32px; background: var(--grey-50); border: 1px solid var(--grey-100);
+  }
+  .archetype-section.spotlight .panel { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+  .panel .panel-label { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--orange); font-weight: 800; margin-bottom: 4px; }
+  .panel h4 { font-size: 22px; margin-bottom: 18px; }
+
+  .quote-block {
+    margin-top: 48px; padding: 28px 32px;
+    background: var(--orange); color: var(--white); position: relative;
+  }
+  .quote-block .qmark { position: absolute; top: 6px; left: 14px; font-family: 'Montserrat', sans-serif; font-size: 90px; line-height: 1; opacity: 0.25; font-weight: 900; }
+  .quote-block blockquote { font-family: 'Montserrat', sans-serif; font-style: italic; font-weight: 600; font-size: 22px; line-height: 1.35; padding-left: 36px; }
+  .quote-block .who { padding-left: 36px; margin-top: 12px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; }
+
+  .quote-list { list-style: none; padding: 0; }
+  .quote-list li { padding: 12px 0; border-bottom: 1px dashed var(--grey-300); font-style: italic; color: var(--grey-700); }
+  .archetype-section.spotlight .quote-list li { border-bottom-color: rgba(255,255,255,0.15); color: var(--grey-300); }
+  .quote-list li:last-child { border-bottom: none; }
+
+  /* ─── Hire / Fire ─── */
+  .hire-fire { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-top: 36px; }
+  .hire-fire .hf {
+    padding: 28px 32px;
+  }
+  .hire-fire .hire { background: var(--black); color: var(--white); }
+  .hire-fire .fire { background: var(--orange); color: var(--white); }
+  .hire-fire .label { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 800; opacity: 0.7; }
+  .hire-fire h5 { font-size: 22px; margin: 8px 0 14px; }
+  .hire-fire p { font-size: 15px; line-height: 1.5; }
+
+  /* ─── Brand promise mapping ─── */
+  .promise-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 32px;
+  }
+  .promise-card {
+    background: var(--white); padding: 38px 32px; border: 1px solid var(--grey-100);
+    position: relative; overflow: hidden;
+  }
+  .promise-card::before {
+    content: ''; position: absolute; bottom: 0; right: 0;
+    width: 60px; height: 60px;
+    background: var(--orange);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  }
+  .promise-card .num { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 56px; color: var(--orange); line-height: 1; }
+  .promise-card h4 { font-size: 22px; margin-top: 14px; line-height: 1.2; }
+  .promise-card .by-the-numbers { margin-top: 18px; font-size: 13px; color: var(--grey-700); }
+  .promise-card .by-the-numbers .row { padding: 6px 0; border-bottom: 1px dotted var(--grey-300); display: flex; justify-content: space-between; font-weight: 600; }
+  .promise-card .by-the-numbers .row:last-child { border-bottom: none; }
+  .promise-card .by-the-numbers .pct { color: var(--orange); }
+
+  /* ─── Footer ─── */
+  footer {
+    background: var(--black); color: var(--grey-300);
+    padding: 60px 64px 40px;
+    font-size: 13px;
+    border-top: 4px solid var(--orange);
+  }
+  footer .row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 24px; align-items: end; }
+  footer img.logo { height: 32px; filter: brightness(0) invert(1); margin-bottom: 18px; }
+  footer h5 { font-family: 'Montserrat', sans-serif; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--white); margin-bottom: 10px; }
+  footer .meta { font-size: 11px; color: var(--grey-500); margin-top: 24px; letter-spacing: 0.04em; }
+  footer .meta a { color: var(--grey-300); text-decoration: underline; text-decoration-color: var(--orange); }
+
+  @media (max-width: 1024px) {
+    .archetype-grid, .jtbd-grid, .promise-grid { grid-template-columns: 1fr; }
+    .arch-header, .double-grid { grid-template-columns: 1fr; gap: 28px; }
+    .stat-strip { grid-template-columns: repeat(2, 1fr); }
+    .stat-strip .cell:nth-child(even) { border-right: none; }
+    .stat-strip .cell:nth-child(-n+2) { border-bottom: 1px solid var(--grey-100); }
+    section, .archetype-section, .archetype-section.spotlight, footer, header.topbar { padding-left: 28px; padding-right: 28px; }
+    .hero { padding: 60px 28px 80px; }
+    .hire-fire { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─────────── TOP BAR ─────────── -->
+<header class="topbar">
+  <div class="brand">
+    <img class="logo" src="https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576" alt="Gym and Fitness" />
+    <div class="pipe"></div>
+    <div>
+      <h1>Customer Intelligence</h1>
+      <div class="meta">Archetype Deep Dive · April 2026</div>
+    </div>
+  </div>
+  <nav>
+    <a href="#overview">Overview</a>
+    <a href="#home-gym-builder">Home Gym Builder</a>
+    <a href="#performance-optimiser">Performance Optimiser</a>
+    <a href="#budget-conscious">Budget Seeker</a>
+    <a href="#strategy">Strategic Lens</a>
+  </nav>
+</header>
+
+<!-- ─────────── HERO ─────────── -->
+<div class="hero">
+  <div class="eyebrow">Jobs To Be Done · Strategic Brief</div>
+  <h2>Three customers.<br>One <span class="accent">project framing</span>.<br>Different rooms in the same house.</h2>
+  <p class="lede">A deep dive into the three B2C archetypes calling Gym and Fitness — what they're actually trying to get done, where they're stuck, and which of them is the customer worth designing for.</p>
+  <div class="meta-row">
+    <div class="meta-cell"><div class="k">Cohort analysed</div><div class="v">2,267 calls</div></div>
+    <div class="meta-cell"><div class="k">Window</div><div class="v">Nov 25 — Apr 26</div></div>
+    <div class="meta-cell"><div class="k">Residential calls</div><div class="v">970 (43%)</div></div>
+    <div class="meta-cell"><div class="k">Framework</div><div class="v">Strategyn JTBD</div></div>
+  </div>
+</div>
+
+<!-- ─────────── OVERVIEW ─────────── -->
+<section id="overview">
+  <div class="section-head">
+    <div class="num">01 · The Cohort</div>
+    <h3>Three archetypes inside the home-gym call base.</h3>
+    <p class="sub">Classified by the same rule-based engine the dashboard runs — segment × equipment location × dominant functional job × dominant barrier. The numbers below pin each archetype's scale, calling pattern, and economic shape.</p>
+  </div>
+
+  <div class="archetype-grid">
+
+    <a href="#home-gym-builder" class="archetype-card">
+      <div class="label">01 — Project Builder</div>
+      <h4>The Home Gym Builder</h4>
+      <span class="tag hot">Best customer</span>
+      <p class="quote">"I wanna create a home gym, but I don't just want cheap shit, man."</p>
+      <div class="meta-row">
+        <div class="m"><div class="k">Calls</div><div class="v">511</div></div>
+        <div class="m"><div class="k">AOV</div><div class="v">$4,031</div></div>
+        <div class="m"><div class="k">Top barrier</div><div class="v" style="font-size:14px;">Space (20%)</div></div>
+      </div>
+    </a>
+
+    <a href="#performance-optimiser" class="archetype-card">
+      <div class="label">02 — Serious Lifter</div>
+      <h4>The Performance Optimiser</h4>
+      <span class="tag">Profitable via sales team</span>
+      <p class="quote">"You don't get to push heavy with the reformer. So I've sold that, and I wanna buy something that you can actually lift a decent weight."</p>
+      <div class="meta-row">
+        <div class="m"><div class="k">Calls</div><div class="v">173</div></div>
+        <div class="m"><div class="k">AOV</div><div class="v">$3,276</div></div>
+        <div class="m"><div class="k">Top barrier</div><div class="v" style="font-size:14px;">Specs (6%)</div></div>
+      </div>
+    </a>
+
+    <a href="#budget-conscious" class="archetype-card">
+      <div class="label">03 — Price-First</div>
+      <h4>The Budget-Conscious Seeker</h4>
+      <span class="tag cold">Loss-making channel</span>
+      <p class="quote">"I'm not paying that much for shipping and handling."</p>
+      <div class="meta-row">
+        <div class="m"><div class="k">Calls</div><div class="v">246</div></div>
+        <div class="m"><div class="k">AOV</div><div class="v">$2,763</div></div>
+        <div class="m"><div class="k">Top barrier</div><div class="v" style="font-size:14px;">Price (73%)</div></div>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ─────────── DARK STAT BAND ─────────── -->
+<section class="dark">
+  <div class="inner">
+    <div class="section-head" style="margin-bottom: 36px;">
+      <div class="num" style="color: var(--orange);">02 · The Headline</div>
+      <h3 style="color: var(--white);">96% of barriers are resolvable. 60% of motivation is rated <span style="color: var(--orange);">strong</span>.</h3>
+      <p class="sub" style="color: var(--grey-300);">This is not a desire-poor audience. It is a guidance-poor one. White-glove design is the highest-leverage response — the same intervention serves all three archetypes, but with different emphasis.</p>
+    </div>
+    <div class="stat-strip dark">
+      <div class="cell"><div class="v accent">96%</div><div class="k">Resolvable barriers</div></div>
+      <div class="cell"><div class="v accent">60%</div><div class="k">Motivation = "strong"</div></div>
+      <div class="cell"><div class="v">82%</div><div class="k">Functional job dominance</div></div>
+      <div class="cell"><div class="v">63%</div><div class="k">Garage + spare room + basement</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ ARCHETYPE 1 · HOME GYM BUILDER ═══════════ -->
+<section class="archetype-section spotlight" id="home-gym-builder">
+  <div class="inner">
+    <div class="arch-header">
+      <div>
+        <div class="label-row">
+          <div class="badge">Archetype 01</div>
+          <div class="pos">Best customer · ~50% of residential calls</div>
+        </div>
+        <h3>The Home<br>Gym Builder</h3>
+        <p class="tagline">Replacing the gym commute with garage iron — building a complete training space, room by room.</p>
+      </div>
+      <div class="right-stats">
+        <div class="cell"><div class="v accent">511</div><div class="k">Calls in cohort</div></div>
+        <div class="cell"><div class="v accent">$4,031</div><div class="k">Avg order value</div></div>
+        <div class="cell"><div class="v">47%</div><div class="k">Equipment → garage</div></div>
+        <div class="cell"><div class="v">28.6%</div><div class="k">Driven by Achievement / Progress</div></div>
+      </div>
+    </div>
+
+    <h4 style="font-size:24px; margin-bottom: 14px;">The Job Stack — broken to sub-themes</h4>
+    <p style="color: var(--grey-300); max-width: 760px; margin-bottom: 28px;">Three layers — what they functionally hire the gym to do, what they emotionally hire it to make them feel, what they socially hire it to signal. Percentages are share of the 511-call cohort.</p>
+
+    <div class="jtbd-grid">
+
+      <div class="jtbd-block">
+        <div class="label">Functional</div>
+        <h4>Build the project</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Complete a project / fit-out</span><span class="pct">49.3%</span></div><div class="track"><div class="fill accent" style="width:98%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Cardio / conditioning</span><span class="pct">13.5%</span></div><div class="track"><div class="fill" style="width:27%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Family fitness / kids</span><span class="pct">11.0%</span></div><div class="track"><div class="fill accent faded" style="width:22%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Expand existing setup</span><span class="pct">8.6%</span></div><div class="track"><div class="fill" style="width:17%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Functional fitness / mobility</span><span class="pct">7.0%</span></div><div class="track"><div class="fill" style="width:14%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Replace a specific item</span><span class="pct">3.5%</span></div><div class="track"><div class="fill" style="width:7%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Replicate gym capability</span><span class="pct">2.2%</span></div><div class="track"><div class="fill" style="width:4%"></div></div></div>
+      </div>
+
+      <div class="jtbd-block">
+        <div class="label">Emotional</div>
+        <h4>Feel the build</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Achievement / progress</span><span class="pct">28.6%</span></div><div class="track"><div class="fill accent" style="width:57%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Control / discipline</span><span class="pct">9.4%</span></div><div class="track"><div class="fill" style="width:19%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Confidence / self-image</span><span class="pct">9.2%</span></div><div class="track"><div class="fill" style="width:18%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Long-term investment</span><span class="pct">3.1%</span></div><div class="track"><div class="fill" style="width:6%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Stress / mental relief</span><span class="pct">3.1%</span></div><div class="track"><div class="fill" style="width:6%"></div></div></div>
+      </div>
+
+      <div class="jtbd-block">
+        <div class="label">Social</div>
+        <h4>Signal the standard</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Authority / expertise (gear-as-knowledge)</span><span class="pct">10.2%</span></div><div class="track"><div class="fill accent" style="width:51%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Status / impression (gear-as-symbol)</span><span class="pct">0.4%</span></div><div class="track"><div class="fill" style="width:2%"></div></div></div>
+        <p style="font-size:13px; color: var(--grey-500); margin-top: 16px; line-height: 1.5;">Most callers don't articulate social drivers explicitly — but the language ("don't want shitty looking ones," "wife loves them") shows household acceptance and gear-as-authority signalling running below the surface. Underexploited brand opportunity.</p>
+      </div>
+
+    </div>
+
+    <div class="quote-block">
+      <div class="qmark">"</div>
+      <blockquote>I wanna create a home gym, but I don't just want cheap shit, man. We've got room for it now and the wife actually loves the idea — she said as long as it doesn't look like a warehouse.</blockquote>
+      <div class="who">— Composite, Home Gym Builder cohort</div>
+    </div>
+
+    <div class="double-grid">
+
+      <div class="panel">
+        <div class="panel-label">Motivation Sub-Clusters</div>
+        <h4>What's actually pulling them in</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Premium quality fixation</span><span class="pct">9.2%</span></div><div class="track"><div class="fill accent" style="width:46%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Specific equipment desire</span><span class="pct">8.6%</span></div><div class="track"><div class="fill" style="width:43%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Future-proof / upgradeable</span><span class="pct">5.5%</span></div><div class="track"><div class="fill" style="width:28%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Lifestyle integration</span><span class="pct">4.3%</span></div><div class="track"><div class="fill" style="width:22%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Money saving (vs gym membership)</span><span class="pct">1.0%</span></div><div class="track"><div class="fill" style="width:5%"></div></div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">Barrier Sub-Clusters</div>
+        <h4>What's actually getting in the way</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Space / dimensions / fit</span><span class="pct">19.8%</span></div><div class="track"><div class="fill accent" style="width:99%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Total price exceeds budget</span><span class="pct">10.2%</span></div><div class="track"><div class="fill" style="width:51%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Specs / compatibility confusion</span><span class="pct">5.7%</span></div><div class="track"><div class="fill" style="width:29%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Shipping / freight cost</span><span class="pct">4.9%</span></div><div class="track"><div class="fill" style="width:25%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Spousal / household approval</span><span class="pct">4.5%</span></div><div class="track"><div class="fill" style="width:23%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Assembly / install complexity</span><span class="pct">3.7%</span></div><div class="track"><div class="fill" style="width:19%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Stock / availability</span><span class="pct">2.3%</span></div><div class="track"><div class="fill" style="width:12%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="hire-fire">
+      <div class="hf hire">
+        <div class="label">Hiring</div>
+        <h5>All-in-one trainers, racks, benches, plates, flooring, family-friendly cardio</h5>
+        <p>Equipment that completes a defined room — usually the garage or a converted spare room. The shopping list is built, not picked one item at a time.</p>
+      </div>
+      <div class="hf fire">
+        <div class="label">Firing</div>
+        <h5>Commercial gym memberships, gym commute, multi-supplier piecemeal builds</h5>
+        <p>Cancelling $60–80/month memberships. Tired of cobbling kit from three suppliers. Wants one source that gets the room right first time.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top: 36px; background: rgba(242,100,34,0.12); border-color: rgba(242,100,34,0.3);">
+      <div class="panel-label">Strategic Implication</div>
+      <h4>Lock in the design moment.</h4>
+      <p style="font-size:15px; line-height:1.55; color: var(--grey-300);">This is the customer the white-glove strategy is built for. Space is their #1 barrier, project framing dominates their language, and they're already willing to pay for quality. A guided design consultation — layout, phased spec, fit guarantee — converts directly against their two largest frictions (space confusion + spousal approval) and amplifies their existing motivations (quality fixation, future-proofing).</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════ ARCHETYPE 2 · PERFORMANCE OPTIMISER ═══════════ -->
+<section class="archetype-section" id="performance-optimiser">
+  <div class="arch-header">
+    <div>
+      <div class="label-row">
+        <div class="badge">Archetype 02</div>
+        <div class="pos">Profitable via sales team · 17% of residential cohort</div>
+      </div>
+      <h3>The Performance<br>Optimiser</h3>
+      <p class="tagline">A serious lifter building a training compound — knows the gear, has the budget, demands the spec.</p>
+    </div>
+    <div class="right-stats">
+      <div class="cell"><div class="v accent">173</div><div class="k">Calls in cohort</div></div>
+      <div class="cell"><div class="v accent">$3,276</div><div class="k">Avg order value</div></div>
+      <div class="cell"><div class="v">56%</div><div class="k">Equipment → garage</div></div>
+      <div class="cell"><div class="v">51.4%</div><div class="k">Driven by Achievement / Progress</div></div>
+    </div>
+  </div>
+
+  <h4 style="font-size:24px; margin-bottom: 14px;">The Job Stack — broken to sub-themes</h4>
+  <p style="color: var(--grey-700); max-width: 760px; margin-bottom: 28px;">The Achievement/Progress emotional engine runs nearly twice as hot here as it does in any other archetype. They are not buying a gym; they are buying the next step of their training arc.</p>
+
+  <div class="jtbd-grid">
+
+    <div class="jtbd-block">
+      <div class="label">Functional</div>
+      <h4>Train heavier</h4>
+      <div class="bar-row"><div class="lbl"><span class="name">Complete a project / fit-out</span><span class="pct">38.7%</span></div><div class="track"><div class="fill accent" style="width:77%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Strength / lifting goals</span><span class="pct">22.0%</span></div><div class="track"><div class="fill accent" style="width:44%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Expand an existing setup</span><span class="pct">20.8%</span></div><div class="track"><div class="fill" style="width:42%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Family fitness / kids</span><span class="pct">6.9%</span></div><div class="track"><div class="fill" style="width:14%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Functional fitness / mobility</span><span class="pct">5.2%</span></div><div class="track"><div class="fill" style="width:10%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Build muscle / hypertrophy</span><span class="pct">2.3%</span></div><div class="track"><div class="fill" style="width:5%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Replace a specific item</span><span class="pct">2.3%</span></div><div class="track"><div class="fill" style="width:5%"></div></div></div>
+    </div>
+
+    <div class="jtbd-block">
+      <div class="label">Emotional</div>
+      <h4>Make progress visible</h4>
+      <div class="bar-row"><div class="lbl"><span class="name">Achievement / progress</span><span class="pct">51.4%</span></div><div class="track"><div class="fill accent" style="width:100%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Control / discipline</span><span class="pct">10.4%</span></div><div class="track"><div class="fill" style="width:21%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Confidence / self-image</span><span class="pct">7.5%</span></div><div class="track"><div class="fill" style="width:15%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Long-term investment</span><span class="pct">1.7%</span></div><div class="track"><div class="fill" style="width:3%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Stress / mental relief</span><span class="pct">1.7%</span></div><div class="track"><div class="fill" style="width:3%"></div></div></div>
+    </div>
+
+    <div class="jtbd-block">
+      <div class="label">Social</div>
+      <h4>Signal the standard</h4>
+      <div class="bar-row"><div class="lbl"><span class="name">Authority / expertise (gear-as-knowledge)</span><span class="pct">9.2%</span></div><div class="track"><div class="fill accent" style="width:46%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Status / impression (gear-as-symbol)</span><span class="pct">0.6%</span></div><div class="track"><div class="fill" style="width:3%"></div></div></div>
+      <p style="font-size:13px; color: var(--grey-700); margin-top: 16px; line-height: 1.5;">They use gear vocabulary fluently — exact model names, weight ratings, attachments, brand pedigree. Talking down to them or skipping spec depth is the fastest way to lose this customer.</p>
+    </div>
+
+  </div>
+
+  <div class="quote-block">
+    <div class="qmark">"</div>
+    <blockquote>I just feel like you just don't get to push heavy with the reformer. So I've sold that, and I wanna buy something that you can actually lift a decent weight.</blockquote>
+    <div class="who">— Composite, Performance Optimiser cohort</div>
+  </div>
+
+  <div class="double-grid">
+
+    <div class="panel">
+      <div class="panel-label">Motivation Sub-Clusters</div>
+      <h4>What's actually pulling them in</h4>
+      <div class="bar-row"><div class="lbl"><span class="name">Specific equipment desire</span><span class="pct">17.3%</span></div><div class="track"><div class="fill accent" style="width:87%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Premium quality fixation</span><span class="pct">12.7%</span></div><div class="track"><div class="fill accent faded" style="width:64%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Future-proof / upgradeable</span><span class="pct">11.0%</span></div><div class="track"><div class="fill" style="width:55%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Lifestyle integration</span><span class="pct">4.6%</span></div><div class="track"><div class="fill" style="width:23%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Time-of-day flexibility</span><span class="pct">0.6%</span></div><div class="track"><div class="fill" style="width:3%"></div></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Barrier Sub-Clusters</div>
+      <h4>What's actually getting in the way</h4>
+      <div class="bar-row"><div class="lbl"><span class="name">Space / dimensions / fit</span><span class="pct">9.8%</span></div><div class="track"><div class="fill accent" style="width:49%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Total price exceeds budget</span><span class="pct">8.1%</span></div><div class="track"><div class="fill" style="width:41%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Shipping / freight cost</span><span class="pct">6.9%</span></div><div class="track"><div class="fill" style="width:35%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Specs / compatibility confusion</span><span class="pct">6.4%</span></div><div class="track"><div class="fill" style="width:32%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Spousal / household approval</span><span class="pct">2.9%</span></div><div class="track"><div class="fill" style="width:14%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Assembly / install complexity</span><span class="pct">2.3%</span></div><div class="track"><div class="fill" style="width:12%"></div></div></div>
+      <div class="bar-row"><div class="lbl"><span class="name">Stock / availability</span><span class="pct">2.3%</span></div><div class="track"><div class="fill" style="width:12%"></div></div></div>
+    </div>
+  </div>
+
+  <div class="hire-fire">
+    <div class="hf hire">
+      <div class="label">Hiring</div>
+      <h5>Power racks, bumper plates, commercial benches, specialty bars, attachments</h5>
+      <p>Specific models, specific weight ratings, specific compatibility. They've researched. They want validation, not discovery.</p>
+    </div>
+    <div class="hf fire">
+      <div class="label">Firing</div>
+      <h5>F45 / CrossFit / reformer studios, basic home equipment they've outgrown</h5>
+      <p>Sold the reformer. Cancelled the studio. Moving from "fitness" to "training" — and the gear has to keep up.</p>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top: 36px; background: rgba(242,100,34,0.08); border-color: rgba(242,100,34,0.4);">
+    <div class="panel-label">Strategic Implication</div>
+    <h4>Make the consultant credible at spec depth.</h4>
+    <p style="font-size:15px; line-height:1.55; color: var(--grey-700);">This customer doesn't need design — they need a peer. Sales consultants need to talk weight ratings, attachment compatibility, and progressive overload trajectories like a coach, not a salesperson. The "Designer" framing pivots here to "Trainer" — same white-glove, different vocabulary. Phase 2 is huge: 21% are already expanding an existing setup, meaning the door is wide open for repeat purchase if we earn their trust on call one.</p>
+  </div>
+</section>
+
+<!-- ═══════════ ARCHETYPE 3 · BUDGET-CONSCIOUS SEEKER ═══════════ -->
+<section class="archetype-section spotlight" id="budget-conscious">
+  <div class="inner">
+    <div class="arch-header">
+      <div>
+        <div class="label-row">
+          <div class="badge" style="background: var(--white); color: var(--black);">Archetype 03</div>
+          <div class="pos">Loss-making channel · 25% of residential cohort</div>
+        </div>
+        <h3>The Budget-<br>Conscious Seeker</h3>
+        <p class="tagline">Wants the gains, wary of the cost — same project framing as the Builder, fundamentally different willingness to pay.</p>
+      </div>
+      <div class="right-stats">
+        <div class="cell"><div class="v accent">246</div><div class="k">Calls in cohort</div></div>
+        <div class="cell"><div class="v accent">$2,763</div><div class="k">Avg order value</div></div>
+        <div class="cell"><div class="v">73%</div><div class="k">Price barrier — dominant</div></div>
+        <div class="cell"><div class="v">34%</div><div class="k">Shipping cost barrier</div></div>
+      </div>
+    </div>
+
+    <h4 style="font-size:24px; margin-bottom: 14px;">The Job Stack — broken to sub-themes</h4>
+    <p style="color: var(--grey-300); max-width: 760px; margin-bottom: 28px;">Same dominant functional job ("complete the project") and same dominant emotional engine ("achievement / progress") as the Builder — but the entire conversation is gated by price and freight. They <em>aspire</em> to the Builder's behaviour without the Builder's wallet.</p>
+
+    <div class="jtbd-grid">
+
+      <div class="jtbd-block">
+        <div class="label">Functional</div>
+        <h4>Build it for less</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Complete a project / fit-out</span><span class="pct">46.3%</span></div><div class="track"><div class="fill accent" style="width:93%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Expand an existing setup</span><span class="pct">10.6%</span></div><div class="track"><div class="fill" style="width:21%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Cardio / conditioning</span><span class="pct">8.9%</span></div><div class="track"><div class="fill" style="width:18%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Family fitness / kids</span><span class="pct">8.1%</span></div><div class="track"><div class="fill" style="width:16%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Functional fitness / mobility</span><span class="pct">4.9%</span></div><div class="track"><div class="fill" style="width:10%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Strength / lifting goals</span><span class="pct">4.9%</span></div><div class="track"><div class="fill" style="width:10%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Weight loss / health</span><span class="pct">2.4%</span></div><div class="track"><div class="fill" style="width:5%"></div></div></div>
+      </div>
+
+      <div class="jtbd-block">
+        <div class="label">Emotional</div>
+        <h4>Feel the win without the burn</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Achievement / progress</span><span class="pct">39.0%</span></div><div class="track"><div class="fill accent" style="width:78%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Confidence / self-image</span><span class="pct">4.9%</span></div><div class="track"><div class="fill" style="width:10%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Control / discipline</span><span class="pct">4.5%</span></div><div class="track"><div class="fill" style="width:9%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Stress / mental relief</span><span class="pct">2.0%</span></div><div class="track"><div class="fill" style="width:4%"></div></div></div>
+      </div>
+
+      <div class="jtbd-block">
+        <div class="label">Social</div>
+        <h4>Don't want to look cheap</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Authority / expertise (gear-as-knowledge)</span><span class="pct">9.8%</span></div><div class="track"><div class="fill accent" style="width:49%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Status / impression (gear-as-symbol)</span><span class="pct">1.2%</span></div><div class="track"><div class="fill" style="width:6%"></div></div></div>
+        <p style="font-size:13px; color: var(--grey-500); margin-top: 16px; line-height: 1.5;">The premium-quality vocabulary persists even here — 13% mention "premium quality fixation" as a motivation. The tension is structural: they want the Builder's outcome on a Marketplace budget.</p>
+      </div>
+
+    </div>
+
+    <div class="quote-block">
+      <div class="qmark">"</div>
+      <blockquote>I'm not paying that much for shipping and handling. Found one online for $2,500 — can you guys beat that? I just don't wanna spend the same on shipping as I am for the thing.</blockquote>
+      <div class="who">— Composite, Budget-Conscious Seeker cohort</div>
+    </div>
+
+    <div class="double-grid">
+
+      <div class="panel">
+        <div class="panel-label">Motivation Sub-Clusters</div>
+        <h4>What's pulling them in (despite the friction)</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Premium quality fixation</span><span class="pct">12.6%</span></div><div class="track"><div class="fill accent" style="width:63%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Specific equipment desire</span><span class="pct">8.5%</span></div><div class="track"><div class="fill" style="width:43%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Lifestyle integration</span><span class="pct">3.7%</span></div><div class="track"><div class="fill" style="width:19%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Future-proof / upgradeable</span><span class="pct">3.7%</span></div><div class="track"><div class="fill" style="width:19%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Money saving (vs membership)</span><span class="pct">0.8%</span></div><div class="track"><div class="fill" style="width:4%"></div></div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">Barrier Sub-Clusters</div>
+        <h4>The wall — concentrated in two layers</h4>
+        <div class="bar-row"><div class="lbl"><span class="name">Total price exceeds budget</span><span class="pct">73.2%</span></div><div class="track"><div class="fill accent" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Shipping / freight cost</span><span class="pct">33.7%</span></div><div class="track"><div class="fill accent faded" style="width:67%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Space / dimensions / fit</span><span class="pct">4.5%</span></div><div class="track"><div class="fill" style="width:9%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Spousal / household approval</span><span class="pct">3.3%</span></div><div class="track"><div class="fill" style="width:7%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Assembly / install complexity</span><span class="pct">3.3%</span></div><div class="track"><div class="fill" style="width:7%"></div></div></div>
+        <div class="bar-row"><div class="lbl"><span class="name">Stock / availability</span><span class="pct">1.2%</span></div><div class="track"><div class="fill" style="width:3%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="hire-fire">
+      <div class="hf hire">
+        <div class="label">Hiring</div>
+        <h5>Benches, plates, all-in-one trainers — but only on promo or with finance</h5>
+        <p>Will buy from us if the freight maths works. Will walk to Marketplace if it doesn't. Most price-sensitive of any cohort and most likely to compare prices live on the call.</p>
+      </div>
+      <div class="hf fire">
+        <div class="label">Firing</div>
+        <h5>Facebook Marketplace, Kmart, Big W, generic budget brands</h5>
+        <p>Wants to upgrade <em>away</em> from the cheap stuff but is still in shock at how much real equipment costs.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top: 36px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);">
+      <div class="panel-label">Strategic Implication</div>
+      <h4>Don't try to convert them into Builders — design a different funnel.</h4>
+      <p style="font-size:15px; line-height:1.55; color: var(--grey-300);">The bubble-chart truth is that this segment is loss-making at full white-glove cost-to-serve. The right move is segmentation, not conversion: offer self-serve tooling (configurator, freight calculator, finance prequal) before phone, and reserve the human consultant time for the upper two archetypes. A subset will up-tier into Home Gym Builder over 18–24 months as their finances and ambition grow — make sure the door stays open with a saved design and Phase-2 nurture, but don't subsidise the call today.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════ STRATEGIC LENS ═══════════ -->
+<section class="grey" id="strategy">
+  <div class="inner">
+    <div class="section-head">
+      <div class="num">04 · The Strategic Lens</div>
+      <h3>How the three archetypes map to the white-glove design strategy.</h3>
+      <p class="sub">The strategy doesn't treat them identically. It treats them with the right level of human intervention — concentrated on the customer who pays for it, automated for the customer who doesn't, and pivoted in tone for the customer who wants a peer instead of a guide.</p>
+    </div>
+
+    <div class="promise-grid">
+
+      <div class="promise-card">
+        <div class="num">01</div>
+        <h4>"You'll talk to a designer, not a salesperson."</h4>
+        <div class="by-the-numbers">
+          <div class="row"><span>Home Gym Builder relevance</span><span class="pct">High</span></div>
+          <div class="row"><span>Performance Optimiser relevance</span><span class="pct">Medium · pivot to "peer"</span></div>
+          <div class="row"><span>Budget Seeker relevance</span><span class="pct">Self-serve only</span></div>
+          <div class="row"><span>Barrier addressed</span><span class="pct">Specs confusion · Spousal approval</span></div>
+        </div>
+      </div>
+
+      <div class="promise-card">
+        <div class="num">02</div>
+        <h4>"It will fit your space, your body, your life — guaranteed."</h4>
+        <div class="by-the-numbers">
+          <div class="row"><span>Home Gym Builder relevance</span><span class="pct">Critical · 20% barrier</span></div>
+          <div class="row"><span>Performance Optimiser relevance</span><span class="pct">High · 10% barrier</span></div>
+          <div class="row"><span>Budget Seeker relevance</span><span class="pct">Low · 4% barrier</span></div>
+          <div class="row"><span>Barrier addressed</span><span class="pct">Space · Specs · Approval</span></div>
+        </div>
+      </div>
+
+      <div class="promise-card">
+        <div class="num">03</div>
+        <h4>"Built once. Built right. Built to grow with you."</h4>
+        <div class="by-the-numbers">
+          <div class="row"><span>Home Gym Builder relevance</span><span class="pct">High · phased anchor</span></div>
+          <div class="row"><span>Performance Optimiser relevance</span><span class="pct">Critical · 21% expanding</span></div>
+          <div class="row"><span>Budget Seeker relevance</span><span class="pct">Medium · finance route</span></div>
+          <div class="row"><span>Barrier addressed</span><span class="pct">Price (47% across cohort)</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="panel" style="margin-top: 56px; background: var(--white); border-color: var(--grey-100);">
+      <div class="panel-label">Where each archetype goes next</div>
+      <h4 style="margin-bottom: 22px;">Three lanes, one operating model.</h4>
+      <p style="font-size:15px; line-height: 1.65; margin-bottom: 14px;"><strong style="font-family: 'Montserrat', sans-serif; color: var(--orange);">Home Gym Builder →</strong> Full white-glove design consult on call. Saved Design Portal record. Phase 2 nurture at 60–90 days. Fit guarantee front-and-centre. This is where <em>"# of Home Gyms Designed"</em> is earned.</p>
+      <p style="font-size:15px; line-height: 1.65; margin-bottom: 14px;"><strong style="font-family: 'Montserrat', sans-serif; color: var(--orange);">Performance Optimiser →</strong> Same Designer Portal, but the consultant is positioned as a peer/coach. Talk progressive overload, attachment compatibility, weight ratings. Less layout, more spec. Phase 2 = the next attachment, not the next room.</p>
+      <p style="font-size:15px; line-height: 1.65;"><strong style="font-family: 'Montserrat', sans-serif; color: var(--orange);">Budget-Conscious Seeker →</strong> Self-serve configurator. Freight calculator before checkout. Finance prequal up front. No human consultant on inbound — reserve that capacity for the upper tiers. Saved design + nurture in case they up-tier.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FINAL ═══════════ -->
+<section class="dark">
+  <div class="inner" style="text-align: center;">
+    <div class="num" style="color: var(--orange); justify-content: center;">05 · The One Sentence</div>
+    <h3 style="color: var(--white); font-size: clamp(34px, 4.5vw, 56px); line-height: 1.05; max-width: 1100px; margin: 28px auto 0;">
+      The Home Gym Builder is the customer worth designing for. <span style="color: var(--orange);">Everyone else gets the version of design they can afford to be served.</span>
+    </h3>
+    <p style="color: var(--grey-300); font-size: 17px; max-width: 720px; margin: 28px auto 0;">Three archetypes. One funnel. Different doses of human time. The strategy works because it stops trying to serve everyone equally — and starts serving each customer at the level the unit economics support.</p>
+  </div>
+</section>
+
+<!-- ─────────── FOOTER ─────────── -->
+<footer>
+  <div class="row">
+    <div>
+      <img class="logo" src="https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576" alt="Gym and Fitness" />
+      <h5>Customer Intelligence · Archetype Deep Dive</h5>
+      <div style="margin-top:6px;">Internal strategic brief · Not for external distribution</div>
+    </div>
+    <div style="text-align:right;">
+      <h5>Methodology</h5>
+      <div>2,267 AI-analysed sales call transcripts · Strategyn JTBD framework</div>
+      <div>Source: GAF Customer Intelligence Dashboard (Cloud Run)</div>
+      <div>Cohort filter: residential_home_gym + home_* equipment locations</div>
+    </div>
+  </div>
+  <div class="meta">
+    Generated April 2026 · GAF Marketing · Josh Hancock + Gary
+  </div>
+</footer>
+
+</body>
+</html>
