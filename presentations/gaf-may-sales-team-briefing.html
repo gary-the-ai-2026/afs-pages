@@ -300,51 +300,19 @@ const QRLSlide = ({ n, t }) => {
     <SectionTitle pre="Coming Up" title="QRL × STATE OF ORIGIN" sub={`Official Supplier of the Queensland Maroons. Marketing rollout begins mid-May, anchored by our "Money Can't Buy Experience" campaign — a Camp Maroon Sideline Experience giveaway.`} />
     <div className="flex gap-6 flex-1 min-h-0">
       <div className="flex-1 flex flex-col gap-3 min-h-0">
-        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex-1 flex flex-col min-h-0`}>
-          <div className="flex items-center gap-2 mb-3 shrink-0">
-            <Trophy size={16} className="text-gaf-orange" />
-            <p className={`text-[15px] font-heading tracking-[.3em] ${th.sub} uppercase`}>2026 Match Calendar</p>
-          </div>
-          <div className="flex-1 overflow-auto stagger">
-            <table className="w-full text-left">
-              <thead className="sticky top-0">
-                <tr className={`${th.bg3}`}>
-                  <th className={`py-2.5 px-3 text-[13px] font-heading font-semibold tracking-[.2em] uppercase ${th.sub}`}>Date</th>
-                  <th className={`py-2.5 px-3 text-[13px] font-heading font-semibold tracking-[.2em] uppercase ${th.sub}`}>Game</th>
-                  <th className={`py-2.5 px-3 text-[13px] font-heading font-semibold tracking-[.2em] uppercase ${th.sub}`}>Venue</th>
-                </tr>
-              </thead>
-              <tbody>
-                {qrlMatches.map((m, i) => (
-                  <tr key={i} className={`border-b ${th.cardBorder}`}>
-                    <td className={`py-3 px-3 text-[15px] font-heading font-semibold ${th.text}`}>{m.date}</td>
-                    <td className={`py-3 px-3 text-[15px] ${th.sub} font-body`}>{m.game}</td>
-                    <td className={`py-3 px-3 text-[15px] ${th.sub} font-body`}>{m.venue}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="bg-gaf-orange/5 border border-gaf-orange/20 rounded-lg p-4 shrink-0 flex items-start gap-3">
-          <Eye size={18} className="text-gaf-orange shrink-0 mt-0.5" />
-          <p className={`text-[15px] font-body ${th.sub} leading-snug`}>This is a <span className={`font-semibold ${th.text}`}>brand awareness play</span>, not a direct-sales lever.</p>
-        </div>
-      </div>
-      <div className="w-[400px] shrink-0 flex flex-col gap-3 min-h-0">
         <div className={`bg-gaf-orange rounded-lg p-5 text-white shrink-0 relative overflow-hidden`}>
-          <div className="absolute -right-4 -top-4 opacity-10"><Trophy size={120} /></div>
+          <div className="absolute -right-4 -top-4 opacity-10"><Trophy size={140} /></div>
           <p className="text-[14px] font-heading tracking-[.3em] uppercase opacity-90 mb-2 relative z-10">Hero Campaign</p>
-          <h3 className="font-display text-4xl tracking-wide leading-[0.95] relative z-10">MONEY CAN'T<br/>BUY EXPERIENCE</h3>
-          <div className="w-12 h-[2px] bg-white mt-3 mb-3 relative z-10"></div>
-          <p className="text-[15px] font-body opacity-95 leading-snug relative z-10">Camp Maroon Sideline Experience giveaway — 4 attendees + hospitality + watch the team train. Plus 4 Gold tickets to the Men's Brisbane decider.</p>
+          <h3 className="font-display text-5xl tracking-wide leading-[0.95] relative z-10">MONEY CAN'T BUY EXPERIENCE</h3>
+          <div className="w-14 h-[2px] bg-white mt-3 mb-3 relative z-10"></div>
+          <p className="text-[16px] font-body opacity-95 leading-snug relative z-10 max-w-2xl">Camp Maroon Sideline Experience giveaway — 4 attendees + hospitality + watch the team train. Plus 4 Gold tickets to the Men's Brisbane decider.</p>
         </div>
         <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex-1 flex flex-col min-h-0`}>
           <div className="flex items-center gap-2 mb-3 shrink-0">
             <Cal size={16} className="text-gaf-orange" />
             <p className={`text-[15px] font-heading tracking-[.3em] ${th.sub} uppercase`}>Marketing Deliverables</p>
           </div>
-          <div className="space-y-2.5 flex-1 stagger overflow-auto">
+          <div className="grid grid-cols-2 gap-3 flex-1 stagger overflow-auto">
             {[
               { w: "Photo Galleries × 3", note: "One per training camp — players using GAF equipment" },
               { w: "Insta Collab Post", note: "Maroons × Gym and Fitness handles, joint reach" },
@@ -354,15 +322,36 @@ const QRLSlide = ({ n, t }) => {
               { w: "In-Situ Product Filming", note: "Equipment-only shoots (no players, no QRL marks)" },
               { w: "Print Collateral", note: "2× QRL pull-up banners + machine stickering" },
             ].map((p, i) => (
-              <div key={i} className="flex gap-3 items-start">
+              <div key={i} className={`${th.bg3} rounded-lg p-4 flex gap-3 items-start`}>
                 <div className="w-1.5 h-1.5 rounded-full bg-gaf-orange mt-2 shrink-0"></div>
                 <div>
-                  <p className={`text-[14px] font-heading font-semibold ${th.text}`}>{p.w}</p>
+                  <p className={`text-[15px] font-heading font-semibold ${th.text} mb-1`}>{p.w}</p>
                   <p className={`text-[14px] ${th.sub} font-body leading-snug`}>{p.note}</p>
                 </div>
               </div>
             ))}
           </div>
+        </div>
+      </div>
+      <div className="w-[320px] shrink-0 flex flex-col gap-3 min-h-0">
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex-1 flex flex-col min-h-0`}>
+          <div className="flex items-center gap-2 mb-3 shrink-0">
+            <Trophy size={15} className="text-gaf-orange" />
+            <p className={`text-[13px] font-heading tracking-[.3em] ${th.sub} uppercase`}>Match Calendar</p>
+          </div>
+          <div className="flex-1 overflow-auto stagger space-y-2">
+            {qrlMatches.map((m, i) => (
+              <div key={i} className={`${th.bg3} rounded-lg p-3`}>
+                <p className={`text-[14px] font-heading font-semibold ${th.text} leading-tight`}>{m.date}</p>
+                <p className={`text-[13px] ${th.sub} font-body mt-1`}>{m.game}</p>
+                <p className={`text-[12px] ${th.muted} font-body mt-0.5`}>{m.venue}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-gaf-orange/5 border border-gaf-orange/20 rounded-lg p-4 shrink-0 flex items-start gap-3">
+          <Eye size={18} className="text-gaf-orange shrink-0 mt-0.5" />
+          <p className={`text-[14px] font-body ${th.sub} leading-snug`}>This is a <span className={`font-semibold ${th.text}`}>brand awareness play</span>, not a direct-sales lever.</p>
         </div>
       </div>
     </div>
@@ -388,26 +377,19 @@ const NikeSlide = ({ n, t }) => {
         <Kpi label="May Focus" value="Heavy" sub="Visibility peak, evergreen after" />
         <Kpi label="KPI Set" value="CPM · Eng · Clicks" sub="Not ROAS — awareness lens" />
       </div>
-      <div className="flex gap-4 flex-1 min-h-0">
-        <div className={`flex-1 ${th.cardBg} rounded-lg border ${th.cardBorder} p-5 flex flex-col`}>
-          <div className="flex items-center gap-2 mb-3 shrink-0">
-            <Dollar size={16} className="text-gaf-orange" />
-            <p className={`text-[14px] font-heading tracking-[.3em] ${th.sub} uppercase`}>Budget Allocation</p>
-          </div>
-          <div className="grid grid-cols-3 gap-3 flex-1 stagger">
-            {nikeAlloc.map((a, i) => (
-              <div key={i} className={`${th.bg3} rounded-lg p-4 flex flex-col items-start gap-2`}>
-                <div className="w-10 h-10 rounded-lg bg-gaf-orange/10 flex items-center justify-center shrink-0"><a.I size={18} className="text-gaf-orange" /></div>
-                <p className={`text-[15px] font-heading font-semibold ${th.text}`}>{a.label}</p>
-                <p className={`text-[14px] ${th.sub} font-body leading-snug`}>{a.note}</p>
-              </div>
-            ))}
-          </div>
+      <div className={`flex-1 ${th.cardBg} rounded-lg border ${th.cardBorder} p-5 flex flex-col min-h-0`}>
+        <div className="flex items-center gap-2 mb-3 shrink-0">
+          <Dollar size={16} className="text-gaf-orange" />
+          <p className={`text-[14px] font-heading tracking-[.3em] ${th.sub} uppercase`}>Budget Allocation</p>
         </div>
-        <div className={`w-[320px] shrink-0 bg-gaf-black rounded-lg p-5 text-white relative overflow-hidden flex flex-col justify-center`}>
-          <div className="absolute -right-4 -top-4 opacity-10"><Flame size={140} className="text-gaf-orange" /></div>
-          <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase mb-3 relative z-10">For the Sales Team</p>
-          <p className="text-[16px] font-body leading-snug relative z-10">Inbound from Nike awareness is <span className="text-gaf-orange font-semibold">not promo-driven</span>. They saw the ad, they're curious. Treat like a top-of-funnel lead — discovery first, no discount lever.</p>
+        <div className="grid grid-cols-3 gap-4 flex-1 stagger">
+          {nikeAlloc.map((a, i) => (
+            <div key={i} className={`${th.bg3} rounded-lg p-5 flex flex-col items-start gap-3`}>
+              <div className="w-12 h-12 rounded-lg bg-gaf-orange/10 flex items-center justify-center shrink-0"><a.I size={22} className="text-gaf-orange" /></div>
+              <p className={`text-[18px] font-heading font-semibold ${th.text}`}>{a.label}</p>
+              <p className={`text-[15px] ${th.sub} font-body leading-snug`}>{a.note}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
