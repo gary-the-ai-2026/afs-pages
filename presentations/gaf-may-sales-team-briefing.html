@@ -359,7 +359,55 @@ const QRLSlide = ({ n, t }) => {
   );
 };
 
-// ===== SLIDE 4: NIKE AWARENESS PUSH =====
+// ===== SLIDE 4: QRL BUMPERS =====
+const BumperSlide = ({ n, t }) => {
+  const th = useTheme();
+  return (
+  <Slide num={n} total={t}>
+    <SectionTitle pre="Adjacent Licensing Deal" title="QRL × FORCE USA BUMPERS" sub="Limited-edition 2026 Origin Camp Series bumpers — first co-branded product collaboration. A selection is being flown in for Camp 1; pre-orders and website listings go live before Men's Game 2." />
+    <div className="flex gap-6 flex-1 min-h-0">
+      <div className={`flex-1 ${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex items-center justify-center min-h-0 overflow-hidden`}>
+        <img src="assets/qrl-bumpers.png" alt="QRL × Force USA Limited Edition 2026 Origin Camp Series Bumper Plate" className="max-h-full max-w-full object-contain" />
+      </div>
+      <div className="w-[420px] shrink-0 flex flex-col gap-3 min-h-0">
+        <div className={`bg-gaf-orange rounded-lg p-5 text-white shrink-0 relative overflow-hidden`}>
+          <div className="absolute -right-4 -top-4 opacity-10"><Pkg size={140} /></div>
+          <p className="text-[14px] font-heading tracking-[.3em] uppercase opacity-90 mb-2 relative z-10">The Product</p>
+          <h3 className="font-display text-4xl tracking-wide leading-[0.95] relative z-10">LIMITED EDITION<br/>ORIGIN CAMP SERIES</h3>
+          <div className="w-12 h-[2px] bg-white mt-3 mb-3 relative z-10"></div>
+          <p className="text-[15px] font-body opacity-95 leading-snug relative z-10">Maroon Force USA bumpers with full Queensland Maroons branding. Stamped, dated, numbered — a collector's piece for fans, a brand asset for everyone else.</p>
+        </div>
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex-1 flex flex-col min-h-0`}>
+          <div className="flex items-center gap-2 mb-3 shrink-0">
+            <Cal size={16} className="text-gaf-orange" />
+            <p className={`text-[15px] font-heading tracking-[.3em] ${th.sub} uppercase`}>Rollout Timeline</p>
+          </div>
+          <div className="space-y-3 flex-1 stagger">
+            {[
+              { w: "Camp 1 Fly-In", note: "Selection arrives in time for Maroons Camp 1 — players & content teams handle them on camera before anyone else" },
+              { w: "Pre-Order Launch", note: "Pre-orders open before Men's Game 2 (Wed 17 Jun, MCG) to capture series momentum" },
+              { w: "Website Listing Live", note: "Force USA category listing + dedicated PDP go up alongside pre-order open" },
+              { w: "Sales Team Angle", note: "Talk-up the limited-edition framing — collector item, not standard inventory. Scarcity is real." },
+            ].map((p, i) => (
+              <div key={i} className="flex gap-3 items-start">
+                <div className={`w-5 h-5 rounded-full ${th.greenBg} flex items-center justify-center shrink-0 mt-0.5`}>
+                  <Check size={11} className={th.green} />
+                </div>
+                <div>
+                  <p className={`text-[15px] font-heading font-semibold ${th.text}`}>{p.w}</p>
+                  <p className={`text-[14px] ${th.sub} font-body leading-snug`}>{p.note}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </Slide>
+  );
+};
+
+// ===== SLIDE 5: NIKE AWARENESS PUSH =====
 const nikeAlloc = [
   { label: "Meta", note: "Nike pulled into dedicated campaign — separate spend pool", I: Megaphone },
   { label: "YouTube", note: "Top-of-funnel video reach, complements Meta", I: Tv },
@@ -435,7 +483,7 @@ const QSlide = ({ n, t }) => {
 };
 
 // ===== APP =====
-const SLIDES = [TitleSlide, LatitudeSlide, QRLSlide, NikeSlide, EOFYSlide, QSlide];
+const SLIDES = [TitleSlide, LatitudeSlide, QRLSlide, BumperSlide, NikeSlide, EOFYSlide, QSlide];
 
 function App() {
   const [idx, setIdx] = useState(0);
