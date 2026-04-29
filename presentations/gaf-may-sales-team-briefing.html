@@ -250,30 +250,46 @@ const TitleSlide = ({ n, t }) => {
 // ===== SLIDE 2: MAY TARGETS =====
 const TargetsSlide = ({ n, t }) => {
   const th = useTheme();
-  const targets = [
-    { label: "Website Sessions", value: "~193,000", IconComp: Users, sub: "Total store traffic across May" },
-    { label: "Abandoned Carts", value: "~1,000", IconComp: Pkg, sub: "Recovery opportunity for the team" },
-    { label: "Inbound Phone Calls", value: "~250", IconComp: Megaphone, sub: "Sales-qualified leads to convert" },
+  const financial = [
+    { label: "GP Created (Budget)", value: "$767K", IconComp: Dollar, sub: "Total GP target across May" },
+    { label: "GP Fulfilled (Budget)", value: "$667K", IconComp: Check, sub: "GP delivered through invoicing" },
+  ];
+  const operational = [
+    { label: "Website Sessions", value: "~193K", IconComp: Users, sub: "Total store traffic" },
+    { label: "Abandoned Carts", value: "~1,000", IconComp: Pkg, sub: "Recovery opportunity" },
+    { label: "Inbound Phone Calls", value: "~250", IconComp: Megaphone, sub: "Sales-qualified leads" },
   ];
   return (
   <Slide num={n} total={t}>
-    <SectionTitle pre="The Month Ahead" title="MAY TARGETS" sub="What good looks like this month — the volume baseline the sales team is working against." />
+    <SectionTitle pre="The Month Ahead" title="MAY TARGETS" sub="What good looks like this month — the financial and volume baselines the sales team is working against." />
     <div className="flex-1 flex flex-col gap-4 min-h-0 justify-center">
-      <div className="grid grid-cols-3 gap-5 stagger">
-        {targets.map((m, i) => (
-          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-7 flex flex-col gap-4`}>
+      <div className="grid grid-cols-2 gap-5 stagger">
+        {financial.map((m, i) => (
+          <div key={i} className={`${th.kpiAccentBg} border ${th.borderAccent} rounded-lg p-7 flex flex-col gap-3`}>
             <div className="flex items-center justify-between">
-              <p className={`text-[14px] font-heading font-medium tracking-[.3em] uppercase ${th.sub}`}>{m.label}</p>
+              <p className={`text-[14px] font-heading font-medium tracking-[.3em] uppercase text-gaf-orange`}>{m.label}</p>
               <div className="w-11 h-11 rounded-lg bg-gaf-orange/10 flex items-center justify-center"><m.IconComp size={22} className="text-gaf-orange" /></div>
             </div>
-            <p className={`font-display text-7xl tracking-wide leading-[0.9] text-gaf-orange`}>{m.value}</p>
+            <p className={`font-display text-8xl tracking-wide leading-[0.9] text-gaf-orange`}>{m.value}</p>
             <p className={`text-[15px] font-body ${th.sub} leading-snug`}>{m.sub}</p>
           </div>
         ))}
       </div>
-      <div className="bg-gaf-orange/5 border border-gaf-orange/20 rounded-lg p-4 flex items-start gap-3 max-w-4xl mx-auto w-full">
+      <div className="grid grid-cols-3 gap-4 stagger">
+        {operational.map((m, i) => (
+          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col gap-2`}>
+            <div className="flex items-center justify-between">
+              <p className={`text-[12px] font-heading font-medium tracking-[.3em] uppercase ${th.sub}`}>{m.label}</p>
+              <m.IconComp size={16} className="text-gaf-orange" />
+            </div>
+            <p className={`font-display text-5xl tracking-wide leading-[0.9] ${th.text}`}>{m.value}</p>
+            <p className={`text-[13px] font-body ${th.muted} leading-snug`}>{m.sub}</p>
+          </div>
+        ))}
+      </div>
+      <div className="bg-gaf-orange/5 border border-gaf-orange/20 rounded-lg p-3.5 flex items-start gap-3">
         <Target size={18} className="text-gaf-orange shrink-0 mt-0.5" />
-        <p className={`text-[15px] font-body ${th.sub} leading-snug`}>These are the <span className={`font-semibold ${th.text}`}>volume targets</span> we're driving toward. Every campaign on the next slides feeds into these numbers — Latitude messaging on the homepage holds conversion, QRL + Nike push top-of-funnel, EOFY is the closer.</p>
+        <p className={`text-[14px] font-body ${th.sub} leading-snug`}>Every campaign on the slides ahead feeds these numbers — Latitude on the homepage holds conversion, QRL + Nike push top-of-funnel, EOFY is the closer.</p>
       </div>
     </div>
   </Slide>
