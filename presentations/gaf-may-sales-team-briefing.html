@@ -247,7 +247,40 @@ const TitleSlide = ({ n, t }) => {
   );
 };
 
-// ===== SLIDE 2: LATITUDE — NOW LIVE =====
+// ===== SLIDE 2: MAY TARGETS =====
+const TargetsSlide = ({ n, t }) => {
+  const th = useTheme();
+  const targets = [
+    { label: "Website Sessions", value: "~193,000", IconComp: Users, sub: "Total store traffic across May" },
+    { label: "Abandoned Carts", value: "~1,000", IconComp: Pkg, sub: "Recovery opportunity for the team" },
+    { label: "Inbound Phone Calls", value: "~250", IconComp: Megaphone, sub: "Sales-qualified leads to convert" },
+  ];
+  return (
+  <Slide num={n} total={t}>
+    <SectionTitle pre="The Month Ahead" title="MAY TARGETS" sub="What good looks like this month — the volume baseline the sales team is working against." />
+    <div className="flex-1 flex flex-col gap-4 min-h-0 justify-center">
+      <div className="grid grid-cols-3 gap-5 stagger">
+        {targets.map((m, i) => (
+          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-7 flex flex-col gap-4`}>
+            <div className="flex items-center justify-between">
+              <p className={`text-[14px] font-heading font-medium tracking-[.3em] uppercase ${th.sub}`}>{m.label}</p>
+              <div className="w-11 h-11 rounded-lg bg-gaf-orange/10 flex items-center justify-center"><m.IconComp size={22} className="text-gaf-orange" /></div>
+            </div>
+            <p className={`font-display text-7xl tracking-wide leading-[0.9] text-gaf-orange`}>{m.value}</p>
+            <p className={`text-[15px] font-body ${th.sub} leading-snug`}>{m.sub}</p>
+          </div>
+        ))}
+      </div>
+      <div className="bg-gaf-orange/5 border border-gaf-orange/20 rounded-lg p-4 flex items-start gap-3 max-w-4xl mx-auto w-full">
+        <Target size={18} className="text-gaf-orange shrink-0 mt-0.5" />
+        <p className={`text-[15px] font-body ${th.sub} leading-snug`}>These are the <span className={`font-semibold ${th.text}`}>volume targets</span> we're driving toward. Every campaign on the next slides feeds into these numbers — Latitude messaging on the homepage holds conversion, QRL + Nike push top-of-funnel, EOFY is the closer.</p>
+      </div>
+    </div>
+  </Slide>
+  );
+};
+
+// ===== SLIDE 3: LATITUDE — NOW LIVE =====
 const LatitudeSlide = ({ n, t }) => {
   const th = useTheme();
   const max = Math.max(...latitudeMoM.map(d => d.rev));
@@ -483,7 +516,7 @@ const QSlide = ({ n, t }) => {
 };
 
 // ===== APP =====
-const SLIDES = [TitleSlide, LatitudeSlide, QRLSlide, BumperSlide, NikeSlide, EOFYSlide, QSlide];
+const SLIDES = [TitleSlide, TargetsSlide, LatitudeSlide, QRLSlide, BumperSlide, NikeSlide, EOFYSlide, QSlide];
 
 function App() {
   const [idx, setIdx] = useState(0);
