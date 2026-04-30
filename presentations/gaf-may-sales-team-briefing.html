@@ -25,7 +25,7 @@ tailwind.config = {
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Open Sans',sans-serif}
+body{font-family:'Open Sans',sans-serif;overflow:hidden}
 h1,h2,h3,h4,h5,h6{font-family:'Montserrat',sans-serif}
 .font-display{font-weight:900;letter-spacing:.01em}
 .font-heading{font-family:'Montserrat',sans-serif}
@@ -146,27 +146,22 @@ const Logo = () => {
   return <img src={GAF_LOGO} alt="GAF" className={`h-8 w-auto object-contain opacity-60 ${th.logoFilter}`} />;
 };
 
-// ===== MOBILE CONTEXT =====
-const MobileCtx = createContext(false);
-const useMobile = () => useContext(MobileCtx);
-
 // ===== SLIDE WRAPPER =====
 const Slide = ({ children, num, total, noPad }) => {
   const th = useTheme();
-  const isMobile = useMobile();
   return (
-  <div className={`w-full ${isMobile ? 'min-h-screen' : 'h-full'} ${th.bg} ${th.text} flex flex-col relative ${isMobile ? '' : 'overflow-hidden'}`}>
+  <div className={`w-full h-full ${th.bg} ${th.text} flex flex-col relative overflow-hidden`}>
     <div className="slash" style={{top:'30%',left:'-50%',background:`linear-gradient(90deg,transparent,${th.slashColor},transparent)`}}></div>
     <div className="slash" style={{top:'60%',left:'-30%',background:`linear-gradient(90deg,transparent,${th.slashColor},transparent)`}}></div>
-    <header className={`flex justify-between items-center z-10 shrink-0 ${isMobile ? 'px-5 pt-4 pb-2' : 'px-10 pt-5 pb-3'}`}>
+    <header className="flex justify-between items-center px-10 pt-5 pb-3 z-10 shrink-0">
       <Logo />
       <div className="flex items-center gap-3">
-        <span className={`text-[14px] font-heading font-light tracking-[.3em] ${th.sub} uppercase ${isMobile ? 'hidden' : 'flex'}`}>Sales Team Briefing</span>
-        <div className={`w-px h-4 ${th.bg3} ${isMobile ? 'hidden' : ''}`}></div>
+        <span className={`text-[14px] font-heading font-light tracking-[.3em] ${th.sub} uppercase`}>Sales Team Briefing</span>
+        <div className={`w-px h-4 ${th.bg3}`}></div>
         <span className={`text-[14px] font-body ${th.sub}`}>{num}<span className={`${th.muted} mx-1`}>/</span>{total}</span>
       </div>
     </header>
-    <main className={`flex-1 flex flex-col z-10 ${isMobile ? '' : 'overflow-hidden'} ${noPad ? '' : (isMobile ? 'px-5 pb-5' : 'px-10 pb-8')}`}>
+    <main className={`flex-1 flex flex-col z-10 overflow-hidden ${noPad ? '' : 'px-10 pb-8'}`}>
       {children}
     </main>
     <footer className="h-1 bg-gradient-to-r from-gaf-orange via-gaf-orange to-transparent z-10 shrink-0" style={{width: `${(num/total)*100}%`}}></footer>
@@ -226,9 +221,8 @@ const qrlMatches = [
 // ===== SLIDE 1: TITLE =====
 const TitleSlide = ({ n, t }) => {
   const th = useTheme();
-  const isMobile = useMobile();
   return (
-  <div className={`w-full ${isMobile ? 'min-h-screen' : 'h-full'} ${th.bg} relative flex flex-col justify-end ${isMobile ? '' : 'overflow-hidden'}`}>
+  <div className={`w-full h-full ${th.bg} relative flex flex-col justify-end overflow-hidden`}>
     <div className="absolute -right-[20%] top-[10%] w-[70%] h-[140%] bg-gaf-orange opacity-[0.04] transform rotate-[-18deg]"></div>
     <div className="absolute -right-[25%] top-[15%] w-[60%] h-[130%] border border-gaf-orange/10 transform rotate-[-18deg]"></div>
     <div className="flex-1 flex items-center px-16 z-10">
@@ -238,7 +232,7 @@ const TitleSlide = ({ n, t }) => {
           <div className={`w-px h-10 ${th.bg3}`}></div>
           <span className={`text-[14px] font-heading tracking-[.4em] ${th.sub} uppercase`}>Sales Team Briefing</span>
         </div>
-        <h1 className={`font-display text-[4rem] md:text-[11rem] leading-[0.85] tracking-wider ${th.titleText}`}>
+        <h1 className={`font-display text-[8rem] md:text-[11rem] leading-[0.85] tracking-wider ${th.titleText}`}>
           MAY<br/><span className="text-gaf-orange">2026</span>
         </h1>
         <div className="flex items-center gap-6 mt-10">
@@ -271,26 +265,26 @@ const TargetsSlide = ({ n, t }) => {
   <Slide num={n} total={t}>
     <SectionTitle pre="The Month Ahead" title="MAY TARGETS" sub="What good looks like this month — the financial and volume baselines the sales team is working against." />
     <div className="flex-1 flex flex-col gap-4 min-h-0 justify-center">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 stagger">
+      <div className="grid grid-cols-2 gap-5 stagger">
         {financial.map((m, i) => (
           <div key={i} className={`${th.kpiAccentBg} border ${th.borderAccent} rounded-lg p-7 flex flex-col gap-3`}>
             <div className="flex items-center justify-between">
               <p className={`text-[14px] font-heading font-medium tracking-[.3em] uppercase text-gaf-orange`}>{m.label}</p>
               <div className="w-11 h-11 rounded-lg bg-gaf-orange/10 flex items-center justify-center"><m.IconComp size={22} className="text-gaf-orange" /></div>
             </div>
-            <p className={`font-display text-5xl md:text-8xl tracking-wide leading-[0.9] text-gaf-orange`}>{m.value}</p>
+            <p className={`font-display text-8xl tracking-wide leading-[0.9] text-gaf-orange`}>{m.value}</p>
             <p className={`text-[15px] font-body ${th.sub} leading-snug`}>{m.sub}</p>
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger">
+      <div className="grid grid-cols-3 gap-4 stagger">
         {operational.map((m, i) => (
           <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col gap-2`}>
             <div className="flex items-center justify-between">
               <p className={`text-[12px] font-heading font-medium tracking-[.3em] uppercase ${th.sub}`}>{m.label}</p>
               <m.IconComp size={16} className="text-gaf-orange" />
             </div>
-            <p className={`font-display text-3xl md:text-5xl tracking-wide leading-[0.9] ${th.text}`}>{m.value}</p>
+            <p className={`font-display text-5xl tracking-wide leading-[0.9] ${th.text}`}>{m.value}</p>
             <p className={`text-[13px] font-body ${th.muted} leading-snug`}>{m.sub}</p>
           </div>
         ))}
@@ -312,7 +306,7 @@ const LatitudeSlide = ({ n, t }) => {
   <Slide num={n} total={t}>
     <SectionTitle pre="Now Live" title="LATITUDE FINANCE" sub={`"Your Gym. Your Terms." — homepage hero stays up through May. The April finance campaign has wrapped, but the banner and "from $X/month" messaging continue.`} />
     <div className="flex flex-col flex-1 gap-4 min-h-0">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0 stagger">
+      <div className="grid grid-cols-3 gap-4 shrink-0 stagger">
         <Kpi label="Apr Revenue" value="$53.3K" sub="12 orders · partial month (to 29th)" accent />
         <Kpi label="Apr Share of Sales" value="3.13%" sub="Highest share in 12 months" />
         <Kpi label="Pre-sale Barrier" value="32%" sub="Calls citing financial friction" />
@@ -322,7 +316,7 @@ const LatitudeSlide = ({ n, t }) => {
           <p className={`text-[14px] font-heading tracking-[.3em] ${th.sub} uppercase`}>Latitude Revenue — Month on Month</p>
           <p className={`text-[14px] ${th.sub} font-body`}>Source: <span className="text-gaf-orange font-semibold">Shopify payment gateway</span> · *Apr through 29th</p>
         </div>
-        <div className="flex items-end gap-[6px] h-[calc(100%-44px)] min-h-[200px]">
+        <div className="flex items-end gap-[6px] h-[calc(100%-44px)]">
           {latitudeMoM.map((d, i) => {
             const isCurrent = d.m.includes('Apr');
             return (
@@ -355,12 +349,12 @@ const QRLSlide = ({ n, t }) => {
   return (
   <Slide num={n} total={t}>
     <SectionTitle pre="Coming Up" title="QRL × STATE OF ORIGIN" sub={`Official Supplier of the Queensland Maroons. Marketing rollout begins mid-May, anchored by our "Money Can't Buy Experience" campaign — a Camp Maroon Sideline Experience giveaway.`} />
-    <div className="flex flex-col md:flex-row gap-4 md:gap-6 flex-1 min-h-0">
+    <div className="flex gap-6 flex-1 min-h-0">
       <div className="flex-1 flex flex-col gap-3 min-h-0">
         <div className={`bg-gaf-orange rounded-lg p-5 text-white shrink-0 relative overflow-hidden`}>
           <div className="absolute -right-4 -top-4 opacity-10"><Trophy size={140} /></div>
           <p className="text-[14px] font-heading tracking-[.3em] uppercase opacity-90 mb-2 relative z-10">Hero Campaign</p>
-          <h3 className="font-display text-3xl md:text-5xl tracking-wide leading-[0.95] relative z-10">MONEY CAN'T BUY EXPERIENCE</h3>
+          <h3 className="font-display text-5xl tracking-wide leading-[0.95] relative z-10">MONEY CAN'T BUY EXPERIENCE</h3>
           <div className="w-14 h-[2px] bg-white mt-3 mb-3 relative z-10"></div>
           <p className="text-[16px] font-body opacity-95 leading-snug relative z-10 max-w-2xl">Camp Maroon Sideline Experience giveaway — 4 attendees + hospitality + watch the team train. Plus 4 Gold tickets to the Men's Brisbane decider.</p>
         </div>
@@ -369,7 +363,7 @@ const QRLSlide = ({ n, t }) => {
             <Cal size={16} className="text-gaf-orange" />
             <p className={`text-[15px] font-heading tracking-[.3em] ${th.sub} uppercase`}>Marketing Deliverables</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 stagger overflow-auto">
+          <div className="grid grid-cols-2 gap-3 flex-1 stagger overflow-auto">
             {[
               { w: "Photo Galleries × 3", note: "One per training camp — players using GAF equipment" },
               { w: "Insta Collab Post", note: "Maroons × Gym and Fitness handles, joint reach" },
@@ -390,7 +384,7 @@ const QRLSlide = ({ n, t }) => {
           </div>
         </div>
       </div>
-      <div className="w-full md:w-[320px] shrink-0 flex flex-col gap-3 min-h-0">
+      <div className="w-[320px] shrink-0 flex flex-col gap-3 min-h-0">
         <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex-1 flex flex-col min-h-0`}>
           <div className="flex items-center gap-2 mb-3 shrink-0">
             <Trophy size={15} className="text-gaf-orange" />
@@ -422,15 +416,15 @@ const BumperSlide = ({ n, t }) => {
   return (
   <Slide num={n} total={t}>
     <SectionTitle pre="Adjacent Licensing Deal" title="QRL × FORCE USA BUMPERS" sub="Limited-edition 2026 Origin Camp Series bumpers — first co-branded product collaboration. A selection is being flown in for Camp 1; pre-orders and website listings go live before Men's Game 2." />
-    <div className="flex flex-col md:flex-row gap-4 md:gap-6 flex-1 min-h-0">
+    <div className="flex gap-6 flex-1 min-h-0">
       <div className={`flex-1 ${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex items-center justify-center min-h-0 overflow-hidden`}>
         <img src="assets/qrl-bumpers.png" alt="QRL × Force USA Limited Edition 2026 Origin Camp Series Bumper Plate" className="max-h-full max-w-full object-contain" />
       </div>
-      <div className="w-full md:w-[420px] shrink-0 flex flex-col gap-3 min-h-0">
+      <div className="w-[420px] shrink-0 flex flex-col gap-3 min-h-0">
         <div className={`bg-gaf-orange rounded-lg p-5 text-white shrink-0 relative overflow-hidden`}>
           <div className="absolute -right-4 -top-4 opacity-10"><Pkg size={140} /></div>
           <p className="text-[14px] font-heading tracking-[.3em] uppercase opacity-90 mb-2 relative z-10">The Product</p>
-          <h3 className="font-display text-2xl md:text-4xl tracking-wide leading-[0.95] relative z-10">LIMITED EDITION<br/>ORIGIN CAMP SERIES</h3>
+          <h3 className="font-display text-4xl tracking-wide leading-[0.95] relative z-10">LIMITED EDITION<br/>ORIGIN CAMP SERIES</h3>
           <div className="w-12 h-[2px] bg-white mt-3 mb-3 relative z-10"></div>
           <p className="text-[15px] font-body opacity-95 leading-snug relative z-10">Maroon Force USA bumpers with full Queensland Maroons branding. Stamped, dated, numbered — a collector's piece for fans, a brand asset for everyone else.</p>
         </div>
@@ -477,7 +471,7 @@ const NikeSlide = ({ n, t }) => {
   <Slide num={n} total={t}>
     <SectionTitle pre="Coming Up" title="NIKE AWARENESS PUSH" sub="Heavy in May, but ongoing. The content is evergreen and the $16K/month is an ongoing investment — May is just the visibility peak." />
     <div className="flex flex-col flex-1 gap-4 min-h-0">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0 stagger">
+      <div className="grid grid-cols-3 gap-4 shrink-0 stagger">
         <Kpi label="Monthly Budget" value="$16K" sub="Ongoing — not a one-month spend" accent />
         <Kpi label="May Focus" value="Heavy" sub="Visibility peak, evergreen after" />
         <Kpi label="KPI Set" value="CPM · Eng · Clicks" sub="Not ROAS — awareness lens" />
@@ -487,7 +481,7 @@ const NikeSlide = ({ n, t }) => {
           <Dollar size={16} className="text-gaf-orange" />
           <p className={`text-[14px] font-heading tracking-[.3em] ${th.sub} uppercase`}>Budget Allocation</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 stagger">
+        <div className="grid grid-cols-3 gap-4 flex-1 stagger">
           {nikeAlloc.map((a, i) => (
             <div key={i} className={`${th.bg3} rounded-lg p-5 flex flex-col items-start gap-3`}>
               <div className="w-12 h-12 rounded-lg bg-gaf-orange/10 flex items-center justify-center shrink-0"><a.I size={22} className="text-gaf-orange" /></div>
@@ -513,7 +507,7 @@ const EOFYSlide = ({ n, t }) => {
         <div className="absolute -right-12 -top-12 opacity-10"><Dollar size={280} /></div>
         <div className="absolute -left-8 -bottom-8 opacity-5"><Dollar size={200} /></div>
         <p className="text-[15px] font-heading tracking-[.3em] uppercase opacity-90 mb-4 relative z-10">Peak Campaign #3 of 2026</p>
-        <h3 className="font-display text-[4rem] md:text-[8rem] tracking-wide leading-[0.9] relative z-10">EOFY<br/>SALE</h3>
+        <h3 className="font-display text-[8rem] tracking-wide leading-[0.9] relative z-10">EOFY<br/>SALE</h3>
         <div className="w-16 h-[2px] bg-white mt-6 mb-5 relative z-10"></div>
         <p className="text-[18px] font-body opacity-95 leading-snug relative z-10 max-w-xl">1 June → 30 June. We're starting to prepare now — more detail to come.</p>
       </div>
@@ -525,14 +519,13 @@ const EOFYSlide = ({ n, t }) => {
 // ===== SLIDE 6: Q&A =====
 const QSlide = ({ n, t }) => {
   const th = useTheme();
-  const isMobile = useMobile();
   return (
-  <div className={`w-full ${isMobile ? 'min-h-screen' : 'h-full'} ${th.bg} relative flex items-center justify-center ${isMobile ? '' : 'overflow-hidden'}`}>
+  <div className={`w-full h-full ${th.bg} relative flex items-center justify-center overflow-hidden`}>
     <div className="absolute -right-[20%] top-[10%] w-[70%] h-[140%] bg-gaf-orange opacity-[0.04] transform rotate-[-18deg]"></div>
     <div className={`absolute -left-[20%] bottom-[10%] w-[50%] h-[120%] border ${th.cardBorder} opacity-30 transform rotate-[-18deg]`}></div>
     <div className="z-10 text-center stagger">
       <p className="text-[14px] font-heading tracking-[.5em] text-gaf-orange uppercase mb-6">Over to you</p>
-      <h1 className={`font-display text-[5rem] md:text-[14rem] ${th.text} leading-[0.85] tracking-wider`}>Q&A</h1>
+      <h1 className={`font-display text-[10rem] md:text-[14rem] ${th.text} leading-[0.85] tracking-wider`}>Q&A</h1>
       <div className="w-16 h-[2px] bg-gaf-orange mx-auto mt-8"></div>
     </div>
     <footer className="absolute bottom-0 left-0 h-1 bg-gaf-orange z-10 w-full"></footer>
@@ -547,7 +540,6 @@ function App() {
   const [idx, setIdx] = useState(0);
   const [key, setKey] = useState(0);
   const [dark, setDark] = useState(false);
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [zoom, setZoom] = useState(() => Math.min(window.innerWidth / 1600, window.innerHeight / 900, 1));
   const th = dark ? themes.dark : themes.light;
 
@@ -557,13 +549,7 @@ function App() {
   }, [idx]);
 
   useEffect(() => {
-    const calc = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (!mobile) {
-        setZoom(Math.min(window.innerWidth / 1600, window.innerHeight / 900, 1));
-      }
-    };
+    const calc = () => setZoom(Math.min(window.innerWidth / 1600, window.innerHeight / 900, 1));
     window.addEventListener('resize', calc);
     return () => window.removeEventListener('resize', calc);
   }, []);
@@ -579,70 +565,33 @@ function App() {
   }, [go]);
 
   useEffect(() => {
-    if (!isMobile) return;
-    let startX = 0;
-    const onStart = e => { startX = e.touches[0].clientX; };
-    const onEnd = e => {
-      const diff = startX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) go(diff > 0 ? 1 : -1);
-    };
-    window.addEventListener('touchstart', onStart);
-    window.addEventListener('touchend', onEnd);
-    return () => { window.removeEventListener('touchstart', onStart); window.removeEventListener('touchend', onEnd); };
-  }, [isMobile, go]);
-
-  useEffect(() => {
     document.body.style.background = th.bodyBg;
     document.body.className = th.grainClass;
-    document.body.style.overflow = isMobile ? 'auto' : 'hidden';
-  }, [dark, isMobile]);
+  }, [dark]);
 
   const C = SLIDES[idx];
   return (
     <ThemeCtx.Provider value={th}>
-    <MobileCtx.Provider value={isMobile}>
-      {isMobile ? (
-        <div key={key} className="w-full min-h-screen slide-enter" style={{background: th.bodyBg}}>
+      <div className="w-screen h-screen overflow-hidden flex items-center justify-center" style={{background: th.bodyBg}}>
+        <div key={key} className="overflow-hidden slide-enter rounded-lg shrink-0" style={{width: 1600, height: 900, zoom, boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
           <C n={idx + 1} t={SLIDES.length} />
-          <div className="fixed bottom-4 right-4 flex gap-2 z-50">
+          <div className="absolute bottom-6 right-8 flex gap-2 z-50">
             <button onClick={() => setDark(d => !d)} title="Toggle theme (D)"
-              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all border ${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}>
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border ${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}>
               {dark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
-            <div className="w-px h-11 bg-gaf-orange/20"></div>
+            <div className="w-px h-9 bg-gaf-orange/20"></div>
             <button onClick={() => go(-1)} disabled={idx===0}
-              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all border ${idx===0 ? th.navDisabled : `${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}`}>
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border ${idx===0 ? th.navDisabled : `${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}`}>
               <ChevL size={16} />
             </button>
             <button onClick={() => go(1)} disabled={idx===SLIDES.length-1}
-              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all border ${idx===SLIDES.length-1 ? th.navDisabled : `${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}`}>
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border ${idx===SLIDES.length-1 ? th.navDisabled : `${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}`}>
               <ChevR size={16} />
             </button>
           </div>
         </div>
-      ) : (
-        <div className="w-screen h-screen overflow-hidden flex items-center justify-center" style={{background: th.bodyBg}}>
-          <div key={key} className="overflow-hidden slide-enter rounded-lg shrink-0" style={{width: 1600, height: 900, zoom, boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
-            <C n={idx + 1} t={SLIDES.length} />
-            <div className="absolute bottom-6 right-8 flex gap-2 z-50">
-              <button onClick={() => setDark(d => !d)} title="Toggle theme (D)"
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border ${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}>
-                {dark ? <Sun size={14} /> : <Moon size={14} />}
-              </button>
-              <div className="w-px h-9 bg-gaf-orange/20"></div>
-              <button onClick={() => go(-1)} disabled={idx===0}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border ${idx===0 ? th.navDisabled : `${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}`}>
-                <ChevL size={16} />
-              </button>
-              <button onClick={() => go(1)} disabled={idx===SLIDES.length-1}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border ${idx===SLIDES.length-1 ? th.navDisabled : `${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}`}>
-                <ChevR size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </MobileCtx.Provider>
+      </div>
     </ThemeCtx.Provider>
   );
 }
