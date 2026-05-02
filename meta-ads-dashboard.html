@@ -650,10 +650,70 @@ function AdsTab({ data, brand }) {
   );
 }
 
+// ─── Creative Detail Modal ───
+function CreativeModal({ card, rank, brand, onClose }) {
+  if (!card) return null;
+  const b = BRANDS[brand];
+  useEffect(() => {
+    const handler = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+  const stats = [
+    { label: 'Spend', value: fmt.currency(card.spend) },
+    { label: 'Impressions', value: fmt.number(card.impressions) },
+    { label: 'Clicks', value: fmt.number(card.clicks) },
+    { label: 'CTR', value: fmt.pct(card.ctr) },
+    { label: 'CPC', value: fmt.currency(card.cpc) },
+    { label: 'Outbound Clicks', value: fmt.number(card.outboundClicks) },
+    { label: 'Conversions', value: card.conversions > 0 ? fmt.number(card.conversions) : '-' },
+    { label: 'CPA', value: card.costPerConv > 0 ? fmt.currency(card.costPerConv) : '-' },
+    { label: 'Revenue', value: card.revenue > 0 ? fmt.currency(card.revenue) : '-' },
+    { label: 'ROAS', value: card.roas > 0 ? fmt.roas(card.roas) : '-' },
+  ];
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose} style={{fontFamily: b.bodyFont}}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <div className="relative bg-gray-100 rounded-t-2xl">
+          <img src={card.thumbnail} alt={card.name} className="w-full max-h-[50vh] object-contain" />
+          <div className="absolute top-3 left-3">
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-full text-white text-sm font-bold shadow-lg" style={{backgroundColor: b.primary}}>#{rank}</span>
+          </div>
+        </div>
+        <div className="p-5">
+          <h3 className="font-display text-lg font-bold text-gray-900 mb-1">{card.name}</h3>
+          <p className="text-sm text-gray-400 mb-1">{card.campaign}</p>
+          <p className="text-xs text-gray-400 mb-4">{card.adset}</p>
+          {(card.body || card.title) && (
+            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              {card.title && <p className="text-sm font-semibold text-gray-700 mb-1">{card.title}</p>}
+              {card.body && <p className="text-xs text-gray-500 whitespace-pre-line">{card.body}</p>}
+            </div>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {stats.map(s => (
+              <div key={s.label} className="text-center py-2 px-1 rounded-lg bg-gray-50">
+                <div className="text-xs text-gray-400">{s.label}</div>
+                <div className="text-sm font-bold text-gray-800 mt-0.5">{s.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 // ─── Creative Performance Tab ───
 function CreativeTab({ data, brand }) {
   if (!data?.adInsights?.length) return <EmptyState brand={brand} />;
   const [sortMetric, setSortMetric] = useState('roas');
+  const [selected, setSelected] = useState(null);
   const b = BRANDS[brand];
 
   const creativeMap = useMemo(() => {
@@ -712,6 +772,15 @@ function CreativeTab({ data, brand }) {
 
   const isLowerBetter = sortMetric === 'cpc' || sortMetric === 'costPerConv';
 
+  const fmtMetricVal = (card) => {
+    const v = card[sortMetric] || 0;
+    if (sortMetric === 'roas') return v > 0 ? fmt.roas(v) : '-';
+    if (sortMetric === 'ctr') return fmt.pct(v);
+    if (sortMetric === 'cpc') return fmt.currency(v);
+    if (sortMetric === 'spend') return fmt.currency(v);
+    return fmt.number(v);
+  };
+
   return (
     <div className="space-y-4 fade-in">
       <div className="flex items-center justify-between">
@@ -734,58 +803,37 @@ function CreativeTab({ data, brand }) {
           No ad creatives with thumbnails found. Creative thumbnails require active or recently paused ads.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 stagger">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 stagger">
           {cards.map((card, i) => {
             const val = card[sortMetric] || 0;
             const isGood = isLowerBetter ? val < avgMetric : val > avgMetric;
             const rankColor = i < 3 ? b.primary : (isGood ? '#059669' : '#dc2626');
             return (
-              <div key={i} className="creative-card bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all group" style={{borderColor: b.cardBorder}}>
-                <div className="relative">
-                  <img src={card.thumbnail} alt={card.name} className="w-full h-48 object-cover" loading="lazy" />
-                  <div className="absolute top-2 left-2">
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold shadow" style={{backgroundColor: rankColor}}>
+              <div key={i} className="creative-card bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all cursor-pointer" style={{borderColor: b.cardBorder}} onClick={() => setSelected(i)}>
+                <div className="relative bg-gray-100">
+                  <img src={card.thumbnail} alt={card.name} className="w-full aspect-[4/5] object-contain" loading="lazy" />
+                  <div className="absolute top-1.5 left-1.5">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-bold shadow" style={{backgroundColor: rankColor}}>
                       {i + 1}
                     </span>
                   </div>
-                  <div className="creative-overlay absolute inset-0 bg-black/60 opacity-0 flex items-end p-3">
-                    <p className="text-white text-xs line-clamp-3">{card.body || card.title || 'No copy'}</p>
-                  </div>
                 </div>
-                <div className="p-3">
-                  <h4 className="text-sm font-semibold text-gray-900 truncate mb-1">{card.name}</h4>
-                  <p className="text-xs text-gray-400 truncate mb-3">{card.campaign}</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="text-center">
-                      <div className="text-xs text-gray-400">Spend</div>
-                      <div className="text-sm font-semibold text-gray-700">{fmt.currency(card.spend)}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-gray-400">CTR</div>
-                      <div className="text-sm font-semibold text-gray-700">{fmt.pct(card.ctr)}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-gray-400">ROAS</div>
-                      <div className="text-sm font-semibold text-gray-700">{card.roas > 0 ? fmt.roas(card.roas) : '-'}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-gray-400">CPC</div>
-                      <div className="text-sm font-semibold text-gray-700">{fmt.currency(card.cpc)}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-gray-400">Conv.</div>
-                      <div className="text-sm font-semibold text-gray-700">{card.conversions > 0 ? fmt.number(card.conversions) : '-'}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-gray-400">Outbound</div>
-                      <div className="text-sm font-semibold text-gray-700">{fmt.number(card.outboundClicks)}</div>
-                    </div>
+                <div className="p-2">
+                  <h4 className="text-xs font-semibold text-gray-900 truncate">{card.name}</h4>
+                  <p className="text-[10px] text-gray-400 truncate mb-1.5">{card.campaign}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400 uppercase">{metricOptions.find(o => o.value === sortMetric)?.label || sortMetric}</span>
+                    <span className="text-xs font-bold" style={{color: rankColor}}>{fmtMetricVal(card)}</span>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {selected !== null && cards[selected] && (
+        <CreativeModal card={cards[selected]} rank={selected + 1} brand={brand} onClose={() => setSelected(null)} />
       )}
     </div>
   );
