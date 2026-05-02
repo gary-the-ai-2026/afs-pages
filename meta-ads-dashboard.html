@@ -185,16 +185,36 @@ async function fetchInsights(accountId, level, since, until, token) {
 async function fetchAdsCreatives(adIds, token) {
   if (!adIds || adIds.length === 0) return [];
   const batchSize = 50;
-  const results = [];
+  const allAds = [];
   for (let i = 0; i < adIds.length; i += batchSize) {
     const batch = adIds.slice(i, i + batchSize);
     const ids = batch.join(',');
-    const res = await fetch(`${META_API}/?ids=${ids}&fields=id,name,status,creative{thumbnail_url,image_url,body,title,name}&thumbnail_width=480&thumbnail_height=480&access_token=${token}`);
+    const res = await fetch(`${META_API}/?ids=${ids}&fields=id,name,status,creative{id}&access_token=${token}`);
     if (!res.ok) continue;
     const json = await res.json();
-    results.push(...Object.values(json));
+    allAds.push(...Object.values(json));
   }
-  return results;
+  const adCreativeMap = {};
+  const creativeIds = [];
+  allAds.forEach(ad => {
+    if (ad.creative?.id) {
+      adCreativeMap[ad.id] = ad.creative.id;
+      if (!creativeIds.includes(ad.creative.id)) creativeIds.push(ad.creative.id);
+    }
+  });
+  const creativeDetails = {};
+  for (let i = 0; i < creativeIds.length; i += batchSize) {
+    const batch = creativeIds.slice(i, i + batchSize);
+    const ids = batch.join(',');
+    const res = await fetch(`${META_API}/?ids=${ids}&fields=thumbnail_url,image_url,body,title,name&thumbnail_width=480&thumbnail_height=480&access_token=${token}`);
+    if (!res.ok) continue;
+    const json = await res.json();
+    Object.values(json).forEach(c => { creativeDetails[c.id] = c; });
+  }
+  return allAds.map(ad => ({
+    ...ad,
+    creative: creativeDetails[adCreativeMap[ad.id]] || ad.creative
+  }));
 }
 
 // ─── Icons (inline SVG) ───
