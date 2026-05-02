@@ -189,7 +189,7 @@ async function fetchAdsCreatives(adIds, token) {
   for (let i = 0; i < adIds.length; i += batchSize) {
     const batch = adIds.slice(i, i + batchSize);
     const ids = batch.join(',');
-    const res = await fetch(`${META_API}/?ids=${ids}&fields=id,name,status,creative{thumbnail_url,image_url,body,title,name}&access_token=${token}`);
+    const res = await fetch(`${META_API}/?ids=${ids}&fields=id,name,status,creative{thumbnail_url,image_url,effective_object_story_id,body,title,name}&access_token=${token}`);
     if (!res.ok) continue;
     const json = await res.json();
     results.push(...Object.values(json));
@@ -568,15 +568,17 @@ function AdsTab({ data, brand }) {
       const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
       const creative = creativeMap[r.ad_id];
       return {
-        thumbnail: creative?.thumbnail_url || creative?.image_url || null,
+        thumbnail: creative?.image_url || creative?.thumbnail_url || null,
         campaign: r.campaign_name,
         adset: r.adset_name,
         name: r.ad_name,
         spend: parseFloat(r.spend || 0),
         impressions: parseInt(r.impressions || 0),
+        reach: parseInt(r.reach || 0),
         clicks: parseInt(r.clicks || 0),
         ctr: parseFloat(r.ctr || 0),
         cpc: parseFloat(r.cpc || 0),
+        cpm: parseFloat(r.cpm || 0),
         outboundClicks: outbound,
         frequency: parseFloat(r.frequency || 0),
         conversions,
@@ -589,19 +591,23 @@ function AdsTab({ data, brand }) {
 
   const columns = [
     { key: 'thumbnail', label: '', sortable: false, render: v => v ?
-      <img src={v} alt="" className="w-10 h-10 rounded object-cover" /> :
-      <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-xs">N/A</div>
+      <img src={v} alt="" className="w-12 h-12 rounded object-cover" loading="lazy" /> :
+      <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-xs">N/A</div>
     },
     { key: 'name', label: 'Ad', bold: true, sortable: true },
     { key: 'adset', label: 'Ad Set', sortable: true, render: v => <span className="text-gray-400 text-xs">{v}</span> },
     { key: 'spend', label: 'Spend', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'reach', label: 'Reach', align: 'right', sortable: true, render: v => fmt.number(v) },
     { key: 'clicks', label: 'Clicks', align: 'right', sortable: true, render: v => fmt.number(v) },
     { key: 'ctr', label: 'CTR', align: 'right', sortable: true, render: v => fmt.pct(v) },
     { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'cpm', label: 'CPM', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'outboundClicks', label: 'Outbound', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'frequency', label: 'Freq.', align: 'right', sortable: true, render: v => fmt.decimal(v) },
     { key: 'conversions', label: 'Conv.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'costPerConv', label: 'CPA', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
+    { key: 'revenue', label: 'Revenue', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
     { key: 'roas', label: 'ROAS', align: 'right', sortable: true, render: v => v > 0 ? fmt.roas(v) : '-' },
   ];
 
@@ -642,7 +648,7 @@ function CreativeTab({ data, brand }) {
     return data.adInsights
       .map(r => {
         const creative = creativeMap[r.ad_id];
-        const thumb = creative?.thumbnail_url || creative?.image_url;
+        const thumb = creative?.image_url || creative?.thumbnail_url;
         if (!thumb) return null;
         const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
         const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
@@ -716,7 +722,7 @@ function CreativeTab({ data, brand }) {
             return (
               <div key={i} className="creative-card bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all group" style={{borderColor: b.cardBorder}}>
                 <div className="relative">
-                  <img src={card.thumbnail} alt={card.name} className="w-full h-48 object-cover" />
+                  <img src={card.thumbnail} alt={card.name} className="w-full h-48 object-cover" loading="lazy" />
                   <div className="absolute top-2 left-2">
                     <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold shadow" style={{backgroundColor: rankColor}}>
                       {i + 1}
