@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad Performance Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://esm.sh/react@19?dev" type="module"></script>
+<script src="https://esm.sh/react-dom@19/client?dev" type="module"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',sans-serif;overflow-x:hidden}
+h1,h2,h3,h4,h5,h6,.font-display{font-family:'Montserrat',sans-serif}
+.scrollbar-thin::-webkit-scrollbar{width:6px;height:6px}
+.scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+.scrollbar-thin::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover{background:#9ca3af}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s cubic-bezier(.16,1,.3,1) forwards}
+.stagger>*{opacity:0;animation:fadeIn .4s cubic-bezier(.16,1,.3,1) forwards}
+.stagger>*:nth-child(1){animation-delay:.05s}
+.stagger>*:nth-child(2){animation-delay:.1s}
+.stagger>*:nth-child(3){animation-delay:.15s}
+.stagger>*:nth-child(4){animation-delay:.2s}
+.stagger>*:nth-child(5){animation-delay:.25s}
+.stagger>*:nth-child(6){animation-delay:.3s}
+.stagger>*:nth-child(7){animation-delay:.35s}
+.stagger>*:nth-child(8){animation-delay:.4s}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.pulse-dot{animation:pulse-dot 2s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{animation:spin 1s linear infinite}
+input[type="date"]{color-scheme:light}
+.creative-card:hover .creative-overlay{opacity:1}
+.creative-overlay{transition:opacity .2s ease}
+</style>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['"Montserrat"','sans-serif'],
+        body: ['"Open Sans"','sans-serif'],
+        accent: ['"Playfair Display"','serif'],
+      }
+    }
+  }
+}
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-type="module">
+
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+// ─── Brand Config ───
+const BRANDS = {
+  gaf: {
+    name: 'Gym & Fitness',
+    accountId: 'act_10153080558849684',
+    currency: 'AUD',
+    logo: 'https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576',
+    logoDark: 'https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576',
+    primary: '#f26422',
+    primaryLight: '#fff3ec',
+    primaryMid: '#fde0cc',
+    headerBg: '#000000',
+    headerText: '#ffffff',
+    cardBorder: '#f0f0f0',
+    accentGradient: 'from-orange-500 to-orange-600',
+    bodyFont: '"Open Sans", sans-serif',
+    headingFont: '"Montserrat", sans-serif',
+  },
+  revel: {
+    name: 'Revel Saunas',
+    accountId: 'act_2412898282250572',
+    currency: 'AUD',
+    logo: 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-White-02.png?v=1691241102',
+    logoDark: 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-Black-01.png?v=1691024664',
+    primary: '#25B34B',
+    primaryLight: '#ecfdf0',
+    primaryMid: '#d1fae0',
+    headerBg: '#485D4D',
+    headerText: '#ffffff',
+    cardBorder: '#e8ede9',
+    accentGradient: 'from-green-500 to-green-600',
+    bodyFont: '"Montserrat", sans-serif',
+    headingFont: '"Montserrat", sans-serif',
+  }
+};
+
+const META_API = 'https://graph.facebook.com/v21.0';
+
+// ─── Helpers ───
+const fmt = {
+  currency: (v) => {
+    const n = parseFloat(v) || 0;
+    if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+    if (n >= 10000) return '$' + (n/1000).toFixed(1) + 'K';
+    return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  },
+  number: (v) => {
+    const n = parseFloat(v) || 0;
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+    return n.toLocaleString();
+  },
+  pct: (v) => (parseFloat(v) || 0).toFixed(2) + '%',
+  decimal: (v) => (parseFloat(v) || 0).toFixed(2),
+  roas: (v) => (parseFloat(v) || 0).toFixed(2) + 'x',
+};
+
+function getActionValue(actions, type) {
+  if (!actions) return 0;
+  const a = actions.find(x => x.action_type === type);
+  return a ? parseFloat(a.value) : 0;
+}
+
+function getDateRange(preset, custom) {
+  const today = new Date();
+  const pad = d => d.toISOString().slice(0,10);
+  const daysAgo = n => { const d = new Date(today); d.setDate(d.getDate() - n); return d; };
+  switch(preset) {
+    case 'today': return { since: pad(today), until: pad(today) };
+    case 'yesterday': return { since: pad(daysAgo(1)), until: pad(daysAgo(1)) };
+    case 'last_7d': return { since: pad(daysAgo(6)), until: pad(today) };
+    case 'last_14d': return { since: pad(daysAgo(13)), until: pad(today) };
+    case 'last_30d': return { since: pad(daysAgo(29)), until: pad(today) };
+    case 'this_month': {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { since: pad(start), until: pad(today) };
+    }
+    case 'last_month': {
+      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const end = new Date(today.getFullYear(), today.getMonth(), 0);
+      return { since: pad(start), until: pad(end) };
+    }
+    case 'custom': return { since: custom.since, until: custom.until };
+    default: return { since: pad(daysAgo(29)), until: pad(today) };
+  }
+}
+
+async function apiFetch(path, token) {
+  const sep = path.includes('?') ? '&' : '?';
+  const url = `${META_API}${path}${sep}access_token=${token}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function fetchAllPages(path, token) {
+  let all = [];
+  let url = `${META_API}${path}${path.includes('?') ? '&' : '?'}access_token=${token}`;
+  while (url) {
+    const res = await fetch(url);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `API error ${res.status}`);
+    }
+    const json = await res.json();
+    all = all.concat(json.data || []);
+    url = json.paging?.next || null;
+  }
+  return all;
+}
+
+async function fetchInsights(accountId, level, since, until, token) {
+  const fields = 'campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,spend,impressions,reach,cpm,clicks,ctr,cpc,frequency,outbound_clicks,actions,cost_per_action_type,action_values';
+  const timeRange = JSON.stringify({since, until});
+  return fetchAllPages(
+    `/${accountId}/insights?fields=${fields}&level=${level}&time_range=${timeRange}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]`,
+    token
+  );
+}
+
+async function fetchAdsCreatives(accountId, token) {
+  return fetchAllPages(
+    `/${accountId}/ads?fields=id,name,status,creative{thumbnail_url,image_url,body,title,name}&limit=200&filtering=[{"field":"effective_status","operator":"IN","value":["ACTIVE","PAUSED"]}]`,
+    token
+  );
+}
+
+// ─── Icons (inline SVG) ───
+const Icons = {
+  refresh: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+  spend: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  eye: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
+  click: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>,
+  cart: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" /></svg>,
+  chart: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+  sort: <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>,
+  key: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>,
+  logout: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
+};
+
+// ─── Token Screen ───
+function TokenScreen({ onSave, brand }) {
+  const [input, setInput] = useState('');
+  const b = BRANDS[brand];
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 fade-in">
+        <div className="flex justify-center mb-6">
+          <img src={b.logoDark} alt={b.name} className="h-10 w-auto object-contain" />
+        </div>
+        <h2 className="font-display text-2xl font-bold text-center text-gray-900 mb-2">
+          Ad Performance Dashboard
+        </h2>
+        <p className="text-center text-gray-500 text-sm mb-8">
+          Paste your Meta access token to connect. It's stored locally in your browser only.
+        </p>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Access Token
+            </label>
+            <textarea
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="EAAxxxxxxx..."
+              rows={3}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:border-transparent resize-none"
+              style={{focusRingColor: b.primary}}
+            />
+          </div>
+          <button
+            onClick={() => { localStorage.setItem('meta_ads_token', input.trim()); onSave(input.trim()); }}
+            disabled={!input.trim()}
+            className="w-full py-3 rounded-xl text-white font-semibold text-sm transition-all disabled:opacity-40"
+            style={{backgroundColor: b.primary}}
+          >
+            Connect
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 text-center mt-6">
+          Token is stored in localStorage. Never sent anywhere except Meta's API.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── KPI Card ───
+function KpiCard({ label, value, icon, brand }) {
+  const b = BRANDS[brand];
+  return (
+    <div className="bg-white rounded-xl border p-4 hover:shadow-md transition-shadow" style={{borderColor: b.cardBorder}}>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="opacity-40">{icon}</span>
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
+      </div>
+      <div className="text-2xl font-bold text-gray-900 font-display">{value}</div>
+    </div>
+  );
+}
+
+// ─── Sortable Table ───
+function SortableTable({ columns, data, brand, onRowClick }) {
+  const [sortCol, setSortCol] = useState(null);
+  const [sortDir, setSortDir] = useState('desc');
+  const b = BRANDS[brand];
+
+  const sorted = useMemo(() => {
+    if (!sortCol) return data;
+    return [...data].sort((a, b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      if (typeof va === 'string' && !isNaN(parseFloat(va))) { va = parseFloat(va); vb = parseFloat(vb); }
+      if (typeof va === 'number' || typeof va === 'undefined') {
+        va = va || 0; vb = vb || 0;
+        return sortDir === 'asc' ? va - vb : vb - va;
+      }
+      return sortDir === 'asc' ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+    });
+  }, [data, sortCol, sortDir]);
+
+  const handleSort = (key) => {
+    if (sortCol === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortCol(key); setSortDir('desc'); }
+  };
+
+  return (
+    <div className="overflow-x-auto scrollbar-thin rounded-xl border bg-white" style={{borderColor: b.cardBorder}}>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b" style={{borderColor: b.cardBorder}}>
+            {columns.map(col => (
+              <th key={col.key}
+                onClick={() => col.sortable !== false && handleSort(col.key)}
+                className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400 whitespace-nowrap ${col.sortable !== false ? 'cursor-pointer hover:text-gray-600 select-none' : ''} ${col.align === 'right' ? 'text-right' : ''}`}
+              >
+                <span className="inline-flex items-center gap-1">
+                  {col.label}
+                  {sortCol === col.key && <span className={`transition-transform ${sortDir === 'asc' ? 'rotate-180' : ''}`}>{Icons.sort}</span>}
+                </span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.length === 0 ? (
+            <tr><td colSpan={columns.length} className="px-4 py-12 text-center text-gray-400">No data for selected period</td></tr>
+          ) : sorted.map((row, i) => (
+            <tr key={i}
+              onClick={() => onRowClick?.(row)}
+              className={`border-b last:border-0 hover:bg-gray-50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+              style={{borderColor: b.cardBorder}}
+            >
+              {columns.map(col => (
+                <td key={col.key} className={`px-4 py-3 whitespace-nowrap ${col.align === 'right' ? 'text-right tabular-nums' : ''} ${col.bold ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                  {col.render ? col.render(row[col.key], row) : row[col.key]}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Status Badge ───
+function StatusBadge({ status }) {
+  const colors = {
+    ACTIVE: 'bg-emerald-50 text-emerald-700',
+    PAUSED: 'bg-amber-50 text-amber-700',
+    DELETED: 'bg-red-50 text-red-600',
+    ARCHIVED: 'bg-gray-100 text-gray-500',
+  };
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colors[status] || 'bg-gray-100 text-gray-500'}`}>
+      {status === 'ACTIVE' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 pulse-dot"></span>}
+      {(status || 'Unknown').charAt(0) + (status || 'Unknown').slice(1).toLowerCase()}
+    </span>
+  );
+}
+
+// ─── Overview Tab ───
+function OverviewTab({ data, brand }) {
+  if (!data?.campaignInsights?.length) return <EmptyState brand={brand} />;
+  const totals = useMemo(() => {
+    const t = { spend: 0, impressions: 0, reach: 0, clicks: 0, conversions: 0, revenue: 0, outboundClicks: 0 };
+    data.campaignInsights.forEach(r => {
+      t.spend += parseFloat(r.spend || 0);
+      t.impressions += parseInt(r.impressions || 0);
+      t.reach += parseInt(r.reach || 0);
+      t.clicks += parseInt(r.clicks || 0);
+      t.conversions += getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
+      t.revenue += getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      t.outboundClicks += getActionValue(r.outbound_clicks, 'outbound_click');
+    });
+    return t;
+  }, [data]);
+
+  const kpis = [
+    { label: 'Total Spend', value: fmt.currency(totals.spend), icon: Icons.spend },
+    { label: 'Impressions', value: fmt.number(totals.impressions), icon: Icons.eye },
+    { label: 'Reach', value: fmt.number(totals.reach), icon: Icons.eye },
+    { label: 'Clicks', value: fmt.number(totals.clicks), icon: Icons.click },
+    { label: 'CTR', value: fmt.pct(totals.clicks / totals.impressions * 100), icon: Icons.chart },
+    { label: 'CPC', value: fmt.currency(totals.spend / totals.clicks), icon: Icons.spend },
+    { label: 'CPM', value: fmt.currency(totals.spend / totals.impressions * 1000), icon: Icons.spend },
+    { label: 'Outbound Clicks', value: fmt.number(totals.outboundClicks), icon: Icons.click },
+    { label: 'Conversions', value: fmt.number(totals.conversions), icon: Icons.cart },
+    { label: 'Cost / Conv.', value: totals.conversions > 0 ? fmt.currency(totals.spend / totals.conversions) : '-', icon: Icons.spend },
+    { label: 'Revenue', value: fmt.currency(totals.revenue), icon: Icons.spend },
+    { label: 'ROAS', value: totals.spend > 0 ? fmt.roas(totals.revenue / totals.spend) : '-', icon: Icons.chart },
+  ];
+
+  const topCampaigns = [...data.campaignInsights]
+    .sort((a,b) => parseFloat(b.spend) - parseFloat(a.spend))
+    .slice(0, 5);
+
+  const b = BRANDS[brand];
+
+  return (
+    <div className="space-y-6 fade-in">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 stagger">
+        {kpis.map(k => <KpiCard key={k.label} {...k} brand={brand} />)}
+      </div>
+      <div className="bg-white rounded-xl border p-6" style={{borderColor: b.cardBorder}}>
+        <h3 className="font-display font-bold text-gray-900 mb-4">Top Campaigns by Spend</h3>
+        <div className="space-y-3">
+          {topCampaigns.map((c, i) => {
+            const maxSpend = parseFloat(topCampaigns[0]?.spend || 1);
+            const pct = (parseFloat(c.spend) / maxSpend) * 100;
+            const conversions = getActionValue(c.actions, 'purchase') + getActionValue(c.actions, 'omni_purchase');
+            const revenue = getActionValue(c.action_values, 'purchase') + getActionValue(c.action_values, 'omni_purchase');
+            return (
+              <div key={i} className="group">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700 truncate max-w-[60%]">{c.campaign_name}</span>
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <span>{fmt.currency(c.spend)}</span>
+                    <span>{conversions > 0 ? fmt.number(conversions) + ' conv.' : '-'}</span>
+                    <span>{revenue > 0 && parseFloat(c.spend) > 0 ? fmt.roas(revenue / parseFloat(c.spend)) + ' ROAS' : '-'}</span>
+                  </div>
+                </div>
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-700" style={{width: pct + '%', backgroundColor: b.primary}} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Campaign Tab ───
+function CampaignsTab({ data, brand }) {
+  if (!data?.campaignInsights?.length) return <EmptyState brand={brand} />;
+  const [statusFilter, setStatusFilter] = useState('all');
+  const rows = useMemo(() => data.campaignInsights.map(r => {
+    const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
+    const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+    const costPerConv = getActionValue(r.cost_per_action_type, 'purchase') + getActionValue(r.cost_per_action_type, 'omni_purchase');
+    const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+    return {
+      name: r.campaign_name,
+      spend: parseFloat(r.spend || 0),
+      impressions: parseInt(r.impressions || 0),
+      reach: parseInt(r.reach || 0),
+      clicks: parseInt(r.clicks || 0),
+      ctr: parseFloat(r.ctr || 0),
+      cpc: parseFloat(r.cpc || 0),
+      cpm: parseFloat(r.cpm || 0),
+      frequency: parseFloat(r.frequency || 0),
+      outboundClicks: outbound,
+      conversions,
+      costPerConv: costPerConv || (conversions > 0 ? parseFloat(r.spend)/conversions : 0),
+      revenue,
+      roas: parseFloat(r.spend) > 0 ? revenue / parseFloat(r.spend) : 0,
+    };
+  }), [data]);
+
+  const columns = [
+    { key: 'name', label: 'Campaign', bold: true, sortable: true },
+    { key: 'spend', label: 'Spend', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'reach', label: 'Reach', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'clicks', label: 'Clicks', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'ctr', label: 'CTR', align: 'right', sortable: true, render: v => fmt.pct(v) },
+    { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'cpm', label: 'CPM', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'outboundClicks', label: 'Outbound', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'frequency', label: 'Freq.', align: 'right', sortable: true, render: v => fmt.decimal(v) },
+    { key: 'conversions', label: 'Conv.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
+    { key: 'costPerConv', label: 'CPA', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
+    { key: 'revenue', label: 'Revenue', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
+    { key: 'roas', label: 'ROAS', align: 'right', sortable: true, render: v => v > 0 ? fmt.roas(v) : '-' },
+  ];
+
+  return (
+    <div className="fade-in">
+      <SortableTable columns={columns} data={rows} brand={brand} />
+    </div>
+  );
+}
+
+// ─── Ad Sets Tab ───
+function AdSetsTab({ data, brand }) {
+  if (!data?.adsetInsights?.length) return <EmptyState brand={brand} />;
+  const [campaignFilter, setCampaignFilter] = useState('all');
+  const campaigns = useMemo(() => [...new Set(data.adsetInsights.map(r => r.campaign_name))].sort(), [data]);
+  const b = BRANDS[brand];
+
+  const rows = useMemo(() => {
+    let filtered = data.adsetInsights;
+    if (campaignFilter !== 'all') filtered = filtered.filter(r => r.campaign_name === campaignFilter);
+    return filtered.map(r => {
+      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
+      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+      return {
+        campaign: r.campaign_name,
+        name: r.adset_name,
+        spend: parseFloat(r.spend || 0),
+        impressions: parseInt(r.impressions || 0),
+        reach: parseInt(r.reach || 0),
+        clicks: parseInt(r.clicks || 0),
+        ctr: parseFloat(r.ctr || 0),
+        cpc: parseFloat(r.cpc || 0),
+        cpm: parseFloat(r.cpm || 0),
+        frequency: parseFloat(r.frequency || 0),
+        outboundClicks: outbound,
+        conversions,
+        costPerConv: conversions > 0 ? parseFloat(r.spend)/conversions : 0,
+        revenue,
+        roas: parseFloat(r.spend) > 0 ? revenue / parseFloat(r.spend) : 0,
+      };
+    });
+  }, [data, campaignFilter]);
+
+  const columns = [
+    { key: 'campaign', label: 'Campaign', sortable: true, render: v => <span className="text-gray-400 text-xs">{v}</span> },
+    { key: 'name', label: 'Ad Set', bold: true, sortable: true },
+    { key: 'spend', label: 'Spend', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'reach', label: 'Reach', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'clicks', label: 'Clicks', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'ctr', label: 'CTR', align: 'right', sortable: true, render: v => fmt.pct(v) },
+    { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'outboundClicks', label: 'Outbound', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'frequency', label: 'Freq.', align: 'right', sortable: true, render: v => fmt.decimal(v) },
+    { key: 'conversions', label: 'Conv.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
+    { key: 'costPerConv', label: 'CPA', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
+    { key: 'roas', label: 'ROAS', align: 'right', sortable: true, render: v => v > 0 ? fmt.roas(v) : '-' },
+  ];
+
+  return (
+    <div className="space-y-4 fade-in">
+      <div className="flex items-center gap-3">
+        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Campaign</label>
+        <select
+          value={campaignFilter}
+          onChange={e => setCampaignFilter(e.target.value)}
+          className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
+          style={{borderColor: b.cardBorder}}
+        >
+          <option value="all">All Campaigns</option>
+          {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+      <SortableTable columns={columns} data={rows} brand={brand} />
+    </div>
+  );
+}
+
+// ─── Ads Tab ───
+function AdsTab({ data, brand }) {
+  if (!data?.adInsights?.length) return <EmptyState brand={brand} />;
+  const [campaignFilter, setCampaignFilter] = useState('all');
+  const campaigns = useMemo(() => [...new Set(data.adInsights.map(r => r.campaign_name))].sort(), [data]);
+  const b = BRANDS[brand];
+
+  const creativeMap = useMemo(() => {
+    const map = {};
+    (data.adsCreatives || []).forEach(ad => {
+      if (ad.creative) map[ad.id] = ad.creative;
+    });
+    return map;
+  }, [data]);
+
+  const rows = useMemo(() => {
+    let filtered = data.adInsights;
+    if (campaignFilter !== 'all') filtered = filtered.filter(r => r.campaign_name === campaignFilter);
+    return filtered.map(r => {
+      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
+      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+      const creative = creativeMap[r.ad_id];
+      return {
+        thumbnail: creative?.thumbnail_url || creative?.image_url || null,
+        campaign: r.campaign_name,
+        adset: r.adset_name,
+        name: r.ad_name,
+        spend: parseFloat(r.spend || 0),
+        impressions: parseInt(r.impressions || 0),
+        clicks: parseInt(r.clicks || 0),
+        ctr: parseFloat(r.ctr || 0),
+        cpc: parseFloat(r.cpc || 0),
+        outboundClicks: outbound,
+        frequency: parseFloat(r.frequency || 0),
+        conversions,
+        costPerConv: conversions > 0 ? parseFloat(r.spend)/conversions : 0,
+        revenue,
+        roas: parseFloat(r.spend) > 0 ? revenue / parseFloat(r.spend) : 0,
+      };
+    });
+  }, [data, campaignFilter, creativeMap]);
+
+  const columns = [
+    { key: 'thumbnail', label: '', sortable: false, render: v => v ?
+      <img src={v} alt="" className="w-10 h-10 rounded object-cover" /> :
+      <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-xs">N/A</div>
+    },
+    { key: 'name', label: 'Ad', bold: true, sortable: true },
+    { key: 'adset', label: 'Ad Set', sortable: true, render: v => <span className="text-gray-400 text-xs">{v}</span> },
+    { key: 'spend', label: 'Spend', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'clicks', label: 'Clicks', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'ctr', label: 'CTR', align: 'right', sortable: true, render: v => fmt.pct(v) },
+    { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'outboundClicks', label: 'Outbound', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'conversions', label: 'Conv.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
+    { key: 'costPerConv', label: 'CPA', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
+    { key: 'roas', label: 'ROAS', align: 'right', sortable: true, render: v => v > 0 ? fmt.roas(v) : '-' },
+  ];
+
+  return (
+    <div className="space-y-4 fade-in">
+      <div className="flex items-center gap-3">
+        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Campaign</label>
+        <select
+          value={campaignFilter}
+          onChange={e => setCampaignFilter(e.target.value)}
+          className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
+          style={{borderColor: b.cardBorder}}
+        >
+          <option value="all">All Campaigns</option>
+          {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+      <SortableTable columns={columns} data={rows} brand={brand} />
+    </div>
+  );
+}
+
+// ─── Creative Performance Tab ───
+function CreativeTab({ data, brand }) {
+  if (!data?.adInsights?.length) return <EmptyState brand={brand} />;
+  const [sortMetric, setSortMetric] = useState('roas');
+  const b = BRANDS[brand];
+
+  const creativeMap = useMemo(() => {
+    const map = {};
+    (data.adsCreatives || []).forEach(ad => {
+      if (ad.creative) map[ad.id] = ad.creative;
+    });
+    return map;
+  }, [data]);
+
+  const cards = useMemo(() => {
+    return data.adInsights
+      .map(r => {
+        const creative = creativeMap[r.ad_id];
+        const thumb = creative?.thumbnail_url || creative?.image_url;
+        if (!thumb) return null;
+        const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
+        const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+        const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+        return {
+          name: r.ad_name,
+          campaign: r.campaign_name,
+          adset: r.adset_name,
+          thumbnail: thumb,
+          title: creative?.title || '',
+          body: creative?.body || '',
+          spend: parseFloat(r.spend || 0),
+          impressions: parseInt(r.impressions || 0),
+          clicks: parseInt(r.clicks || 0),
+          ctr: parseFloat(r.ctr || 0),
+          cpc: parseFloat(r.cpc || 0),
+          outboundClicks: outbound,
+          conversions,
+          costPerConv: conversions > 0 ? parseFloat(r.spend)/conversions : 0,
+          revenue,
+          roas: parseFloat(r.spend) > 0 ? revenue / parseFloat(r.spend) : 0,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (b[sortMetric] || 0) - (a[sortMetric] || 0));
+  }, [data, creativeMap, sortMetric]);
+
+  const avgMetric = useMemo(() => {
+    if (!cards.length) return 0;
+    return cards.reduce((s, c) => s + (c[sortMetric] || 0), 0) / cards.length;
+  }, [cards, sortMetric]);
+
+  const metricOptions = [
+    { value: 'roas', label: 'ROAS' },
+    { value: 'ctr', label: 'CTR' },
+    { value: 'cpc', label: 'CPC (low is better)' },
+    { value: 'conversions', label: 'Conversions' },
+    { value: 'spend', label: 'Spend' },
+    { value: 'outboundClicks', label: 'Outbound Clicks' },
+  ];
+
+  const isLowerBetter = sortMetric === 'cpc' || sortMetric === 'costPerConv';
+
+  return (
+    <div className="space-y-4 fade-in">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Rank by</label>
+          <select
+            value={sortMetric}
+            onChange={e => setSortMetric(e.target.value)}
+            className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
+            style={{borderColor: b.cardBorder}}
+          >
+            {metricOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+        <span className="text-xs text-gray-400">{cards.length} creatives with thumbnails</span>
+      </div>
+
+      {cards.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">
+          No ad creatives with thumbnails found. Creative thumbnails require active or recently paused ads.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 stagger">
+          {cards.map((card, i) => {
+            const val = card[sortMetric] || 0;
+            const isGood = isLowerBetter ? val < avgMetric : val > avgMetric;
+            const rankColor = i < 3 ? b.primary : (isGood ? '#059669' : '#dc2626');
+            return (
+              <div key={i} className="creative-card bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all group" style={{borderColor: b.cardBorder}}>
+                <div className="relative">
+                  <img src={card.thumbnail} alt={card.name} className="w-full h-48 object-cover" />
+                  <div className="absolute top-2 left-2">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold shadow" style={{backgroundColor: rankColor}}>
+                      {i + 1}
+                    </span>
+                  </div>
+                  <div className="creative-overlay absolute inset-0 bg-black/60 opacity-0 flex items-end p-3">
+                    <p className="text-white text-xs line-clamp-3">{card.body || card.title || 'No copy'}</p>
+                  </div>
+                </div>
+                <div className="p-3">
+                  <h4 className="text-sm font-semibold text-gray-900 truncate mb-1">{card.name}</h4>
+                  <p className="text-xs text-gray-400 truncate mb-3">{card.campaign}</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="text-center">
+                      <div className="text-xs text-gray-400">Spend</div>
+                      <div className="text-sm font-semibold text-gray-700">{fmt.currency(card.spend)}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-400">CTR</div>
+                      <div className="text-sm font-semibold text-gray-700">{fmt.pct(card.ctr)}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-400">ROAS</div>
+                      <div className="text-sm font-semibold text-gray-700">{card.roas > 0 ? fmt.roas(card.roas) : '-'}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-400">CPC</div>
+                      <div className="text-sm font-semibold text-gray-700">{fmt.currency(card.cpc)}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-400">Conv.</div>
+                      <div className="text-sm font-semibold text-gray-700">{card.conversions > 0 ? fmt.number(card.conversions) : '-'}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-400">Outbound</div>
+                      <div className="text-sm font-semibold text-gray-700">{fmt.number(card.outboundClicks)}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Empty State ───
+function EmptyState({ brand }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-gray-400 fade-in">
+      <svg className="w-16 h-16 mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+      <p className="text-sm">No data for selected period</p>
+      <p className="text-xs mt-1">Try adjusting the date range or check your token has ads_read permission</p>
+    </div>
+  );
+}
+
+// ─── Loading Overlay ───
+function LoadingOverlay({ brand }) {
+  const b = BRANDS[brand];
+  return (
+    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-10 h-10 border-3 border-gray-200 rounded-full spinner mx-auto mb-4" style={{borderTopColor: b.primary, borderWidth: '3px'}} />
+        <p className="text-sm text-gray-500 font-medium">Pulling fresh data from Meta...</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ───
+function App() {
+  const [token, setToken] = useState(localStorage.getItem('meta_ads_token') || '');
+  const [brand, setBrand] = useState(localStorage.getItem('meta_ads_brand') || 'gaf');
+  const [tab, setTab] = useState('overview');
+  const [datePreset, setDatePreset] = useState('last_30d');
+  const [customDates, setCustomDates] = useState({ since: '', until: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState(null);
+  const [lastRefresh, setLastRefresh] = useState(null);
+
+  const b = BRANDS[brand];
+
+  const handleBrandSwitch = (newBrand) => {
+    setBrand(newBrand);
+    localStorage.setItem('meta_ads_brand', newBrand);
+    setData(null);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('meta_ads_token');
+    setToken('');
+    setData(null);
+  };
+
+  const fetchData = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { since, until } = getDateRange(datePreset, customDates);
+      if (!since || !until) { setError('Please select valid dates'); setLoading(false); return; }
+      const accountId = BRANDS[brand].accountId;
+
+      const [campaignInsights, adsetInsights, adInsights, adsCreatives] = await Promise.all([
+        fetchInsights(accountId, 'campaign', since, until, token),
+        fetchInsights(accountId, 'adset', since, until, token),
+        fetchInsights(accountId, 'ad', since, until, token),
+        fetchAdsCreatives(accountId, token),
+      ]);
+
+      setData({ campaignInsights, adsetInsights, adInsights, adsCreatives });
+      setLastRefresh(new Date());
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, brand, datePreset, customDates]);
+
+  useEffect(() => {
+    if (token) fetchData();
+  }, [brand]);
+
+  if (!token) return <TokenScreen onSave={setToken} brand={brand} />;
+
+  const tabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'campaigns', label: 'Campaigns' },
+    { id: 'adsets', label: 'Ad Sets' },
+    { id: 'ads', label: 'Ads' },
+    { id: 'creative', label: 'Creative Performance' },
+  ];
+
+  const dateOptions = [
+    { value: 'today', label: 'Today' },
+    { value: 'yesterday', label: 'Yesterday' },
+    { value: 'last_7d', label: 'Last 7 Days' },
+    { value: 'last_14d', label: 'Last 14 Days' },
+    { value: 'last_30d', label: 'Last 30 Days' },
+    { value: 'this_month', label: 'This Month' },
+    { value: 'last_month', label: 'Last Month' },
+    { value: 'custom', label: 'Custom Range' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {loading && <LoadingOverlay brand={brand} />}
+
+      {/* Header */}
+      <header className="sticky top-0 z-40 shadow-sm" style={{backgroundColor: b.headerBg}}>
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <img src={b.logo} alt={b.name} className="h-7 w-auto object-contain" />
+              <div className="h-6 w-px bg-white/20" />
+              <span className="text-sm font-medium" style={{color: b.headerText, opacity: 0.7}}>Ad Performance</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Brand Toggle */}
+              <div className="flex rounded-lg overflow-hidden border border-white/20">
+                {Object.entries(BRANDS).map(([key, val]) => (
+                  <button
+                    key={key}
+                    onClick={() => handleBrandSwitch(key)}
+                    className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all"
+                    style={{
+                      backgroundColor: brand === key ? 'rgba(255,255,255,0.2)' : 'transparent',
+                      color: b.headerText,
+                    }}
+                  >
+                    {key === 'gaf' ? 'GAF' : 'Revel'}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-lg transition-colors hover:bg-white/10"
+                style={{color: b.headerText}}
+                title="Change token"
+              >
+                {Icons.logout}
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Controls Bar */}
+      <div className="bg-white border-b" style={{borderColor: b.cardBorder}}>
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-14 gap-4">
+            {/* Tabs */}
+            <nav className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
+              {tabs.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className="px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-all"
+                  style={{
+                    backgroundColor: tab === t.id ? b.primaryLight : 'transparent',
+                    color: tab === t.id ? b.primary : '#6b7280',
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </nav>
+
+            {/* Date + Refresh */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <select
+                value={datePreset}
+                onChange={e => setDatePreset(e.target.value)}
+                className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
+                style={{borderColor: b.cardBorder}}
+              >
+                {dateOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+
+              {datePreset === 'custom' && (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="date"
+                    value={customDates.since}
+                    onChange={e => setCustomDates(p => ({...p, since: e.target.value}))}
+                    className="px-2 py-1.5 text-sm border rounded-lg"
+                    style={{borderColor: b.cardBorder}}
+                  />
+                  <span className="text-gray-400 text-xs">to</span>
+                  <input
+                    type="date"
+                    value={customDates.until}
+                    onChange={e => setCustomDates(p => ({...p, until: e.target.value}))}
+                    className="px-2 py-1.5 text-sm border rounded-lg"
+                    style={{borderColor: b.cardBorder}}
+                  />
+                </div>
+              )}
+
+              <button
+                onClick={fetchData}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                style={{backgroundColor: b.primary}}
+              >
+                {Icons.refresh}
+                Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 mt-4">
+          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center justify-between">
+            <span className="text-sm text-red-700">{error}</span>
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 text-sm">Dismiss</button>
+          </div>
+        </div>
+      )}
+
+      {/* Last Refreshed */}
+      {lastRefresh && (
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 mt-3">
+          <p className="text-xs text-gray-400">
+            Last refreshed: {lastRefresh.toLocaleTimeString()} ({getDateRange(datePreset, customDates).since} to {getDateRange(datePreset, customDates).until})
+          </p>
+        </div>
+      )}
+
+      {/* Content */}
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6">
+        {!data && !loading && !error && (
+          <div className="text-center py-20 text-gray-400">
+            <p className="text-sm">Click Refresh to pull data</p>
+          </div>
+        )}
+        {tab === 'overview' && data && <OverviewTab data={data} brand={brand} />}
+        {tab === 'campaigns' && data && <CampaignsTab data={data} brand={brand} />}
+        {tab === 'adsets' && data && <AdSetsTab data={data} brand={brand} />}
+        {tab === 'ads' && data && <AdsTab data={data} brand={brand} />}
+        {tab === 'creative' && data && <CreativeTab data={data} brand={brand} />}
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t py-4 mt-8" style={{borderColor: b.cardBorder}}>
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <span className="text-xs text-gray-300">Data pulled live from Meta Marketing API v21.0</span>
+          <span className="text-xs text-gray-300">Token stored locally in browser only</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+// ─── Mount ───
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
+</script>
+</body>
+</html>
