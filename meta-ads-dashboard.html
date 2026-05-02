@@ -154,10 +154,11 @@ async function apiFetch(path, token) {
   return res.json();
 }
 
-async function fetchAllPages(path, token) {
+async function fetchAllPages(path, token, maxPages = 50) {
   let all = [];
   let url = `${META_API}${path}${path.includes('?') ? '&' : '?'}access_token=${token}`;
-  while (url) {
+  let page = 0;
+  while (url && page < maxPages) {
     const res = await fetch(url);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -166,6 +167,7 @@ async function fetchAllPages(path, token) {
     const json = await res.json();
     all = all.concat(json.data || []);
     url = json.paging?.next || null;
+    page++;
   }
   return all;
 }
@@ -179,11 +181,19 @@ async function fetchInsights(accountId, level, since, until, token) {
   );
 }
 
-async function fetchAdsCreatives(accountId, token) {
-  return fetchAllPages(
-    `/${accountId}/ads?fields=id,name,status,creative{thumbnail_url,image_url,body,title,name}&limit=200&filtering=[{"field":"effective_status","operator":"IN","value":["ACTIVE","PAUSED"]}]`,
-    token
-  );
+async function fetchAdsCreatives(adIds, token) {
+  if (!adIds || adIds.length === 0) return [];
+  const batchSize = 50;
+  const results = [];
+  for (let i = 0; i < adIds.length; i += batchSize) {
+    const batch = adIds.slice(i, i + batchSize);
+    const ids = batch.join(',');
+    const res = await fetch(`${META_API}/?ids=${ids}&fields=id,name,status,creative{thumbnail_url,image_url,body,title,name}&access_token=${token}`);
+    if (!res.ok) continue;
+    const json = await res.json();
+    results.push(...Object.values(json));
+  }
+  return results;
 }
 
 // ─── Icons (inline SVG) ───
@@ -815,12 +825,14 @@ function App() {
       if (!since || !until) { setError('Please select valid dates'); setLoading(false); return; }
       const accountId = BRANDS[brand].accountId;
 
-      const [campaignInsights, adsetInsights, adInsights, adsCreatives] = await Promise.all([
+      const [campaignInsights, adsetInsights, adInsights] = await Promise.all([
         fetchInsights(accountId, 'campaign', since, until, token),
         fetchInsights(accountId, 'adset', since, until, token),
         fetchInsights(accountId, 'ad', since, until, token),
-        fetchAdsCreatives(accountId, token),
       ]);
+
+      const adIds = [...new Set(adInsights.map(r => r.ad_id).filter(Boolean))];
+      const adsCreatives = await fetchAdsCreatives(adIds, token);
 
       setData({ campaignInsights, adsetInsights, adInsights, adsCreatives });
       setLastRefresh(new Date());
