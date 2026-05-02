@@ -93,6 +93,7 @@ const BRANDS = {
 };
 
 const META_API = 'https://graph.facebook.com/v21.0';
+const DEFAULT_TOKEN = 'EAAKiMl2GC1oBRfyCoV0VkZCaPySg3qxIBkA8705MevFgXRscMxHgmXCF83sBlbvNm2QDa564iZAFZB4UWAhqNFL3q6laaqpCWha5TZAHKZAtjv1OiSb9JZBqqigJCoyfMvPMpNikvmUmACXwJASjovZCZAHB3dBH124BAqaLuhH9RgSRsZAbQq3oYSqe7NwZDZD';
 
 // ─── Helpers ───
 const fmt = {
@@ -260,12 +261,12 @@ function TokenScreen({ onSave, brand }) {
 function KpiCard({ label, value, icon, brand }) {
   const b = BRANDS[brand];
   return (
-    <div className="bg-white rounded-xl border p-4 hover:shadow-md transition-shadow" style={{borderColor: b.cardBorder}}>
-      <div className="flex items-center gap-2 mb-2">
-        <span className="opacity-40">{icon}</span>
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
+    <div className="bg-white rounded-xl border p-3 sm:p-4 hover:shadow-md transition-shadow" style={{borderColor: b.cardBorder}}>
+      <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+        <span className="opacity-40 hidden sm:block">{icon}</span>
+        <span className="text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider leading-tight">{label}</span>
       </div>
-      <div className="text-2xl font-bold text-gray-900 font-display">{value}</div>
+      <div className="text-lg sm:text-2xl font-bold text-gray-900 font-display">{value}</div>
     </div>
   );
 }
@@ -390,7 +391,7 @@ function OverviewTab({ data, brand }) {
 
   return (
     <div className="space-y-6 fade-in">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 stagger">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3 stagger">
         {kpis.map(k => <KpiCard key={k.label} {...k} brand={brand} />)}
       </div>
       <div className="bg-white rounded-xl border p-6" style={{borderColor: b.cardBorder}}>
@@ -707,7 +708,7 @@ function CreativeTab({ data, brand }) {
           No ad creatives with thumbnails found. Creative thumbnails require active or recently paused ads.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 stagger">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 stagger">
           {cards.map((card, i) => {
             const val = card[sortMetric] || 0;
             const isGood = isLowerBetter ? val < avgMetric : val > avgMetric;
@@ -792,7 +793,7 @@ function LoadingOverlay({ brand }) {
 
 // ─── Main App ───
 function App() {
-  const [token, setToken] = useState(localStorage.getItem('meta_ads_token') || '');
+  const [token, setToken] = useState(localStorage.getItem('meta_ads_token') || DEFAULT_TOKEN);
   const [brand, setBrand] = useState(localStorage.getItem('meta_ads_brand') || 'gaf');
   const [tab, setTab] = useState('overview');
   const [datePreset, setDatePreset] = useState('last_30d');
@@ -847,6 +848,10 @@ function App() {
     if (token) fetchData();
   }, [brand]);
 
+  useEffect(() => {
+    if (token && !data && !loading) fetchData();
+  }, [token]);
+
   if (!token) return <TokenScreen onSave={setToken} brand={brand} />;
 
   const tabs = [
@@ -874,22 +879,22 @@ function App() {
 
       {/* Header */}
       <header className="sticky top-0 z-40 shadow-sm" style={{backgroundColor: b.headerBg}}>
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <img src={b.logo} alt={b.name} className="h-7 w-auto object-contain" />
-              <div className="h-6 w-px bg-white/20" />
-              <span className="text-sm font-medium" style={{color: b.headerText, opacity: 0.7}}>Ad Performance</span>
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-6">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <img src={b.logo} alt={b.name} className="h-5 sm:h-7 w-auto object-contain" />
+              <div className="h-5 w-px bg-white/20 hidden sm:block" />
+              <span className="text-xs sm:text-sm font-medium hidden sm:block" style={{color: b.headerText, opacity: 0.7}}>Ad Performance</span>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Brand Toggle */}
               <div className="flex rounded-lg overflow-hidden border border-white/20">
                 {Object.entries(BRANDS).map(([key, val]) => (
                   <button
                     key={key}
                     onClick={() => handleBrandSwitch(key)}
-                    className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all"
+                    className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold uppercase tracking-wider transition-all"
                     style={{
                       backgroundColor: brand === key ? 'rgba(255,255,255,0.2)' : 'transparent',
                       color: b.headerText,
@@ -902,7 +907,7 @@ function App() {
 
               <button
                 onClick={handleLogout}
-                className="p-2 rounded-lg transition-colors hover:bg-white/10"
+                className="p-1.5 sm:p-2 rounded-lg transition-colors hover:bg-white/10"
                 style={{color: b.headerText}}
                 title="Change token"
               >
@@ -915,15 +920,15 @@ function App() {
 
       {/* Controls Bar */}
       <div className="bg-white border-b" style={{borderColor: b.cardBorder}}>
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-14 gap-4">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2 sm:py-0 sm:h-14">
             {/* Tabs */}
-            <nav className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
+            <nav className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto scrollbar-thin -mx-1 px-1">
               {tabs.map(t => (
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-all"
+                  className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap transition-all"
                   style={{
                     backgroundColor: tab === t.id ? b.primaryLight : 'transparent',
                     color: tab === t.id ? b.primary : '#6b7280',
@@ -939,7 +944,7 @@ function App() {
               <select
                 value={datePreset}
                 onChange={e => setDatePreset(e.target.value)}
-                className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
+                className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm border rounded-lg bg-white focus:outline-none flex-1 sm:flex-none"
                 style={{borderColor: b.cardBorder}}
               >
                 {dateOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -951,7 +956,7 @@ function App() {
                     type="date"
                     value={customDates.since}
                     onChange={e => setCustomDates(p => ({...p, since: e.target.value}))}
-                    className="px-2 py-1.5 text-sm border rounded-lg"
+                    className="px-1.5 sm:px-2 py-1.5 text-xs sm:text-sm border rounded-lg w-28 sm:w-auto"
                     style={{borderColor: b.cardBorder}}
                   />
                   <span className="text-gray-400 text-xs">to</span>
@@ -959,7 +964,7 @@ function App() {
                     type="date"
                     value={customDates.until}
                     onChange={e => setCustomDates(p => ({...p, until: e.target.value}))}
-                    className="px-2 py-1.5 text-sm border rounded-lg"
+                    className="px-1.5 sm:px-2 py-1.5 text-xs sm:text-sm border rounded-lg w-28 sm:w-auto"
                     style={{borderColor: b.cardBorder}}
                   />
                 </div>
@@ -968,7 +973,7 @@ function App() {
               <button
                 onClick={fetchData}
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-white rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
                 style={{backgroundColor: b.primary}}
               >
                 {Icons.refresh}
@@ -991,15 +996,15 @@ function App() {
 
       {/* Last Refreshed */}
       {lastRefresh && (
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 mt-3">
-          <p className="text-xs text-gray-400">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-6 mt-2 sm:mt-3">
+          <p className="text-[10px] sm:text-xs text-gray-400">
             Last refreshed: {lastRefresh.toLocaleTimeString()} ({getDateRange(datePreset, customDates).since} to {getDateRange(datePreset, customDates).until})
           </p>
         </div>
       )}
 
       {/* Content */}
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-[1600px] mx-auto px-3 sm:px-6 py-4 sm:py-6">
         {!data && !loading && !error && (
           <div className="text-center py-20 text-gray-400">
             <p className="text-sm">Click Refresh to pull data</p>
@@ -1013,10 +1018,10 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-4 mt-8" style={{borderColor: b.cardBorder}}>
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 flex items-center justify-between">
-          <span className="text-xs text-gray-300">Data pulled live from Meta Marketing API v21.0</span>
-          <span className="text-xs text-gray-300">Token stored locally in browser only</span>
+      <footer className="border-t py-3 sm:py-4 mt-6 sm:mt-8" style={{borderColor: b.cardBorder}}>
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-1">
+          <span className="text-[10px] sm:text-xs text-gray-300">Data pulled live from Meta Marketing API v21.0</span>
+          <span className="text-[10px] sm:text-xs text-gray-300">Token stored locally in browser only</span>
         </div>
       </footer>
     </div>
