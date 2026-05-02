@@ -11,7 +11,7 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Open Sans',sans-serif;overflow-x:hidden}
+body{font-family:'Open Sans',sans-serif;overflow-x:hidden;background:#f8f8fa}
 h1,h2,h3,h4,h5,h6,.font-display{font-family:'Montserrat',sans-serif}
 .scrollbar-thin::-webkit-scrollbar{width:6px;height:6px}
 .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
@@ -35,6 +35,8 @@ h1,h2,h3,h4,h5,h6,.font-display{font-family:'Montserrat',sans-serif}
 input[type="date"]{color-scheme:light}
 .creative-card:hover .creative-overlay{opacity:1}
 .creative-overlay{transition:opacity .2s ease}
+.dash-card{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.04)}
+.dash-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04)}
 </style>
 <script>
 tailwind.config = {
@@ -281,9 +283,8 @@ function TokenScreen({ onSave, brand }) {
 function KpiCard({ label, value, icon, brand }) {
   const b = BRANDS[brand];
   return (
-    <div className="bg-white rounded-xl border p-3 sm:p-4 hover:shadow-md transition-all group" style={{borderColor: b.cardBorder}}>
+    <div className="dash-card p-3 sm:p-5 transition-all group">
       <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-        <span className="opacity-30 hidden sm:block group-hover:opacity-50 transition-opacity" style={{color: b.primary}}>{icon}</span>
         <span className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider leading-tight">{label}</span>
       </div>
       <div className="text-lg sm:text-2xl font-bold text-gray-900 font-display tabular-nums">{value}</div>
@@ -316,10 +317,10 @@ function SortableTable({ columns, data, brand, onRowClick }) {
   };
 
   return (
-    <div className="overflow-x-auto scrollbar-thin rounded-xl border bg-white" style={{borderColor: b.cardBorder}}>
+    <div className="overflow-x-auto scrollbar-thin dash-card">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b" style={{borderColor: b.cardBorder}}>
+          <tr className="border-b" style={{borderColor: '#f0f0f2'}}>
             {columns.map(col => (
               <th key={col.key}
                 onClick={() => col.sortable !== false && handleSort(col.key)}
@@ -340,7 +341,7 @@ function SortableTable({ columns, data, brand, onRowClick }) {
             <tr key={i}
               onClick={() => onRowClick?.(row)}
               className={`border-b last:border-0 hover:bg-gray-50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
-              style={{borderColor: b.cardBorder}}
+              style={{borderColor: '#f0f0f2'}}
             >
               {columns.map(col => (
                 <td key={col.key} className={`px-4 py-3 whitespace-nowrap ${col.align === 'right' ? 'text-right tabular-nums' : ''} ${col.bold ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
@@ -414,8 +415,13 @@ function OverviewTab({ data, brand }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3 stagger">
         {kpis.map(k => <KpiCard key={k.label} {...k} brand={brand} />)}
       </div>
-      <div className="bg-white rounded-xl border p-6" style={{borderColor: b.cardBorder}}>
-        <h3 className="font-display font-bold text-gray-900 mb-4">Top Campaigns by Spend</h3>
+      <div className="dash-card p-5 sm:p-6">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: b.primary}}>
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+          </div>
+          <h3 className="font-display text-lg font-bold text-gray-900">Top Campaigns by Spend</h3>
+        </div>
         <div className="space-y-3">
           {topCampaigns.map((c, i) => {
             const maxSpend = parseFloat(topCampaigns[0]?.spend || 1);
@@ -553,7 +559,7 @@ function AdSetsTab({ data, brand }) {
           value={campaignFilter}
           onChange={e => setCampaignFilter(e.target.value)}
           className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
-          style={{borderColor: b.cardBorder}}
+          style={{borderColor: '#f0f0f2'}}
         >
           <option value="all">All Campaigns</option>
           {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
@@ -639,7 +645,7 @@ function AdsTab({ data, brand }) {
           value={campaignFilter}
           onChange={e => setCampaignFilter(e.target.value)}
           className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
-          style={{borderColor: b.cardBorder}}
+          style={{borderColor: '#f0f0f2'}}
         >
           <option value="all">All Campaigns</option>
           {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
@@ -706,7 +712,7 @@ function CreativeModal({ card, rank, brand, onClose }) {
             ))}
           </div>
           {(card.body || card.title) && (
-            <div className="mt-4 border-t pt-3" style={{borderColor: b.cardBorder}}>
+            <div className="mt-4 border-t pt-3" style={{borderColor: '#f0f0f2'}}>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1.5 font-semibold">Ad Copy</p>
               {card.title && <p className="text-sm font-semibold text-gray-700 mb-1">{card.title}</p>}
               {card.body && <p className="text-xs text-gray-500 whitespace-pre-line leading-relaxed">{card.body}</p>}
@@ -800,7 +806,7 @@ function CreativeTab({ data, brand }) {
             value={sortMetric}
             onChange={e => setSortMetric(e.target.value)}
             className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
-            style={{borderColor: b.cardBorder}}
+            style={{borderColor: '#f0f0f2'}}
           >
             {metricOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
@@ -867,7 +873,7 @@ function EmptyState({ brand }) {
 function LoadingOverlay({ brand }) {
   const b = BRANDS[brand];
   return (
-    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background: 'rgba(248,248,250,.85)', backdropFilter: 'blur(8px)'}}>
       <div className="text-center">
         <div className="w-10 h-10 border-3 border-gray-200 rounded-full spinner mx-auto mb-4" style={{borderTopColor: b.primary, borderWidth: '3px'}} />
         <p className="text-sm text-gray-500 font-medium">Pulling fresh data from Meta...</p>
@@ -959,30 +965,30 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{background: '#f8f8fa'}}>
       {loading && <LoadingOverlay brand={brand} />}
 
       {/* Header */}
-      <header className="sticky top-0 z-40 shadow-sm" style={{backgroundColor: b.headerBg}}>
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md" style={{boxShadow: '0 1px 3px rgba(0,0,0,.08)'}}>
         <div className="max-w-[1600px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between h-14 sm:h-16">
-            <div className="flex items-center gap-2 sm:gap-4">
-              <img src={b.logo} alt={b.name} className="h-5 sm:h-7 w-auto object-contain" />
-              <div className="h-5 w-px bg-white/20 hidden sm:block" />
-              <span className="text-xs sm:text-sm font-medium hidden sm:block" style={{color: b.headerText, opacity: 0.7}}>Ad Performance</span>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <img src={b.logoDark} alt={b.name} className="h-5 sm:h-7 w-auto object-contain" />
+              <div className="h-5 w-px bg-gray-200 hidden sm:block" />
+              <h1 className="font-display text-sm sm:text-base font-bold text-gray-900 hidden sm:block">Ad Performance</h1>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Brand Toggle */}
-              <div className="flex rounded-lg overflow-hidden border border-white/20">
+              <div className="flex rounded-lg overflow-hidden border" style={{borderColor: '#e5e7eb'}}>
                 {Object.entries(BRANDS).map(([key, val]) => (
                   <button
                     key={key}
                     onClick={() => handleBrandSwitch(key)}
-                    className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold uppercase tracking-wider transition-all"
+                    className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-xs font-semibold uppercase tracking-wider transition-all"
                     style={{
-                      backgroundColor: brand === key ? 'rgba(255,255,255,0.2)' : 'transparent',
-                      color: b.headerText,
+                      backgroundColor: brand === key ? b.primary : 'transparent',
+                      color: brand === key ? '#fff' : '#6b7280',
                     }}
                   >
                     {key === 'gaf' ? 'GAF' : 'Revel'}
@@ -992,8 +998,7 @@ function App() {
 
               <button
                 onClick={handleLogout}
-                className="p-1.5 sm:p-2 rounded-lg transition-colors hover:bg-white/10"
-                style={{color: b.headerText}}
+                className="p-1.5 sm:p-2 rounded-lg transition-colors hover:bg-gray-100 text-gray-400 hover:text-gray-600"
                 title="Change token"
               >
                 {Icons.logout}
@@ -1004,67 +1009,65 @@ function App() {
       </header>
 
       {/* Controls Bar */}
-      <div className="bg-white border-b" style={{borderColor: b.cardBorder}}>
-        <div className="max-w-[1600px] mx-auto px-3 sm:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2 sm:py-0 sm:h-14">
-            {/* Tabs */}
-            <nav className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto scrollbar-thin -mx-1 px-1">
-              {tabs.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap transition-all"
-                  style={{
-                    backgroundColor: tab === t.id ? b.primaryLight : 'transparent',
-                    color: tab === t.id ? b.primary : '#6b7280',
-                  }}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </nav>
-
-            {/* Date + Refresh */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <select
-                value={datePreset}
-                onChange={e => setDatePreset(e.target.value)}
-                className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm border rounded-lg bg-white focus:outline-none flex-1 sm:flex-none"
-                style={{borderColor: b.cardBorder}}
-              >
-                {dateOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-
-              {datePreset === 'custom' && (
-                <div className="flex items-center gap-1">
-                  <input
-                    type="date"
-                    value={customDates.since}
-                    onChange={e => setCustomDates(p => ({...p, since: e.target.value}))}
-                    className="px-1.5 sm:px-2 py-1.5 text-xs sm:text-sm border rounded-lg w-28 sm:w-auto"
-                    style={{borderColor: b.cardBorder}}
-                  />
-                  <span className="text-gray-400 text-xs">to</span>
-                  <input
-                    type="date"
-                    value={customDates.until}
-                    onChange={e => setCustomDates(p => ({...p, until: e.target.value}))}
-                    className="px-1.5 sm:px-2 py-1.5 text-xs sm:text-sm border rounded-lg w-28 sm:w-auto"
-                    style={{borderColor: b.cardBorder}}
-                  />
-                </div>
-              )}
-
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-6 mt-4 sm:mt-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          {/* Tabs */}
+          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-thin bg-white rounded-xl p-1" style={{boxShadow: '0 1px 2px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)'}}>
+            {tabs.map(t => (
               <button
-                onClick={fetchData}
-                disabled={loading}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-white rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
-                style={{backgroundColor: b.primary}}
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg whitespace-nowrap transition-all"
+                style={{
+                  backgroundColor: tab === t.id ? b.primary : 'transparent',
+                  color: tab === t.id ? '#ffffff' : '#6b7280',
+                }}
               >
-                {Icons.refresh}
-                Refresh
+                {t.label}
               </button>
-            </div>
+            ))}
+          </nav>
+
+          {/* Date + Refresh */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <select
+              value={datePreset}
+              onChange={e => setDatePreset(e.target.value)}
+              className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border rounded-lg bg-white focus:outline-none flex-1 sm:flex-none"
+              style={{borderColor: '#e5e7eb'}}
+            >
+              {dateOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+
+            {datePreset === 'custom' && (
+              <div className="flex items-center gap-1">
+                <input
+                  type="date"
+                  value={customDates.since}
+                  onChange={e => setCustomDates(p => ({...p, since: e.target.value}))}
+                  className="px-1.5 sm:px-2 py-1.5 text-xs sm:text-sm border rounded-lg w-28 sm:w-auto"
+                  style={{borderColor: '#e5e7eb'}}
+                />
+                <span className="text-gray-400 text-xs">to</span>
+                <input
+                  type="date"
+                  value={customDates.until}
+                  onChange={e => setCustomDates(p => ({...p, until: e.target.value}))}
+                  className="px-1.5 sm:px-2 py-1.5 text-xs sm:text-sm border rounded-lg w-28 sm:w-auto"
+                  style={{borderColor: '#e5e7eb'}}
+                />
+              </div>
+            )}
+
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+              style={{backgroundColor: b.primary}}
+            >
+              {Icons.refresh}
+              Refresh
+            </button>
           </div>
         </div>
       </div>
@@ -1072,7 +1075,7 @@ function App() {
       {/* Error Banner */}
       {error && (
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 mt-4">
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center justify-between">
+          <div className="dash-card bg-red-50 px-4 py-3 flex items-center justify-between">
             <span className="text-sm text-red-700">{error}</span>
             <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 text-sm">Dismiss</button>
           </div>
@@ -1103,7 +1106,7 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-3 sm:py-4 mt-6 sm:mt-8" style={{borderColor: b.cardBorder}}>
+      <footer className="py-3 sm:py-4 mt-6 sm:mt-8">
         <div className="max-w-[1600px] mx-auto px-3 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-1">
           <span className="text-[10px] sm:text-xs text-gray-300">Data pulled live from Meta Marketing API v21.0</span>
           <span className="text-[10px] sm:text-xs text-gray-300">Token stored locally in browser only</span>
