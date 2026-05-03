@@ -219,6 +219,72 @@ async function fetchAdsCreatives(adIds, token) {
   }));
 }
 
+// ─── Comparison & Daily Fetch ───
+function getComparisonRange(since, until) {
+  const s = new Date(since), e = new Date(until);
+  const days = Math.round((e - s) / 86400000);
+  const compEnd = new Date(s); compEnd.setDate(compEnd.getDate() - 1);
+  const compStart = new Date(compEnd); compStart.setDate(compStart.getDate() - days);
+  return { since: compStart.toISOString().slice(0,10), until: compEnd.toISOString().slice(0,10) };
+}
+
+async function fetchDailyInsights(accountId, since, until, token) {
+  const fields = 'spend,impressions,reach,clicks,ctr,cpm,cpc,frequency,actions,action_values,outbound_clicks';
+  const timeRange = JSON.stringify({since, until});
+  return fetchAllPages(
+    `/${accountId}/insights?fields=${fields}&level=account&time_range=${timeRange}&time_increment=1&limit=500`,
+    token
+  );
+}
+
+async function fetchCampaignMeta(accountId, token) {
+  return fetchAllPages(`/${accountId}/campaigns?fields=id,name,objective,status&limit=500`, token);
+}
+
+const OBJECTIVE_MAP = {
+  OUTCOME_SALES: 'conversion', CONVERSIONS: 'conversion', CATALOG_SALES: 'conversion', PRODUCT_CATALOG_SALES: 'conversion',
+  OUTCOME_TRAFFIC: 'traffic', LINK_CLICKS: 'traffic',
+  OUTCOME_AWARENESS: 'awareness', REACH: 'awareness', BRAND_AWARENESS: 'awareness',
+  OUTCOME_ENGAGEMENT: 'engagement', POST_ENGAGEMENT: 'engagement', VIDEO_VIEWS: 'engagement',
+  OUTCOME_LEADS: 'leads', LEAD_GENERATION: 'leads',
+};
+
+function classifyCampaign(row, avgMetrics, objective) {
+  const goal = OBJECTIVE_MAP[objective] || null;
+  const spend = parseFloat(row.spend || 0);
+  const conversions = getActionValue(row.actions, 'purchase') + getActionValue(row.actions, 'omni_purchase');
+  const revenue = getActionValue(row.action_values, 'purchase') + getActionValue(row.action_values, 'omni_purchase');
+  const roas = spend > 0 ? revenue / spend : 0;
+  const ctr = parseFloat(row.ctr || 0);
+  const cpm = parseFloat(row.cpm || 0);
+
+  let metric, val, avg, label, lowerBetter = false;
+
+  if (goal === 'conversion' || goal === 'leads' || (!goal && conversions > 0)) {
+    metric = 'ROAS'; val = roas; avg = avgMetrics.roas; label = fmt.roas(roas);
+  } else if (goal === 'traffic') {
+    metric = 'CTR'; val = ctr; avg = avgMetrics.ctr; label = fmt.pct(ctr);
+  } else if (goal === 'awareness') {
+    metric = 'CPM'; val = cpm; avg = avgMetrics.cpm; label = fmt.currency(cpm); lowerBetter = true;
+  } else if (goal === 'engagement') {
+    metric = 'CTR'; val = ctr; avg = avgMetrics.ctr; label = fmt.pct(ctr);
+  } else {
+    if (conversions > 0) { metric = 'ROAS'; val = roas; avg = avgMetrics.roas; label = fmt.roas(roas); }
+    else { metric = 'CTR'; val = ctr; avg = avgMetrics.ctr; label = fmt.pct(ctr); }
+  }
+
+  let tier;
+  if (lowerBetter) {
+    tier = val <= avg * 0.6 ? 'win' : val <= avg * 1.5 ? 'watch' : 'waste';
+  } else {
+    tier = val >= avg * 1.0 ? 'win' : val >= avg * 0.5 ? 'watch' : 'waste';
+  }
+
+  if (spend < 50) tier = 'watch';
+
+  return { tier, metric, label };
+}
+
 // ─── Icons (inline SVG) ───
 const Icons = {
   refresh: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
@@ -280,15 +346,156 @@ function TokenScreen({ onSave, brand }) {
 }
 
 // ─── KPI Card ───
-function KpiCard({ label, value, icon, brand }) {
+function KpiCard({ label, value, icon, brand, delta, invertDelta }) {
   const b = BRANDS[brand];
+  const hasDelta = delta !== undefined && delta !== null && isFinite(delta);
+  const isPositive = invertDelta ? delta < 0 : delta > 0;
+  const isNeutral = hasDelta && Math.abs(delta) < 0.5;
   return (
     <div className="dash-card p-3 sm:p-5 transition-all group">
       <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
         <span className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider leading-tight">{label}</span>
       </div>
       <div className="text-lg sm:text-2xl font-bold text-gray-900 font-display tabular-nums">{value}</div>
+      {hasDelta && (
+        <div className={`flex items-center gap-1 mt-1.5 ${isNeutral ? 'text-gray-400' : isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
+          <span className="text-[10px] sm:text-xs font-semibold tabular-nums">
+            {delta > 0 ? '+' : ''}{delta.toFixed(1)}%
+          </span>
+          <span className="text-[9px] text-gray-400">vs prev</span>
+        </div>
+      )}
     </div>
+  );
+}
+
+// ─── Trend Chart ───
+function TrendChart({ dailyData, brand }) {
+  const [metric, setMetric] = useState('spend');
+  const [hover, setHover] = useState(null);
+  const b = BRANDS[brand];
+
+  const metricDefs = [
+    { key: 'spend', label: 'Spend', format: fmt.currency },
+    { key: 'roas', label: 'ROAS', format: fmt.roas },
+    { key: 'purchases', label: 'Purchases', format: fmt.number },
+    { key: 'cpm', label: 'CPM', format: fmt.currency },
+    { key: 'ctr', label: 'CTR', format: fmt.pct },
+  ];
+
+  const points = useMemo(() => {
+    return (dailyData || []).map(d => {
+      const spend = parseFloat(d.spend || 0);
+      const purchases = getActionValue(d.actions, 'purchase') + getActionValue(d.actions, 'omni_purchase');
+      const revenue = getActionValue(d.action_values, 'purchase') + getActionValue(d.action_values, 'omni_purchase');
+      return {
+        date: d.date_start,
+        spend,
+        impressions: parseInt(d.impressions || 0),
+        reach: parseInt(d.reach || 0),
+        clicks: parseInt(d.clicks || 0),
+        ctr: parseFloat(d.ctr || 0),
+        cpm: parseFloat(d.cpm || 0),
+        purchases,
+        revenue,
+        roas: spend > 0 ? revenue / spend : 0,
+      };
+    });
+  }, [dailyData]);
+
+  if (points.length < 2) return null;
+
+  const W = 800, H = 220;
+  const PAD = { top: 20, right: 20, bottom: 30, left: 60 };
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top - PAD.bottom;
+
+  const values = points.map(p => p[metric]);
+  const max = Math.max(...values, 0.01);
+  const min = Math.min(...values, 0);
+  const range = max - min || 1;
+  const avg = values.reduce((a, c) => a + c, 0) / values.length;
+  const fmtFn = metricDefs.find(m => m.key === metric)?.format || fmt.number;
+
+  const getX = i => PAD.left + (i / (points.length - 1)) * chartW;
+  const getY = v => PAD.top + chartH - ((v - min) / range) * chartH;
+
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${getX(i)},${getY(p[metric])}`).join(' ');
+  const areaD = pathD + ` L${getX(points.length-1)},${PAD.top + chartH} L${PAD.left},${PAD.top + chartH} Z`;
+  const avgY = getY(avg);
+
+  const labelEvery = Math.max(1, Math.floor(points.length / 7));
+
+  return (
+    <div className="dash-card p-5 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <h3 className="font-display text-lg font-bold text-gray-900">Performance Trend</h3>
+        <div className="flex gap-1 flex-wrap">
+          {metricDefs.map(m => (
+            <button key={m.key} onClick={() => setMetric(m.key)}
+              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${metric === m.key ? 'text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+              style={metric === m.key ? { backgroundColor: b.primary } : {}}
+            >{m.label}</button>
+          ))}
+        </div>
+      </div>
+      <div className="relative">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{maxHeight: '280px'}}>
+          {[0, 0.25, 0.5, 0.75, 1].map(frac => {
+            const y = PAD.top + chartH * (1 - frac);
+            return (
+              <g key={frac}>
+                <line x1={PAD.left} y1={y} x2={PAD.left + chartW} y2={y} stroke="#f0f0f2" strokeWidth="1" />
+                <text x={PAD.left - 8} y={y + 4} textAnchor="end" fill="#9ca3af" fontSize="9" fontFamily="Open Sans">{fmtFn(min + range * frac)}</text>
+              </g>
+            );
+          })}
+          {points.map((p, i) => (i % labelEvery === 0 || i === points.length - 1) ? (
+            <text key={i} x={getX(i)} y={H - 5} textAnchor="middle" fill="#9ca3af" fontSize="9" fontFamily="Open Sans">
+              {new Date(p.date + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
+            </text>
+          ) : null)}
+          <line x1={PAD.left} y1={avgY} x2={PAD.left + chartW} y2={avgY} stroke={b.primary} strokeWidth="1" strokeDasharray="6 4" opacity="0.4" />
+          <path d={areaD} fill={b.primary} opacity="0.07" />
+          <path d={pathD} fill="none" stroke={b.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          {points.length <= 60 && points.map((p, i) => (
+            <circle key={i} cx={getX(i)} cy={getY(p[metric])} r={hover === i ? 5 : 3} fill={hover === i ? b.primary : 'white'} stroke={b.primary} strokeWidth="2" />
+          ))}
+          {points.map((p, i) => (
+            <rect key={'h'+i} x={getX(i) - chartW / points.length / 2} y={PAD.top} width={chartW / points.length} height={chartH}
+              fill="transparent" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} />
+          ))}
+          {hover !== null && (
+            <g>
+              <line x1={getX(hover)} y1={PAD.top} x2={getX(hover)} y2={PAD.top + chartH} stroke={b.primary} strokeWidth="1" opacity="0.3" />
+              <rect x={getX(hover) - 45} y={getY(points[hover][metric]) - 28} width="90" height="22" rx="6" fill="#1f2937" opacity="0.9" />
+              <text x={getX(hover)} y={getY(points[hover][metric]) - 14} textAnchor="middle" fill="white" fontSize="10" fontFamily="Open Sans" fontWeight="600">{fmtFn(points[hover][metric])}</text>
+            </g>
+          )}
+        </svg>
+      </div>
+      <div className="flex items-center gap-6 mt-3 pt-3 border-t" style={{borderColor: '#f0f0f2'}}>
+        <div><span className="text-[10px] text-gray-400 uppercase tracking-wider">Avg</span><span className="text-sm font-bold text-gray-700 ml-2 tabular-nums">{fmtFn(avg)}</span></div>
+        <div><span className="text-[10px] text-gray-400 uppercase tracking-wider">Peak</span><span className="text-sm font-bold text-gray-700 ml-2 tabular-nums">{fmtFn(max)}</span></div>
+        <div><span className="text-[10px] text-gray-400 uppercase tracking-wider">Low</span><span className="text-sm font-bold text-gray-700 ml-2 tabular-nums">{fmtFn(min)}</span></div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tier Badge ───
+function TierBadge({ tier, metric, label }) {
+  const styles = {
+    win: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    watch: 'bg-amber-50 text-amber-700 border-amber-200',
+    waste: 'bg-red-50 text-red-600 border-red-200',
+  };
+  const icons = { win: '+', watch: '~', waste: '-' };
+  const names = { win: 'Win', watch: 'Watch', waste: 'Waste' };
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${styles[tier] || styles.watch}`}>
+      {names[tier]} <span className="opacity-60">({label})</span>
+    </span>
   );
 }
 
@@ -375,9 +582,10 @@ function StatusBadge({ status }) {
 // ─── Overview Tab ───
 function OverviewTab({ data, brand }) {
   if (!data?.campaignInsights?.length) return <EmptyState brand={brand} />;
-  const totals = useMemo(() => {
+
+  const sumInsights = (rows) => {
     const t = { spend: 0, impressions: 0, reach: 0, clicks: 0, conversions: 0, revenue: 0, outboundClicks: 0 };
-    data.campaignInsights.forEach(r => {
+    rows.forEach(r => {
       t.spend += parseFloat(r.spend || 0);
       t.impressions += parseInt(r.impressions || 0);
       t.reach += parseInt(r.reach || 0);
@@ -387,65 +595,175 @@ function OverviewTab({ data, brand }) {
       t.outboundClicks += getActionValue(r.outbound_clicks, 'outbound_click');
     });
     return t;
-  }, [data]);
+  };
+
+  const totals = useMemo(() => sumInsights(data.campaignInsights), [data]);
+  const prevTotals = useMemo(() => data.compInsights?.length ? sumInsights(data.compInsights) : null, [data]);
+
+  const pctChange = (cur, prev) => prev && prev !== 0 ? ((cur - prev) / Math.abs(prev)) * 100 : undefined;
 
   const kpis = [
-    { label: 'Total Spend', value: fmt.currency(totals.spend), icon: Icons.spend },
-    { label: 'Impressions', value: fmt.number(totals.impressions), icon: Icons.eye },
-    { label: 'Reach', value: fmt.number(totals.reach), icon: Icons.eye },
-    { label: 'Clicks', value: fmt.number(totals.clicks), icon: Icons.click },
-    { label: 'CTR', value: fmt.pct(totals.clicks / totals.impressions * 100), icon: Icons.chart },
-    { label: 'CPC', value: fmt.currency(totals.spend / totals.clicks), icon: Icons.spend },
-    { label: 'CPM', value: fmt.currency(totals.spend / totals.impressions * 1000), icon: Icons.spend },
-    { label: 'Outbound Clicks', value: fmt.number(totals.outboundClicks), icon: Icons.click },
-    { label: 'Conversions', value: fmt.number(totals.conversions), icon: Icons.cart },
-    { label: 'Cost / Conv.', value: totals.conversions > 0 ? fmt.currency(totals.spend / totals.conversions) : '-', icon: Icons.spend },
-    { label: 'Revenue', value: fmt.currency(totals.revenue), icon: Icons.spend },
-    { label: 'ROAS', value: totals.spend > 0 ? fmt.roas(totals.revenue / totals.spend) : '-', icon: Icons.chart },
+    { label: 'Total Spend', value: fmt.currency(totals.spend), delta: pctChange(totals.spend, prevTotals?.spend) },
+    { label: 'Impressions', value: fmt.number(totals.impressions), delta: pctChange(totals.impressions, prevTotals?.impressions) },
+    { label: 'Reach', value: fmt.number(totals.reach), delta: pctChange(totals.reach, prevTotals?.reach) },
+    { label: 'Clicks', value: fmt.number(totals.clicks), delta: pctChange(totals.clicks, prevTotals?.clicks) },
+    { label: 'CTR', value: fmt.pct(totals.clicks / totals.impressions * 100), delta: pctChange(totals.clicks / totals.impressions, prevTotals ? prevTotals.clicks / (prevTotals.impressions || 1) : undefined) },
+    { label: 'CPC', value: fmt.currency(totals.spend / totals.clicks), delta: pctChange(totals.spend / totals.clicks, prevTotals ? prevTotals.spend / (prevTotals.clicks || 1) : undefined), invertDelta: true },
+    { label: 'CPM', value: fmt.currency(totals.spend / totals.impressions * 1000), delta: pctChange(totals.spend / totals.impressions, prevTotals ? prevTotals.spend / (prevTotals.impressions || 1) : undefined), invertDelta: true },
+    { label: 'Outbound Clicks', value: fmt.number(totals.outboundClicks), delta: pctChange(totals.outboundClicks, prevTotals?.outboundClicks) },
+    { label: 'Conversions', value: fmt.number(totals.conversions), delta: pctChange(totals.conversions, prevTotals?.conversions) },
+    { label: 'Cost / Conv.', value: totals.conversions > 0 ? fmt.currency(totals.spend / totals.conversions) : '-', delta: totals.conversions > 0 && prevTotals?.conversions > 0 ? pctChange(totals.spend / totals.conversions, prevTotals.spend / prevTotals.conversions) : undefined, invertDelta: true },
+    { label: 'Revenue', value: fmt.currency(totals.revenue), delta: pctChange(totals.revenue, prevTotals?.revenue) },
+    { label: 'ROAS', value: totals.spend > 0 ? fmt.roas(totals.revenue / totals.spend) : '-', delta: totals.spend > 0 && prevTotals?.spend > 0 ? pctChange(totals.revenue / totals.spend, prevTotals.revenue / prevTotals.spend) : undefined },
   ];
-
-  const topCampaigns = [...data.campaignInsights]
-    .sort((a,b) => parseFloat(b.spend) - parseFloat(a.spend))
-    .slice(0, 5);
 
   const b = BRANDS[brand];
 
+  const objMap = useMemo(() => {
+    const m = {};
+    (data.campaignMeta || []).forEach(c => { m[c.id] = c.objective; });
+    return m;
+  }, [data]);
+
+  const avgMetrics = useMemo(() => {
+    const ci = data.campaignInsights;
+    const median = arr => { const s = [...arr].sort((a,b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; };
+    const roasVals = ci.map(r => { const sp = parseFloat(r.spend || 0); const rev = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase'); return sp > 0 ? rev / sp : 0; }).filter(v => v > 0);
+    const ctrVals = ci.map(r => parseFloat(r.ctr || 0)).filter(v => v > 0);
+    const cpmVals = ci.map(r => parseFloat(r.cpm || 0)).filter(v => v > 0);
+    return {
+      roas: roasVals.length ? median(roasVals) : 0,
+      ctr: ctrVals.length ? median(ctrVals) : 0,
+      cpm: cpmVals.length ? median(cpmVals) : 0,
+    };
+  }, [data]);
+
+  const tieredCampaigns = useMemo(() => {
+    return data.campaignInsights.map(r => {
+      const objective = objMap[r.campaign_id] || '';
+      const tier = classifyCampaign(r, avgMetrics, objective);
+      const spend = parseFloat(r.spend || 0);
+      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
+      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      return { ...tier, name: r.campaign_name, spend, conversions, revenue, roas: spend > 0 ? revenue / spend : 0, ctr: parseFloat(r.ctr || 0), cpm: parseFloat(r.cpm || 0), objective };
+    }).sort((a, b) => b.spend - a.spend);
+  }, [data, objMap, avgMetrics]);
+
+  const tierGroups = { win: [], watch: [], waste: [] };
+  tieredCampaigns.forEach(c => tierGroups[c.tier].push(c));
+  const wasteSpend = tierGroups.waste.reduce((s, c) => s + c.spend, 0);
+
+  const scaleWinners = useMemo(() => {
+    return (data.adsetInsights || []).map(r => {
+      const spend = parseFloat(r.spend || 0);
+      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
+      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      const roas = spend > 0 ? revenue / spend : 0;
+      return { name: r.adset_name, campaign: r.campaign_name, spend, conversions, revenue, roas, ctr: parseFloat(r.ctr || 0), cpm: parseFloat(r.cpm || 0) };
+    }).filter(r => r.roas > avgMetrics.roas && r.conversions >= 2 && r.spend >= 200)
+      .sort((a, b) => b.roas - a.roas)
+      .slice(0, 5);
+  }, [data, avgMetrics]);
+
+  const tierColors = { win: '#059669', watch: '#d97706', waste: '#dc2626' };
+  const tierLabels = { win: 'Win', watch: 'Watch', waste: 'Waste' };
+
   return (
     <div className="space-y-6 fade-in">
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3 stagger">
         {kpis.map(k => <KpiCard key={k.label} {...k} brand={brand} />)}
       </div>
+
+      {/* Trend Chart */}
+      {data.dailyInsights?.length > 1 && <TrendChart dailyData={data.dailyInsights} brand={brand} />}
+
+      {/* Budget Waste Alert */}
+      {wasteSpend > 0 && (
+        <div className="dash-card border-l-4 p-4 sm:p-5" style={{borderLeftColor: '#dc2626'}}>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+              <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+            </div>
+            <div>
+              <h4 className="font-display text-sm font-bold text-gray-900">Budget at risk: {fmt.currency(wasteSpend)}</h4>
+              <p className="text-xs text-gray-500 mt-0.5">{tierGroups.waste.length} campaign{tierGroups.waste.length !== 1 ? 's' : ''} underperforming relative to their objective. Review or reallocate.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Campaign Performance Tiers */}
       <div className="dash-card p-5 sm:p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: b.primary}}>
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
           </div>
-          <h3 className="font-display text-lg font-bold text-gray-900">Top Campaigns by Spend</h3>
+          <h3 className="font-display text-lg font-bold text-gray-900">Campaign Performance</h3>
+          <div className="flex gap-2 ml-auto">
+            {['win','watch','waste'].map(t => (
+              <span key={t} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider" style={{color: tierColors[t]}}>
+                <span className="w-2 h-2 rounded-full" style={{backgroundColor: tierColors[t]}} /> {tierLabels[t]} ({tierGroups[t].length})
+              </span>
+            ))}
+          </div>
         </div>
-        <div className="space-y-3">
-          {topCampaigns.map((c, i) => {
-            const maxSpend = parseFloat(topCampaigns[0]?.spend || 1);
-            const pct = (parseFloat(c.spend) / maxSpend) * 100;
-            const conversions = getActionValue(c.actions, 'purchase') + getActionValue(c.actions, 'omni_purchase');
-            const revenue = getActionValue(c.action_values, 'purchase') + getActionValue(c.action_values, 'omni_purchase');
+        <div className="space-y-2.5">
+          {tieredCampaigns.map((c, i) => {
+            const maxSpend = tieredCampaigns[0]?.spend || 1;
+            const pct = (c.spend / maxSpend) * 100;
             return (
               <div key={i} className="group">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-700 truncate max-w-[60%]">{c.campaign_name}</span>
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                <div className="flex items-center justify-between mb-1 gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{backgroundColor: tierColors[c.tier]}} />
+                    <span className="text-sm font-medium text-gray-700 truncate">{c.name}</span>
+                    <TierBadge tier={c.tier} metric={c.metric} label={c.label} />
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-gray-500 flex-shrink-0">
                     <span>{fmt.currency(c.spend)}</span>
-                    <span>{conversions > 0 ? fmt.number(conversions) + ' conv.' : '-'}</span>
-                    <span>{revenue > 0 && parseFloat(c.spend) > 0 ? fmt.roas(revenue / parseFloat(c.spend)) + ' ROAS' : '-'}</span>
+                    <span>{c.conversions > 0 ? fmt.number(c.conversions) + ' conv.' : '-'}</span>
+                    <span>{c.roas > 0 ? fmt.roas(c.roas) + ' ROAS' : '-'}</span>
                   </div>
                 </div>
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-700" style={{width: pct + '%', backgroundColor: b.primary}} />
+                  <div className="h-full rounded-full transition-all duration-700" style={{width: pct + '%', backgroundColor: tierColors[c.tier]}} />
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Scale Winners */}
+      {scaleWinners.length > 0 && (
+        <div className="dash-card p-5 sm:p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+            </div>
+            <div>
+              <h3 className="font-display text-lg font-bold text-gray-900">Scale Winners</h3>
+              <p className="text-xs text-gray-400">Ad sets above avg ROAS with 2+ purchases and $200+ spend</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+            {scaleWinners.map((w, i) => (
+              <div key={i} className="rounded-xl border border-emerald-100 bg-emerald-50/30 p-3.5">
+                <h4 className="text-xs font-semibold text-gray-900 truncate leading-tight">{w.name}</h4>
+                <p className="text-[10px] text-gray-400 truncate mt-0.5 mb-3">{w.campaign}</p>
+                <div className="text-xl font-bold font-display tabular-nums text-emerald-600 mb-2">{fmt.roas(w.roas)}</div>
+                <div className="grid grid-cols-2 gap-1.5 text-center">
+                  <div className="bg-white rounded-md py-1.5"><div className="text-[8px] text-gray-400 uppercase">Spend</div><div className="text-[10px] font-semibold text-gray-700">{fmt.currency(w.spend)}</div></div>
+                  <div className="bg-white rounded-md py-1.5"><div className="text-[8px] text-gray-400 uppercase">Conv.</div><div className="text-[10px] font-semibold text-gray-700">{fmt.number(w.conversions)}</div></div>
+                  <div className="bg-white rounded-md py-1.5"><div className="text-[8px] text-gray-400 uppercase">Revenue</div><div className="text-[10px] font-semibold text-gray-700">{fmt.currency(w.revenue)}</div></div>
+                  <div className="bg-white rounded-md py-1.5"><div className="text-[8px] text-gray-400 uppercase">CTR</div><div className="text-[10px] font-semibold text-gray-700">{fmt.pct(w.ctr)}</div></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -570,92 +888,6 @@ function AdSetsTab({ data, brand }) {
   );
 }
 
-// ─── Ads Tab ───
-function AdsTab({ data, brand }) {
-  if (!data?.adInsights?.length) return <EmptyState brand={brand} />;
-  const [campaignFilter, setCampaignFilter] = useState('all');
-  const campaigns = useMemo(() => [...new Set(data.adInsights.map(r => r.campaign_name))].sort(), [data]);
-  const b = BRANDS[brand];
-
-  const creativeMap = useMemo(() => {
-    const map = {};
-    (data.adsCreatives || []).forEach(ad => {
-      if (ad.creative) map[ad.id] = ad.creative;
-    });
-    return map;
-  }, [data]);
-
-  const rows = useMemo(() => {
-    let filtered = data.adInsights;
-    if (campaignFilter !== 'all') filtered = filtered.filter(r => r.campaign_name === campaignFilter);
-    return filtered.map(r => {
-      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
-      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
-      const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
-      const creative = creativeMap[r.ad_id];
-      return {
-        thumbnail: creative?.image_url || creative?.thumbnail_url || null,
-        campaign: r.campaign_name,
-        adset: r.adset_name,
-        name: r.ad_name,
-        spend: parseFloat(r.spend || 0),
-        impressions: parseInt(r.impressions || 0),
-        reach: parseInt(r.reach || 0),
-        clicks: parseInt(r.clicks || 0),
-        ctr: parseFloat(r.ctr || 0),
-        cpc: parseFloat(r.cpc || 0),
-        cpm: parseFloat(r.cpm || 0),
-        outboundClicks: outbound,
-        frequency: parseFloat(r.frequency || 0),
-        conversions,
-        costPerConv: conversions > 0 ? parseFloat(r.spend)/conversions : 0,
-        revenue,
-        roas: parseFloat(r.spend) > 0 ? revenue / parseFloat(r.spend) : 0,
-      };
-    });
-  }, [data, campaignFilter, creativeMap]);
-
-  const columns = [
-    { key: 'thumbnail', label: '', sortable: false, render: v => v ?
-      <div className="w-12 h-12 rounded bg-gray-950 flex items-center justify-center overflow-hidden"><img src={v} alt="" className="max-w-full max-h-full object-contain" loading="lazy" /></div> :
-      <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-xs">N/A</div>
-    },
-    { key: 'name', label: 'Ad', bold: true, sortable: true },
-    { key: 'adset', label: 'Ad Set', sortable: true, render: v => <span className="text-gray-400 text-xs">{v}</span> },
-    { key: 'spend', label: 'Spend', align: 'right', sortable: true, render: v => fmt.currency(v) },
-    { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
-    { key: 'reach', label: 'Reach', align: 'right', sortable: true, render: v => fmt.number(v) },
-    { key: 'clicks', label: 'Clicks', align: 'right', sortable: true, render: v => fmt.number(v) },
-    { key: 'ctr', label: 'CTR', align: 'right', sortable: true, render: v => fmt.pct(v) },
-    { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
-    { key: 'cpm', label: 'CPM', align: 'right', sortable: true, render: v => fmt.currency(v) },
-    { key: 'outboundClicks', label: 'Outbound', align: 'right', sortable: true, render: v => fmt.number(v) },
-    { key: 'frequency', label: 'Freq.', align: 'right', sortable: true, render: v => fmt.decimal(v) },
-    { key: 'conversions', label: 'Conv.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
-    { key: 'costPerConv', label: 'CPA', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
-    { key: 'revenue', label: 'Revenue', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
-    { key: 'roas', label: 'ROAS', align: 'right', sortable: true, render: v => v > 0 ? fmt.roas(v) : '-' },
-  ];
-
-  return (
-    <div className="space-y-4 fade-in">
-      <div className="flex items-center gap-3">
-        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Campaign</label>
-        <select
-          value={campaignFilter}
-          onChange={e => setCampaignFilter(e.target.value)}
-          className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
-          style={{borderColor: '#f0f0f2'}}
-        >
-          <option value="all">All Campaigns</option>
-          {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-      </div>
-      <SortableTable columns={columns} data={rows} brand={brand} />
-    </div>
-  );
-}
-
 // ─── Creative Detail Modal ───
 function CreativeModal({ card, rank, brand, onClose }) {
   if (!card) return null;
@@ -673,10 +905,13 @@ function CreativeModal({ card, rank, brand, onClose }) {
     { label: 'Conversions', value: card.conversions > 0 ? fmt.number(card.conversions) : '-', primary: true },
     { label: 'CPA', value: card.costPerConv > 0 ? fmt.currency(card.costPerConv) : '-', primary: true },
     { label: 'Impressions', value: fmt.number(card.impressions) },
+    { label: 'Reach', value: fmt.number(card.reach) },
     { label: 'Clicks', value: fmt.number(card.clicks) },
     { label: 'CTR', value: fmt.pct(card.ctr) },
     { label: 'CPC', value: fmt.currency(card.cpc) },
+    { label: 'CPM', value: fmt.currency(card.cpm) },
     { label: 'Outbound Clicks', value: fmt.number(card.outboundClicks) },
+    { label: 'Frequency', value: fmt.decimal(card.frequency) },
   ];
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6" onClick={onClose} style={{fontFamily: b.bodyFont}}>
@@ -703,7 +938,7 @@ function CreativeModal({ card, rank, brand, onClose }) {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
             {stats.filter(s => !s.primary).map(s => (
               <div key={s.label} className="text-center py-2 px-1 rounded-lg bg-gray-50">
                 <div className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-wide">{s.label}</div>
@@ -729,8 +964,10 @@ function CreativeModal({ card, rank, brand, onClose }) {
 function CreativeTab({ data, brand }) {
   if (!data?.adInsights?.length) return <EmptyState brand={brand} />;
   const [sortMetric, setSortMetric] = useState('roas');
+  const [campaignFilter, setCampaignFilter] = useState('all');
   const [selected, setSelected] = useState(null);
   const b = BRANDS[brand];
+  const campaigns = useMemo(() => [...new Set(data.adInsights.map(r => r.campaign_name))].sort(), [data]);
 
   const creativeMap = useMemo(() => {
     const map = {};
@@ -741,7 +978,8 @@ function CreativeTab({ data, brand }) {
   }, [data]);
 
   const cards = useMemo(() => {
-    return data.adInsights
+    const filtered = campaignFilter === 'all' ? data.adInsights : data.adInsights.filter(r => r.campaign_name === campaignFilter);
+    return filtered
       .map(r => {
         const creative = creativeMap[r.ad_id];
         const thumb = creative?.image_url || creative?.thumbnail_url;
@@ -758,9 +996,12 @@ function CreativeTab({ data, brand }) {
           body: creative?.body || '',
           spend: parseFloat(r.spend || 0),
           impressions: parseInt(r.impressions || 0),
+          reach: parseInt(r.reach || 0),
           clicks: parseInt(r.clicks || 0),
           ctr: parseFloat(r.ctr || 0),
           cpc: parseFloat(r.cpc || 0),
+          cpm: parseFloat(r.cpm || 0),
+          frequency: parseFloat(r.frequency || 0),
           outboundClicks: outbound,
           conversions,
           costPerConv: conversions > 0 ? parseFloat(r.spend)/conversions : 0,
@@ -770,7 +1011,7 @@ function CreativeTab({ data, brand }) {
       })
       .filter(Boolean)
       .sort((a, b) => (b[sortMetric] || 0) - (a[sortMetric] || 0));
-  }, [data, creativeMap, sortMetric]);
+  }, [data, creativeMap, sortMetric, campaignFilter]);
 
   const avgMetric = useMemo(() => {
     if (!cards.length) return 0;
@@ -779,37 +1020,59 @@ function CreativeTab({ data, brand }) {
 
   const metricOptions = [
     { value: 'roas', label: 'ROAS' },
+    { value: 'revenue', label: 'Revenue' },
+    { value: 'conversions', label: 'Conversions' },
+    { value: 'costPerConv', label: 'CPA (low is better)' },
+    { value: 'spend', label: 'Spend' },
     { value: 'ctr', label: 'CTR' },
     { value: 'cpc', label: 'CPC (low is better)' },
-    { value: 'conversions', label: 'Conversions' },
-    { value: 'spend', label: 'Spend' },
+    { value: 'cpm', label: 'CPM (low is better)' },
     { value: 'outboundClicks', label: 'Outbound Clicks' },
+    { value: 'impressions', label: 'Impressions' },
+    { value: 'reach', label: 'Reach' },
+    { value: 'clicks', label: 'Clicks' },
+    { value: 'frequency', label: 'Frequency' },
   ];
 
-  const isLowerBetter = sortMetric === 'cpc' || sortMetric === 'costPerConv';
+  const isLowerBetter = sortMetric === 'cpc' || sortMetric === 'costPerConv' || sortMetric === 'cpm';
 
   const fmtMetricVal = (card) => {
     const v = card[sortMetric] || 0;
     if (sortMetric === 'roas') return v > 0 ? fmt.roas(v) : '-';
     if (sortMetric === 'ctr') return fmt.pct(v);
-    if (sortMetric === 'cpc') return fmt.currency(v);
-    if (sortMetric === 'spend') return fmt.currency(v);
+    if (sortMetric === 'cpc' || sortMetric === 'cpm' || sortMetric === 'costPerConv') return v > 0 ? fmt.currency(v) : '-';
+    if (sortMetric === 'spend' || sortMetric === 'revenue') return fmt.currency(v);
+    if (sortMetric === 'frequency') return fmt.decimal(v);
     return fmt.number(v);
   };
 
   return (
     <div className="space-y-4 fade-in">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Rank by</label>
-          <select
-            value={sortMetric}
-            onChange={e => setSortMetric(e.target.value)}
-            className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
-            style={{borderColor: '#f0f0f2'}}
-          >
-            {metricOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Campaign</label>
+            <select
+              value={campaignFilter}
+              onChange={e => setCampaignFilter(e.target.value)}
+              className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
+              style={{borderColor: '#f0f0f2'}}
+            >
+              <option value="all">All Campaigns</option>
+              {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Rank by</label>
+            <select
+              value={sortMetric}
+              onChange={e => setSortMetric(e.target.value)}
+              className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
+              style={{borderColor: '#f0f0f2'}}
+            >
+              {metricOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
         </div>
         <span className="text-xs text-gray-400">{cards.length} creatives with thumbnails</span>
       </div>
@@ -825,6 +1088,14 @@ function CreativeTab({ data, brand }) {
             const isGood = isLowerBetter ? val < avgMetric : val > avgMetric;
             const perfColor = i < 3 ? b.primary : (isGood ? '#059669' : '#dc2626');
             const borderStyle = i < 3 ? `2px solid ${b.primary}` : `1px solid ${isGood ? '#d1fae5' : '#fee2e2'}`;
+            const cardStats = [
+              { label: 'Spend', value: fmt.currency(card.spend) },
+              { label: 'Conv.', value: card.conversions > 0 ? fmt.number(card.conversions) : '-' },
+              { label: 'ROAS', value: card.roas > 0 ? fmt.roas(card.roas) : '-' },
+              { label: 'CTR', value: fmt.pct(card.ctr) },
+              { label: 'CPC', value: fmt.currency(card.cpc) },
+              { label: 'Revenue', value: card.revenue > 0 ? fmt.currency(card.revenue) : '-' },
+            ];
             return (
               <div key={i} className="creative-card bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all cursor-pointer group" style={{border: borderStyle}} onClick={() => setSelected(i)}>
                 <div className="relative bg-gray-950 flex items-center justify-center">
@@ -838,9 +1109,17 @@ function CreativeTab({ data, brand }) {
                 <div className="p-2.5">
                   <h4 className="text-xs font-semibold text-gray-900 truncate leading-tight">{card.name}</h4>
                   <p className="text-[10px] text-gray-400 truncate mt-0.5 mb-2">{card.campaign}</p>
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-md" style={{backgroundColor: i < 3 ? b.primaryLight : (isGood ? '#f0fdf4' : '#fef2f2')}}>
-                    <span className="text-[9px] text-gray-500 uppercase font-medium tracking-wide">{metricOptions.find(o => o.value === sortMetric)?.label || sortMetric}</span>
+                  <div className="flex items-center justify-between py-1.5 px-2 rounded-md mb-2" style={{backgroundColor: i < 3 ? b.primaryLight : (isGood ? '#f0fdf4' : '#fef2f2')}}>
+                    <span className="text-[9px] text-gray-500 uppercase font-medium tracking-wide">{metricOptions.find(o => o.value === sortMetric)?.label?.replace(' (low is better)', '') || sortMetric}</span>
                     <span className="text-xs font-bold tabular-nums" style={{color: perfColor}}>{fmtMetricVal(card)}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-x-1.5 gap-y-1">
+                    {cardStats.map(s => (
+                      <div key={s.label} className="text-center">
+                        <div className="text-[8px] text-gray-400 uppercase tracking-wide leading-tight">{s.label}</div>
+                        <div className="text-[10px] font-semibold text-gray-700 tabular-nums leading-tight">{s.value}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -916,17 +1195,21 @@ function App() {
       const { since, until } = getDateRange(datePreset, customDates);
       if (!since || !until) { setError('Please select valid dates'); setLoading(false); return; }
       const accountId = BRANDS[brand].accountId;
+      const comp = getComparisonRange(since, until);
 
-      const [campaignInsights, adsetInsights, adInsights] = await Promise.all([
+      const [campaignInsights, adsetInsights, adInsights, dailyInsights, compInsights, campaignMeta] = await Promise.all([
         fetchInsights(accountId, 'campaign', since, until, token),
         fetchInsights(accountId, 'adset', since, until, token),
         fetchInsights(accountId, 'ad', since, until, token),
+        fetchDailyInsights(accountId, since, until, token),
+        fetchInsights(accountId, 'campaign', comp.since, comp.until, token).catch(() => []),
+        fetchCampaignMeta(accountId, token).catch(() => []),
       ]);
 
       const adIds = [...new Set(adInsights.map(r => r.ad_id).filter(Boolean))];
       const adsCreatives = await fetchAdsCreatives(adIds, token);
 
-      setData({ campaignInsights, adsetInsights, adInsights, adsCreatives });
+      setData({ campaignInsights, adsetInsights, adInsights, adsCreatives, dailyInsights, compInsights, campaignMeta });
       setLastRefresh(new Date());
     } catch (err) {
       setError(err.message);
@@ -949,7 +1232,6 @@ function App() {
     { id: 'overview', label: 'Overview' },
     { id: 'campaigns', label: 'Campaigns' },
     { id: 'adsets', label: 'Ad Sets' },
-    { id: 'ads', label: 'Ads' },
     { id: 'creative', label: 'Creative Performance' },
   ];
 
@@ -1101,7 +1383,6 @@ function App() {
         {tab === 'overview' && data && <OverviewTab data={data} brand={brand} />}
         {tab === 'campaigns' && data && <CampaignsTab data={data} brand={brand} />}
         {tab === 'adsets' && data && <AdSetsTab data={data} brand={brand} />}
-        {tab === 'ads' && data && <AdsTab data={data} brand={brand} />}
         {tab === 'creative' && data && <CreativeTab data={data} brand={brand} />}
       </main>
 
