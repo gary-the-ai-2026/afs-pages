@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revel x Harris Real Estate — Partnership Proposal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        revel: { green: '#25B34B', sage: '#ABB99C', forest: '#485D4D', black: '#0a0a0a', dark: '#111311' },
+      },
+      fontFamily: {
+        display: ['"Playfair Display"', 'serif'],
+        heading: ['"Montserrat"', 'sans-serif'],
+        body: ['"Montserrat"', 'sans-serif'],
+      },
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;overflow:hidden;background:#0a0a0a}
+h1,h2,h3,h4,h5,h6{font-family:'Montserrat',sans-serif}
+.font-display{font-family:'Playfair Display',serif}
+
+.slide-enter{animation:slideIn .6s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes slideIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.stagger>*{opacity:0;animation:slideIn .55s cubic-bezier(.16,1,.3,1) forwards}
+.stagger>*:nth-child(1){animation-delay:.06s}
+.stagger>*:nth-child(2){animation-delay:.14s}
+.stagger>*:nth-child(3){animation-delay:.22s}
+.stagger>*:nth-child(4){animation-delay:.30s}
+.stagger>*:nth-child(5){animation-delay:.38s}
+.stagger>*:nth-child(6){animation-delay:.46s}
+.stagger>*:nth-child(7){animation-delay:.54s}
+.stagger>*:nth-child(8){animation-delay:.62s}
+.stagger>*:nth-child(9){animation-delay:.70s}
+
+.fade-in{animation:fadeIn .8s ease forwards}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.scale-in{animation:scaleIn .7s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+.img-reveal{animation:imgReveal .9s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes imgReveal{from{opacity:0;transform:scale(1.05)}to{opacity:1;transform:scale(1)}}
+
+.line-grow{animation:lineGrow .8s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes lineGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+.bar-grow{animation:barGrow .8s cubic-bezier(.16,1,.3,1) forwards;transform-origin:bottom}
+@keyframes barGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+.counter{animation:counterPulse .4s ease}
+@keyframes counterPulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#25B34B;border-radius:10px}
+
+.grain::after{content:'';position:fixed;inset:0;pointer-events:none;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index:9999}
+
+.product-card{transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s ease}
+.product-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(37,179,75,.12)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://esm.sh/react@19.1.0" type="module"></script>
+<script src="https://esm.sh/react-dom@19.1.0/client" type="module"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" data-type="module">
+import React, { useState, useEffect, useCallback } from 'https://esm.sh/react@19.1.0';
+import { createRoot } from 'https://esm.sh/react-dom@19.1.0/client';
+
+const REVEL_LOGO_WHITE = 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-White-02.png?v=1691241102';
+const REVEL_LOGO_BLACK = 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-Black-01.png?v=1691024664';
+const REVEL_ICON = 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo_Icon_f9894379-f5b2-45a6-8c22-7de8cf21404e.png?v=1691241102';
+
+const PRODUCTS = {
+  aura: {
+    name: 'Aura 2 Person',
+    subtitle: 'Full Spectrum Infrared',
+    price: '$4,799',
+    img: 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/Aura-2P-G2-01.png?v=1769789942',
+    ideal: 'Indoor spaces, spare rooms, master suites',
+    features: ['Full spectrum infrared therapy', 'Low EMF carbon panels', 'Bluetooth & chromotherapy', 'Plug-and-play setup'],
+  },
+  virta: {
+    name: 'Virta 2 Person',
+    subtitle: 'Traditional Cabin',
+    price: '$8,557',
+    img: 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/revel-virta-2P-01-yellow.png?v=1764193773',
+    ideal: 'Bathrooms, garages, dedicated wellness rooms',
+    features: ['Harvia heater included', 'Canadian hemlock timber', 'Authentic Finnish experience', 'Premium interior lighting'],
+  },
+  eden: {
+    name: 'Eden 4 Person',
+    subtitle: 'Traditional Barrel',
+    price: '$5,999',
+    img: 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/revel-eden-G2-4P-14.png?v=1770615100',
+    ideal: 'Backyards, alfresco areas, outdoor entertaining',
+    features: ['Iconic barrel design', 'Weather-resistant cedar', 'Seats 4 comfortably', 'Statement outdoor piece'],
+  },
+};
+
+const SLIDES = [
+  'cover',
+  'about',
+  'opportunity',
+  'insight',
+  'products',
+  'structure',
+  'harris-benefits',
+  'next-steps',
+];
+
+// ===== COMPONENTS =====
+
+function SlideNav({ current, total, onNav }) {
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
+      <button onClick={() => onNav(-1)} className="w-9 h-9 rounded-full border border-white/20 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white hover:border-revel-green transition-all">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div className="flex gap-1.5">
+        {Array.from({length: total}).map((_, i) => (
+          <button key={i} onClick={() => onNav(i - current)}
+            className={`h-1.5 rounded-full transition-all duration-300 ${i === current ? 'w-8 bg-revel-green' : 'w-1.5 bg-white/25 hover:bg-white/40'}`} />
+        ))}
+      </div>
+      <button onClick={() => onNav(1)} className="w-9 h-9 rounded-full border border-white/20 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white hover:border-revel-green transition-all">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <span className="ml-3 text-[10px] font-mono text-white/30 tracking-widest">{String(current+1).padStart(2,'0')}/{String(total).padStart(2,'0')}</span>
+    </div>
+  );
+}
+
+function Badge({ children, variant = 'green' }) {
+  const styles = {
+    green: 'bg-revel-green/15 text-revel-green border-revel-green/25',
+    sage: 'bg-revel-sage/15 text-revel-sage border-revel-sage/30',
+    forest: 'bg-revel-forest/20 text-white/80 border-revel-forest/40',
+    white: 'bg-white/10 text-white/80 border-white/15',
+  };
+  return <span className={`inline-block px-3 py-1 text-[10px] font-semibold uppercase tracking-[.15em] rounded-full border ${styles[variant]}`}>{children}</span>;
+}
+
+function Divider({ color = 'green' }) {
+  const c = color === 'green' ? 'bg-revel-green' : color === 'sage' ? 'bg-revel-sage' : 'bg-white/15';
+  return <div className={`h-px w-full ${c} line-grow origin-left`} style={{animationDelay:'.3s',opacity:0,animation:'lineGrow .8s cubic-bezier(.16,1,.3,1) .3s forwards'}} />;
+}
+
+// ===== SLIDE: COVER =====
+function CoverSlide() {
+  return (
+    <div className="relative w-full h-screen bg-revel-black overflow-hidden grain">
+      {/* Background pattern */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #25B34B 1px, transparent 0)',backgroundSize:'48px 48px'}} />
+
+      {/* Large watermark icon */}
+      <div className="absolute -right-20 -bottom-20 w-[600px] h-[600px] opacity-[0.04]">
+        <img src={REVEL_ICON} className="w-full h-full object-contain" />
+      </div>
+
+      {/* Green accent line */}
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-revel-green via-revel-green/40 to-transparent" />
+
+      <div className="relative z-10 h-full flex flex-col justify-center px-16 lg:px-24 stagger">
+        <img src={REVEL_LOGO_WHITE} className="h-8 mb-12 self-start" alt="Revel" />
+
+        <div className="flex items-center gap-4 mb-6">
+          <Badge variant="green">Partnership Proposal</Badge>
+          <Badge variant="white">Confidential</Badge>
+        </div>
+
+        <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tight leading-[1.05]">
+          Revel Saunas<br/>
+          <span className="text-revel-green">x</span>{' '}
+          <span className="font-display italic font-normal text-revel-sage">Harris Real Estate</span>
+        </h1>
+
+        <p className="mt-6 text-lg text-white/50 font-light max-w-xl leading-relaxed">
+          A trial partnership to bring premium wellness into the new homeowner journey.
+        </p>
+
+        <Divider />
+
+        <div className="mt-6 flex items-center gap-8 text-[11px] text-white/35 uppercase tracking-[.2em] font-medium">
+          <span>May 2026</span>
+          <span className="w-1 h-1 rounded-full bg-revel-green/50" />
+          <span>Adelaide, SA</span>
+          <span className="w-1 h-1 rounded-full bg-revel-green/50" />
+          <span>Prepared for Simon Tanner</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== SLIDE: ABOUT =====
+function AboutSlide() {
+  return (
+    <div className="relative w-full h-screen bg-revel-black overflow-hidden grain">
+      <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #ABB99C 1px, transparent 0)',backgroundSize:'64px 64px'}} />
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-revel-sage via-revel-sage/30 to-transparent" />
+
+      <div className="relative z-10 h-full flex flex-col lg:flex-row">
+        {/* Left content */}
+        <div className="flex-1 flex flex-col justify-center px-16 lg:px-24 stagger">
+          <Badge variant="sage">About Revel</Badge>
+
+          <h2 className="mt-6 text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+            Making wellness<br/>
+            <span className="font-display italic font-normal text-revel-sage">accessible to all.</span>
+          </h2>
+
+          <p className="mt-6 text-white/50 leading-relaxed max-w-lg">
+            Revel is Australia's fastest-growing recovery and wellness brand. Our product range spans saunas, ice baths, and recovery accessories, designed to enhance muscle recovery, boost performance, improve sleep, and reduce stress.
+          </p>
+
+          <div className="mt-8 grid grid-cols-2 gap-4">
+            {[
+              { num: '5,000+', label: 'Wellness setups delivered' },
+              { num: '#1', label: 'Rated sauna brand on Google' },
+              { num: '4.8', label: 'Average customer rating' },
+              { num: '2024', label: 'The Block collaboration' },
+            ].map((s, i) => (
+              <div key={i} className="border border-white/8 rounded-lg p-4 bg-white/[0.02]">
+                <div className="text-2xl font-bold text-revel-green">{s.num}</div>
+                <div className="text-[11px] text-white/40 mt-1 uppercase tracking-wider">{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-6 text-[12px] text-white/30 leading-relaxed max-w-lg">
+            Featured on The Block with Marty Fox. Trusted by thousands of Australian homeowners transforming their spaces into personal wellness retreats.
+          </p>
+        </div>
+
+        {/* Right image */}
+        <div className="hidden lg:flex flex-1 items-center justify-center p-12">
+          <div className="relative w-full max-w-md img-reveal" style={{animationDelay:'.3s',opacity:0,animation:'imgReveal .9s cubic-bezier(.16,1,.3,1) .3s forwards'}}>
+            <div className="absolute -inset-4 bg-gradient-to-br from-revel-green/10 to-transparent rounded-2xl" />
+            <img src={PRODUCTS.virta.img} className="relative w-full rounded-xl" alt="Revel Sauna" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== SLIDE: OPPORTUNITY =====
+function OpportunitySlide() {
+  return (
+    <div className="relative w-full h-screen bg-revel-black overflow-hidden grain">
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-revel-green via-revel-green/30 to-transparent" />
+
+      {/* Large decorative number */}
+      <div className="absolute -right-8 top-1/2 -translate-y-1/2 text-[320px] font-black text-white/[0.015] leading-none select-none font-heading">
+        $85M
+      </div>
+
+      <div className="relative z-10 h-full flex flex-col justify-center px-16 lg:px-24 stagger">
+        <Badge variant="green">The Opportunity</Badge>
+
+        <h2 className="mt-6 text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+          New homes deserve<br/>
+          <span className="font-display italic font-normal text-revel-green">wellness spaces.</span>
+        </h2>
+
+        <p className="mt-6 text-white/50 leading-relaxed max-w-xl">
+          The Australian home sauna market is valued at $75-150M annually and growing. Health and wellness spending grew 10% in 2025, and new homeowners are the highest-intent buyers.
+        </p>
+
+        <div className="mt-10 grid grid-cols-3 gap-6 max-w-3xl">
+          {[
+            { stat: '55%', desc: 'of sauna users open to buying for home', source: 'AFS Health & Fitness Study' },
+            { stat: '64%', desc: 'cite cost as primary barrier (not desire)', source: 'AFS Research 2021' },
+            { stat: '+13.4%', desc: 'Health & Beauty eCommerce YoY growth', source: 'AusPost 2025' },
+          ].map((item, i) => (
+            <div key={i} className="border-t border-revel-green/30 pt-4">
+              <div className="text-3xl lg:text-4xl font-bold text-revel-green counter">{item.stat}</div>
+              <div className="mt-2 text-sm text-white/60 leading-snug">{item.desc}</div>
+              <div className="mt-2 text-[10px] text-white/25 uppercase tracking-wider">{item.source}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 p-5 border border-revel-forest/40 rounded-lg bg-revel-forest/10 max-w-3xl">
+          <p className="text-sm text-white/70 leading-relaxed">
+            <span className="text-revel-green font-semibold">The insight:</span> Moving house is the #1 trigger for home wellness investment. New homeowners are furnishing, renovating, and designing their ideal living space. A sauna isn't an afterthought; it's a lifestyle upgrade they're already thinking about.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== SLIDE: INSIGHT =====
+function InsightSlide() {
+  return (
+    <div className="relative w-full h-screen bg-revel-black overflow-hidden grain">
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-revel-sage via-revel-sage/30 to-transparent" />
+
+      <div className="relative z-10 h-full flex flex-col justify-center px-16 lg:px-24 stagger">
+        <Badge variant="sage">Customer Insight</Badge>
+
+        <h2 className="mt-6 text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+          Why Harris buyers are<br/>
+          <span className="font-display italic font-normal text-revel-sage">Revel's ideal customer.</span>
+        </h2>
+
+        <div className="mt-10 grid grid-cols-2 gap-8 max-w-4xl">
+          {/* Left: Buyer profile */}
+          <div>
+            <h3 className="text-xs uppercase tracking-[.2em] text-revel-sage font-semibold mb-4">The Home Renovator Archetype</h3>
+            <div className="space-y-3">
+              {[
+                'Highest average order value of all customer segments',
+                'Investing in their "forever home" or dream space',
+                'Wellness is a lifestyle priority, not a luxury',
+                'Actively researching and ready to purchase',
+                'Values quality, brand trust, and expert recommendation',
+              ].map((point, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-revel-sage flex-shrink-0" />
+                  <span className="text-sm text-white/55 leading-snug">{point}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: The connection */}
+          <div>
+            <h3 className="text-xs uppercase tracking-[.2em] text-revel-green font-semibold mb-4">The Harris Connection</h3>
+            <div className="space-y-3">
+              {[
+                'Harris clients are purchasing premium Adelaide properties',
+                'Moving guide is the perfect moment for wellness discovery',
+                'Trusted agent recommendation carries enormous weight',
+                'No hard sell; a curated lifestyle suggestion',
+                'Australia\'s #1 agency (REIA 2022-2024) signals shared quality standards',
+              ].map((point, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-revel-green flex-shrink-0" />
+                  <span className="text-sm text-white/55 leading-snug">{point}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 p-5 rounded-lg bg-gradient-to-r from-revel-forest/20 to-transparent border-l-2 border-revel-green max-w-4xl">
+          <p className="font-display italic text-lg text-white/70 leading-relaxed">
+            "Our call data shows buyers want wellness spaces in new homes. Harris agents are the trusted voice at exactly the right moment."
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== SLIDE: PRODUCTS =====
+function ProductsSlide() {
+  return (
+    <div className="relative w-full h-screen bg-revel-black overflow-hidden grain">
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-revel-green via-revel-green/30 to-transparent" />
+
+      <div className="relative z-10 h-full flex flex-col justify-center px-16 lg:px-24">
+        <div className="stagger">
+          <Badge variant="green">Recommended for New Homeowners</Badge>
+          <h2 className="mt-4 text-3xl lg:text-4xl font-bold text-white tracking-tight">
+            Three saunas, three lifestyles.
+          </h2>
+        </div>
+
+        <div className="mt-8 grid grid-cols-3 gap-6 stagger" style={{animationDelay:'.2s'}}>
+          {Object.values(PRODUCTS).map((p, i) => (
+            <div key={i} className="product-card rounded-xl border border-white/8 bg-white/[0.02] overflow-hidden group">
+              <div className="relative h-52 bg-gradient-to-b from-white/[0.03] to-transparent flex items-center justify-center p-6 overflow-hidden">
+                <img src={p.img} className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105" alt={p.name} />
+                <div className="absolute top-3 right-3">
+                  <span className="bg-revel-green text-white text-[11px] font-bold px-3 py-1 rounded-full">{p.price}</span>
+                </div>
+              </div>
+              <div className="p-5">
+                <h3 className="text-base font-bold text-white">{p.name}</h3>
+                <p className="text-[11px] uppercase tracking-[.15em] text-revel-green font-semibold mt-1">{p.subtitle}</p>
+                <p className="text-[12px] text-white/40 mt-3 leading-snug">
+                  <span className="text-revel-sage font-medium">Ideal for:</span> {p.ideal}
+                </p>
+                <div className="mt-3 space-y-1.5">
+                  {p.features.map((f, j) => (
+                    <div key={j} className="flex items-center gap-2">
+                      <svg className="w-3 h-3 text-revel-green flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                      <span className="text-[11px] text-white/45">{f}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-6 text-[11px] text-white/25 max-w-2xl">
+          Full product range available at revelsaunas.com.au. Custom recommendations can be tailored to buyer profile and property type.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ===== SLIDE: STRUCTURE =====
+function StructureSlide() {
+  return (
+    <div className="relative w-full h-screen bg-revel-black overflow-hidden grain">
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-revel-forest via-revel-forest/40 to-transparent" />
+
+      <div className="relative z-10 h-full flex flex-col justify-center px-16 lg:px-24 stagger">
+        <Badge variant="forest">Partnership Structure</Badge>
+
+        <h2 className="mt-6 text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+          Simple, transparent,<br/>
+          <span className="font-display italic font-normal text-revel-sage">mutually rewarding.</span>
+        </h2>
+
+        <div className="mt-10 grid grid-cols-3 gap-6 max-w-4xl">
+          {/* Commission */}
+          <div className="p-6 rounded-xl border border-revel-green/20 bg-revel-green/[0.04]">
+            <div className="w-10 h-10 rounded-lg bg-revel-green/15 flex items-center justify-center mb-4">
+              <svg className="w-5 h-5 text-revel-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Commission</h3>
+            <div className="mt-3 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-white/50">Flat fee per sale</span>
+                <span className="text-revel-green font-semibold">$150-$300</span>
+              </div>
+              <div className="h-px bg-white/8" />
+              <div className="flex justify-between text-sm">
+                <span className="text-white/50">Percentage model</span>
+                <span className="text-revel-green font-semibold">5-8%</span>
+              </div>
+            </div>
+            <p className="mt-3 text-[11px] text-white/30">Final structure to be agreed. Industry benchmarks for home wellness affiliates sit at 5-10%.</p>
+          </div>
+
+          {/* Tracking */}
+          <div className="p-6 rounded-xl border border-revel-sage/20 bg-revel-sage/[0.04]">
+            <div className="w-10 h-10 rounded-lg bg-revel-sage/15 flex items-center justify-center mb-4">
+              <svg className="w-5 h-5 text-revel-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"/></svg>
+            </div>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Tracking</h3>
+            <div className="mt-3 space-y-2.5">
+              {[
+                { method: 'Unique discount code', detail: 'e.g. HARRIS10' },
+                { method: 'UTM-tagged landing page', detail: 'revelsaunas.com.au/harris' },
+                { method: 'Monthly reporting', detail: 'Full transparency on conversions' },
+              ].map((t, i) => (
+                <div key={i}>
+                  <div className="text-sm text-white/60 font-medium">{t.method}</div>
+                  <div className="text-[11px] text-white/30">{t.detail}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Trial */}
+          <div className="p-6 rounded-xl border border-revel-forest/30 bg-revel-forest/10">
+            <div className="w-10 h-10 rounded-lg bg-revel-forest/30 flex items-center justify-center mb-4">
+              <svg className="w-5 h-5 text-revel-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+            </div>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Trial Period</h3>
+            <div className="mt-3 space-y-2.5">
+              <div>
+                <div className="text-2xl font-bold text-revel-green">3 Months</div>
+                <div className="text-[11px] text-white/30 mt-1">Pilot duration with review gate</div>
+              </div>
+              <div className="h-px bg-white/8" />
+              <div className="text-sm text-white/50">Review at 90 days to assess performance, refine approach, and discuss extension or scaling.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== SLIDE: HARRIS BENEFITS =====
+function HarrisBenefitsSlide() {
+  return (
+    <div className="relative w-full h-screen bg-revel-black overflow-hidden grain">
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-revel-green via-revel-green/30 to-transparent" />
+
+      <div className="relative z-10 h-full flex flex-col lg:flex-row">
+        <div className="flex-1 flex flex-col justify-center px-16 lg:px-24 stagger">
+          <Badge variant="green">What Harris Gets</Badge>
+
+          <h2 className="mt-6 text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+            Elevate the buyer<br/>
+            <span className="font-display italic font-normal text-revel-green">experience.</span>
+          </h2>
+
+          <div className="mt-8 space-y-5 max-w-lg">
+            {[
+              { icon: '01', title: 'Passive revenue stream', desc: 'Earn commission on every Revel sale attributed to Harris, with no inventory or overhead.' },
+              { icon: '02', title: 'Premium brand alignment', desc: 'Associate Harris with the wellness lifestyle. Sauna ownership signals a home designed for living well.' },
+              { icon: '03', title: 'Exclusive client offers', desc: 'Provide Harris buyers with a unique discount code and priority access to new Revel products.' },
+              { icon: '04', title: 'Co-branded collateral', desc: 'Revel designs a Harris x Revel one-pager for the moving guide. Print-ready, on-brand, zero effort.' },
+              { icon: '05', title: 'Dedicated landing page', desc: 'A bespoke revelsaunas.com.au/harris page showcasing curated products for new homeowners.' },
+            ].map((b, i) => (
+              <div key={i} className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-lg bg-revel-green/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[11px] font-bold text-revel-green">{b.icon}</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-white">{b.title}</h4>
+                  <p className="text-[12px] text-white/40 mt-0.5 leading-snug">{b.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right panel with product showcase */}
+        <div className="hidden lg:flex flex-1 items-center justify-center p-12">
+          <div className="relative">
+            <div className="absolute -inset-8 bg-gradient-to-br from-revel-green/5 via-transparent to-revel-sage/5 rounded-3xl" />
+            <div className="relative grid grid-cols-2 gap-4">
+              <div className="img-reveal rounded-xl overflow-hidden border border-white/5 bg-white/[0.02] p-4" style={{animationDelay:'.2s',opacity:0,animation:'imgReveal .9s cubic-bezier(.16,1,.3,1) .2s forwards'}}>
+                <img src={PRODUCTS.aura.img} className="w-full" alt="Aura" />
+                <p className="text-[10px] text-white/30 mt-2 text-center uppercase tracking-wider">Aura Infrared</p>
+              </div>
+              <div className="img-reveal rounded-xl overflow-hidden border border-white/5 bg-white/[0.02] p-4 mt-8" style={{animationDelay:'.35s',opacity:0,animation:'imgReveal .9s cubic-bezier(.16,1,.3,1) .35s forwards'}}>
+                <img src={PRODUCTS.eden.img} className="w-full" alt="Eden" />
+                <p className="text-[10px] text-white/30 mt-2 text-center uppercase tracking-wider">Eden Barrel</p>
+              </div>
+              <div className="col-span-2 img-reveal rounded-xl overflow-hidden border border-white/5 bg-white/[0.02] p-4" style={{animationDelay:'.5s',opacity:0,animation:'imgReveal .9s cubic-bezier(.16,1,.3,1) .5s forwards'}}>
+                <img src={PRODUCTS.virta.img} className="w-full max-h-40 object-contain" alt="Virta" />
+                <p className="text-[10px] text-white/30 mt-2 text-center uppercase tracking-wider">Virta Traditional</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== SLIDE: NEXT STEPS =====
+function NextStepsSlide() {
+  return (
+    <div className="relative w-full h-screen bg-revel-black overflow-hidden grain">
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-revel-green via-revel-green/30 to-transparent" />
+
+      {/* Large watermark */}
+      <div className="absolute right-12 bottom-12 opacity-[0.04]">
+        <img src={REVEL_ICON} className="w-80 h-80 object-contain" />
+      </div>
+
+      <div className="relative z-10 h-full flex flex-col justify-center px-16 lg:px-24 stagger">
+        <Badge variant="green">Next Steps</Badge>
+
+        <h2 className="mt-6 text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+          Let's bring wellness<br/>
+          <span className="font-display italic font-normal text-revel-green">home.</span>
+        </h2>
+
+        <div className="mt-10 max-w-2xl">
+          <div className="space-y-0">
+            {[
+              { step: '01', title: 'Align on terms', desc: 'Agree on commission structure and trial parameters.', timeline: 'This week' },
+              { step: '02', title: 'Build collateral', desc: 'Revel designs the co-branded one-pager and dedicated landing page.', timeline: 'Week 2' },
+              { step: '03', title: 'Launch trial', desc: 'Include Revel in the Harris moving guide. Activate discount code and UTM tracking.', timeline: 'Week 3' },
+              { step: '04', title: 'Review at 90 days', desc: 'Assess conversion data, refine approach, and discuss scaling or extending.', timeline: 'Month 3' },
+            ].map((s, i) => (
+              <div key={i} className="flex items-start gap-6 relative pb-8">
+                {i < 3 && <div className="absolute left-[15px] top-10 w-px h-[calc(100%-28px)] bg-gradient-to-b from-revel-green/30 to-transparent" />}
+                <div className="w-8 h-8 rounded-full bg-revel-green/15 border border-revel-green/30 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[11px] font-bold text-revel-green">{s.step}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h4 className="text-sm font-semibold text-white">{s.title}</h4>
+                    <span className="text-[10px] text-revel-sage/60 uppercase tracking-wider">{s.timeline}</span>
+                  </div>
+                  <p className="text-[12px] text-white/40 mt-0.5">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <Divider />
+
+        <div className="mt-6 flex items-start gap-12">
+          <div>
+            <div className="text-[10px] uppercase tracking-[.2em] text-white/25 mb-1">Revel Contact</div>
+            <div className="text-sm text-white/70 font-medium">Josh Hancock</div>
+            <div className="text-[12px] text-white/40">josh@gymandfitness.com.au</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-[.2em] text-white/25 mb-1">Harris Contact</div>
+            <div className="text-sm text-white/70 font-medium">Simon Tanner</div>
+            <div className="text-[12px] text-white/40">simon@harrisre.com.au | 0402 292 725</div>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <img src={REVEL_LOGO_WHITE} className="h-6 opacity-40" alt="Revel" />
+          <p className="mt-2 text-[10px] text-white/20 uppercase tracking-[.2em]">Live Longer, Live Better.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== MAIN APP =====
+function App() {
+  const [slide, setSlide] = useState(0);
+  const [key, setKey] = useState(0);
+  const total = SLIDES.length;
+
+  const navigate = useCallback((delta) => {
+    setSlide(prev => {
+      const next = typeof delta === 'number' ? prev + delta : delta;
+      if (next < 0 || next >= total) return prev;
+      return next;
+    });
+    setKey(k => k + 1);
+  }, [total]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+      if (e.key === 'Home') { e.preventDefault(); setSlide(0); setKey(k => k + 1); }
+      if (e.key === 'End') { e.preventDefault(); setSlide(total - 1); setKey(k => k + 1); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [navigate, total]);
+
+  const slideComponents = [
+    <CoverSlide />,
+    <AboutSlide />,
+    <OpportunitySlide />,
+    <InsightSlide />,
+    <ProductsSlide />,
+    <StructureSlide />,
+    <HarrisBenefitsSlide />,
+    <NextStepsSlide />,
+  ];
+
+  return (
+    <div className="w-screen h-screen overflow-hidden bg-revel-black">
+      <div key={key}>
+        {slideComponents[slide]}
+      </div>
+      <SlideNav current={slide} total={total} onNav={navigate} />
+    </div>
+  );
+}
+
+createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
