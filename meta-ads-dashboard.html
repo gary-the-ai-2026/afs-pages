@@ -1269,6 +1269,12 @@ function CreativeTab({ data, brand }) {
     return map;
   }, [data]);
 
+  const videoAdIds = useMemo(() => {
+    const ids = new Set();
+    (data.videoInsights || []).forEach(r => { if (r.ad_id) ids.add(r.ad_id); });
+    return ids;
+  }, [data]);
+
   const accountId = BRANDS[brand].accountId.replace('act_', '');
 
   const cards = useMemo(() => {
@@ -1279,7 +1285,7 @@ function CreativeTab({ data, brand }) {
         const creative = creativeMap[r.ad_id];
         const thumb = creative?.image_url || creative?.thumbnail_url;
         if (!thumb) return null;
-        const isVideo = !!creative?.videoId;
+        const isVideo = !!creative?.videoId || videoAdIds.has(r.ad_id);
         const videoSource = creative?.videoSource || null;
         const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
         const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
@@ -1491,6 +1497,14 @@ function VideoTab({ data, brand }) {
   const [viewMode, setViewMode] = useState('cards');
   const [sortBy, setSortBy] = useState('spend');
 
+  const creativeMap = useMemo(() => {
+    const map = {};
+    (data.adsCreatives || []).forEach(ad => {
+      if (ad.creative) map[ad.id] = ad.creative;
+    });
+    return map;
+  }, [data]);
+
   const rows = useMemo(() => {
     return videoData
       .filter(r => {
@@ -1513,9 +1527,14 @@ function VideoTab({ data, brand }) {
         const hookRate = videoPlays > 0 ? (thruPlays / videoPlays) * 100 : 0;
         const holdRate = videoPlays > 0 ? (p75 / videoPlays) * 100 : 0;
         const completionRate = videoPlays > 0 ? (p100 / videoPlays) * 100 : 0;
+        const creative = creativeMap[r.ad_id];
+        const thumbnail = creative?.image_url || creative?.thumbnail_url || null;
+        const videoSource = creative?.videoSource || null;
         return {
           adName: r.ad_name,
+          adId: r.ad_id,
           campaign: r.campaign_name,
+          thumbnail, videoSource,
           spend, impressions, videoPlays, thruPlays,
           thumbStopRate, hookRate, holdRate, completionRate,
           p25, p50, p75, p95, p100, avgWatchTime,
@@ -1678,16 +1697,40 @@ function VideoTab({ data, brand }) {
               { label: 'Completion', value: row.completionRate },
             ];
             return (
-              <div key={i} className="dash-card p-4 hover:shadow-md transition-all">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1 min-w-0">
+              <div key={i} className="dash-card overflow-hidden hover:shadow-md transition-all">
+                {row.thumbnail && (
+                  <div className="relative bg-gray-950 flex items-center justify-center cursor-pointer" onClick={() => {
+                    if (row.videoSource) { window.open(row.videoSource, '_blank'); }
+                  }}>
+                    <img src={row.thumbnail} alt={row.adName} className="w-full object-contain" style={{maxHeight: '140px', minHeight: '80px'}} loading="lazy" />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <span className="w-9 h-9 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm opacity-80 group-hover:opacity-100">
+                        <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                      </span>
+                    </div>
+                    <div className="absolute top-1.5 left-1.5">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-bold shadow-md" style={{backgroundColor: b.primary + 'dd'}}>{i + 1}</span>
+                    </div>
+                  </div>
+                )}
+                <div className="p-4">
+                {!row.thumbnail && (
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-semibold text-gray-900 truncate leading-tight" title={row.adName}>{row.adName}</h4>
+                      <p className="text-[10px] text-gray-400 truncate mt-0.5" title={row.campaign}>{row.campaign}</p>
+                    </div>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-bold ml-2 flex-shrink-0" style={{backgroundColor: b.primary + 'cc'}}>
+                      {i + 1}
+                    </span>
+                  </div>
+                )}
+                {row.thumbnail && (
+                  <div className="mb-2">
                     <h4 className="text-xs font-semibold text-gray-900 truncate leading-tight" title={row.adName}>{row.adName}</h4>
                     <p className="text-[10px] text-gray-400 truncate mt-0.5" title={row.campaign}>{row.campaign}</p>
                   </div>
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-bold ml-2 flex-shrink-0" style={{backgroundColor: b.primary + 'cc'}}>
-                    {i + 1}
-                  </span>
-                </div>
+                )}
                 <div className="flex items-center gap-3 mb-3 pb-3 border-b" style={{borderColor: '#f0f0f2'}}>
                   <div><span className="text-[9px] text-gray-400 uppercase">Spend</span><div className="text-xs font-bold text-gray-700">{fmt.currency(row.spend)}</div></div>
                   <div><span className="text-[9px] text-gray-400 uppercase">Plays</span><div className="text-xs font-bold text-gray-700">{fmt.number(row.videoPlays)}</div></div>
@@ -1705,6 +1748,7 @@ function VideoTab({ data, brand }) {
                       </div>
                     </div>
                   ))}
+                </div>
                 </div>
               </div>
             );
@@ -1727,7 +1771,7 @@ function BreakdownsTab({ data, brand }) {
     { id: 'platform_position', label: 'Placement' },
     { id: 'age', label: 'Age' },
     { id: 'gender', label: 'Gender' },
-    { id: 'country', label: 'Country' },
+    { id: 'region', label: 'State' },
   ];
 
   const dataMap = {
@@ -1735,21 +1779,22 @@ function BreakdownsTab({ data, brand }) {
     platform_position: data?.breakdownPosition || [],
     age: data?.breakdownAge || [],
     gender: data?.breakdownGender || [],
-    country: data?.breakdownCountry || [],
-  };
-
-  const dimensionKey = {
-    publisher_platform: 'publisher_platform',
-    platform_position: 'platform_position',
-    age: 'age',
-    gender: 'gender',
-    country: 'country',
+    region: data?.breakdownRegion || [],
   };
 
   const rawRows = dataMap[subTab] || [];
 
   const rows = useMemo(() => {
-    const dimKey = dimensionKey[subTab];
+    const getDimension = (r) => {
+      if (subTab === 'platform_position') {
+        const plat = r.publisher_platform || '';
+        const pos = r.platform_position || '';
+        if (plat && pos) return plat.charAt(0).toUpperCase() + plat.slice(1) + ' - ' + pos.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        return pos || plat || 'Unknown';
+      }
+      const key = subTab === 'region' ? 'region' : subTab;
+      return r[key] || 'Unknown';
+    };
     return rawRows.map(r => {
       const spend = parseFloat(r.spend || 0);
       const impressions = parseInt(r.impressions || 0);
@@ -1763,7 +1808,7 @@ function BreakdownsTab({ data, brand }) {
       const cpa = conversions > 0 ? spend / conversions : 0;
       const roas = spend > 0 ? revenue / spend : 0;
       return {
-        dimension: r[dimKey] || 'Unknown',
+        dimension: getDimension(r),
         spend, impressions, reach, clicks, ctr, cpc, cpm,
         conversions, cpa, revenue, roas,
       };
@@ -1932,14 +1977,14 @@ function App() {
         fetchBreakdownInsights(accountId, since, until, token, 'age').catch(() => []),
         fetchBreakdownInsights(accountId, since, until, token, 'gender').catch(() => []),
         fetchBreakdownInsights(accountId, since, until, token, 'publisher_platform').catch(() => []),
-        fetchBreakdownInsights(accountId, since, until, token, 'platform_position').catch(() => []),
-        fetchBreakdownInsights(accountId, since, until, token, 'country').catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'publisher_platform,platform_position').catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'region').catch(() => []),
       ]);
 
       const adIds = [...new Set(adInsights.map(r => r.ad_id).filter(Boolean))];
       const adsCreatives = await fetchAdsCreatives(adIds, token);
 
-      setData({ campaignInsights, adsetInsights, adInsights, adsCreatives, dailyInsights, compInsights, campaignMeta, videoInsights, breakdownAge, breakdownGender, breakdownPlatform, breakdownPosition, breakdownCountry });
+      setData({ campaignInsights, adsetInsights, adInsights, adsCreatives, dailyInsights, compInsights, campaignMeta, videoInsights, breakdownAge, breakdownGender, breakdownPlatform, breakdownPosition, breakdownRegion: breakdownCountry });
       setLastRefresh(new Date());
     } catch (err) {
       setError(err.message);
