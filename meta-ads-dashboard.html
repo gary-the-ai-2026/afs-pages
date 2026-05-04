@@ -195,17 +195,19 @@ async function fetchAdsCreatives(adIds, token) {
   for (let i = 0; i < adIds.length; i += batchSize) {
     const batch = adIds.slice(i, i + batchSize);
     const ids = batch.join(',');
-    const res = await fetch(`${META_API}/?ids=${ids}&fields=id,name,status,creative{id},preview_shareable_link&access_token=${token}`);
+    const res = await fetch(`${META_API}/?ids=${ids}&fields=id,name,status,creative{id,video_id},preview_shareable_link&access_token=${token}`);
     if (!res.ok) continue;
     const json = await res.json();
     allAds.push(...Object.values(json));
   }
   const adCreativeMap = {};
   const creativeIds = [];
+  const videoIdSet = new Set();
   allAds.forEach(ad => {
     if (ad.creative?.id) {
       adCreativeMap[ad.id] = ad.creative.id;
       if (!creativeIds.includes(ad.creative.id)) creativeIds.push(ad.creative.id);
+      if (ad.creative.video_id) videoIdSet.add(ad.creative.video_id);
     }
   });
   const creativeDetails = {};
@@ -217,10 +219,31 @@ async function fetchAdsCreatives(adIds, token) {
     const json = await res.json();
     Object.values(json).forEach(c => { creativeDetails[c.id] = c; });
   }
-  return allAds.map(ad => ({
-    ...ad,
-    creative: creativeDetails[adCreativeMap[ad.id]] || ad.creative
-  }));
+  const videoSources = {};
+  const videoIds = [...videoIdSet];
+  for (let i = 0; i < videoIds.length; i += batchSize) {
+    const batch = videoIds.slice(i, i + batchSize);
+    const ids = batch.join(',');
+    try {
+      const res = await fetch(`${META_API}/?ids=${ids}&fields=source,thumbnails&access_token=${token}`);
+      if (res.ok) {
+        const json = await res.json();
+        Object.values(json).forEach(v => { videoSources[v.id] = v.source; });
+      }
+    } catch(e) {}
+  }
+  return allAds.map(ad => {
+    const videoId = ad.creative?.video_id || null;
+    return {
+      ...ad,
+      creative: {
+        ...(creativeDetails[adCreativeMap[ad.id]] || ad.creative || {}),
+        videoId,
+        videoSource: videoId ? (videoSources[videoId] || null) : null,
+      },
+      preview_shareable_link: ad.preview_shareable_link,
+    };
+  });
 }
 
 // ─── Comparison & Daily Fetch ───
@@ -661,37 +684,61 @@ const FILTER_METRICS = [
   { key: 'roas', label: 'ROAS (x)' },
 ];
 
-function MetricFilter({ value, onChange }) {
+function MetricFilter({ filters, onChange, metricOptions }) {
+  const options = metricOptions || FILTER_METRICS;
+  const addFilter = () => onChange([...filters, { metric: '', min: '', max: '' }]);
+  const removeFilter = (idx) => onChange(filters.filter((_, i) => i !== idx));
+  const updateFilter = (idx, update) => onChange(filters.map((f, i) => i === idx ? { ...f, ...update } : f));
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Filter</label>
-      <select value={value.metric} onChange={e => onChange({...value, metric: e.target.value, min: '', max: ''})}
-        className="px-2 py-1.5 text-xs border rounded-lg bg-white focus:outline-none" style={{borderColor: '#f0f0f2'}}>
-        <option value="">None</option>
-        {FILTER_METRICS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
-      </select>
-      {value.metric && (
-        <>
-          <span className="text-[10px] text-gray-400">min</span>
-          <input type="number" step="any" value={value.min} onChange={e => onChange({...value, min: e.target.value})}
-            placeholder="0" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
-          <span className="text-[10px] text-gray-400">max</span>
-          <input type="number" step="any" value={value.max} onChange={e => onChange({...value, max: e.target.value})}
-            placeholder="-" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
-        </>
+    <div className="space-y-2">
+      {filters.map((f, idx) => (
+        <div key={idx} className="flex items-center gap-2 flex-wrap">
+          <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider" style={{minWidth: '38px'}}>
+            {idx === 0 ? 'Filter' : 'AND'}
+          </label>
+          <select value={f.metric} onChange={e => updateFilter(idx, { metric: e.target.value, min: '', max: '' })}
+            className="px-2 py-1.5 text-xs border rounded-lg bg-white focus:outline-none" style={{borderColor: '#f0f0f2'}}>
+            <option value="">None</option>
+            {options.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
+          </select>
+          {f.metric && (
+            <>
+              <span className="text-[10px] text-gray-400">min</span>
+              <input type="number" step="any" value={f.min} onChange={e => updateFilter(idx, { min: e.target.value })}
+                placeholder="0" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
+              <span className="text-[10px] text-gray-400">max</span>
+              <input type="number" step="any" value={f.max} onChange={e => updateFilter(idx, { max: e.target.value })}
+                placeholder="-" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
+            </>
+          )}
+          {filters.length > 1 && (
+            <button onClick={() => removeFilter(idx)} className="text-gray-300 hover:text-red-400 transition-colors p-0.5" title="Remove filter">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
+      ))}
+      {filters.length < 4 && filters.some(f => f.metric) && (
+        <button onClick={addFilter} className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1 ml-[46px]">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          Add filter
+        </button>
       )}
     </div>
   );
 }
 
-function applyMetricFilter(rows, filter) {
-  if (!filter.metric) return rows;
-  return rows.filter(r => {
-    const v = r[filter.metric] || 0;
-    if (filter.min !== '' && v < parseFloat(filter.min)) return false;
-    if (filter.max !== '' && v > parseFloat(filter.max)) return false;
-    return true;
-  });
+function applyMetricFilter(rows, filters) {
+  if (!Array.isArray(filters)) filters = [filters];
+  return filters.reduce((result, filter) => {
+    if (!filter.metric) return result;
+    return result.filter(r => {
+      const v = r[filter.metric] || 0;
+      if (filter.min !== '' && v < parseFloat(filter.min)) return false;
+      if (filter.max !== '' && v > parseFloat(filter.max)) return false;
+      return true;
+    });
+  }, rows);
 }
 
 // ─── Sortable Table ───
@@ -967,7 +1014,7 @@ function OverviewTab({ data, brand, datePreset }) {
 function CampaignsTab({ data, brand }) {
   if (!data?.campaignInsights?.length) return <EmptyState brand={brand} />;
   const [statusFilter, setStatusFilter] = useState('all');
-  const [mFilter, setMFilter] = useState({ metric: '', min: '', max: '' });
+  const [mFilters, setMFilters] = useState([{ metric: '', min: '', max: '' }]);
   const objMap = useMemo(() => {
     const m = {};
     (data.campaignMeta || []).forEach(c => { m[c.id] = c.objective; });
@@ -1018,11 +1065,11 @@ function CampaignsTab({ data, brand }) {
     { key: 'roas', label: 'ROAS', align: 'right', sortable: true, render: v => v > 0 ? fmt.roas(v) : '-' },
   ];
 
-  const filteredRows = useMemo(() => applyMetricFilter(rows, mFilter), [rows, mFilter]);
+  const filteredRows = useMemo(() => applyMetricFilter(rows, mFilters), [rows, mFilters]);
 
   return (
     <div className="space-y-4 fade-in">
-      <MetricFilter value={mFilter} onChange={setMFilter} />
+      <MetricFilter filters={mFilters} onChange={setMFilters} />
       <SortableTable columns={columns} data={filteredRows} brand={brand} />
     </div>
   );
@@ -1032,7 +1079,7 @@ function CampaignsTab({ data, brand }) {
 function AdSetsTab({ data, brand }) {
   if (!data?.adsetInsights?.length) return <EmptyState brand={brand} />;
   const [campaignFilter, setCampaignFilter] = useState('all');
-  const [mFilter, setMFilter] = useState({ metric: '', min: '', max: '' });
+  const [mFilters, setMFilters] = useState([{ metric: '', min: '', max: '' }]);
   const campaigns = useMemo(() => [...new Set(data.adsetInsights.map(r => r.campaign_name))].sort(), [data]);
   const b = BRANDS[brand];
 
@@ -1093,8 +1140,8 @@ function AdSetsTab({ data, brand }) {
           {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
-      <MetricFilter value={mFilter} onChange={setMFilter} />
-      <SortableTable columns={columns} data={applyMetricFilter(rows, mFilter)} brand={brand} />
+      <MetricFilter filters={mFilters} onChange={setMFilters} />
+      <SortableTable columns={columns} data={applyMetricFilter(rows, mFilters)} brand={brand} />
     </div>
   );
 }
@@ -1133,10 +1180,22 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
         <div className="relative bg-gray-950 rounded-t-2xl flex items-center justify-center" style={{minHeight: '200px'}}>
-          <img src={card.thumbnail} alt={card.name} className="w-full object-contain" style={{maxHeight: '55vh'}} />
+          {card.videoSource ? (
+            <video src={card.videoSource} poster={card.thumbnail} controls className="w-full object-contain" style={{maxHeight: '55vh'}} />
+          ) : (
+            <img src={card.thumbnail} alt={card.name} className="w-full object-contain" style={{maxHeight: '55vh'}} />
+          )}
           <div className="absolute top-3 left-3">
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-xs font-bold shadow-lg backdrop-blur-sm" style={{backgroundColor: b.primary + 'dd'}}>#{rank}</span>
           </div>
+          {card.isVideo && (
+            <div className="absolute top-3 right-12">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 text-white text-[10px] font-semibold backdrop-blur-sm">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                VIDEO
+              </span>
+            </div>
+          )}
         </div>
         <div className="p-4 sm:p-5">
           <h3 className="font-display text-base sm:text-lg font-bold text-gray-900 mb-0.5 leading-tight">{card.name}</h3>
@@ -1195,11 +1254,12 @@ function CreativeTab({ data, brand }) {
   if (!data?.adInsights?.length) return <EmptyState brand={brand} />;
   const [sortMetric, setSortMetric] = useState('roas');
   const [campaignFilter, setCampaignFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [selected, setSelected] = useState(null);
   const b = BRANDS[brand];
   const campaigns = useMemo(() => [...new Set(data.adInsights.map(r => r.campaign_name))].sort(), [data]);
 
-  const [mFilter, setMFilter] = useState({ metric: '', min: '', max: '' });
+  const [mFilters, setMFilters] = useState([{ metric: '', min: '', max: '' }]);
 
   const creativeMap = useMemo(() => {
     const map = {};
@@ -1219,6 +1279,8 @@ function CreativeTab({ data, brand }) {
         const creative = creativeMap[r.ad_id];
         const thumb = creative?.image_url || creative?.thumbnail_url;
         if (!thumb) return null;
+        const isVideo = !!creative?.videoId;
+        const videoSource = creative?.videoSource || null;
         const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
         const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
         const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
@@ -1231,6 +1293,8 @@ function CreativeTab({ data, brand }) {
           title: creative?.title || '',
           body: creative?.body || '',
           previewLink: creative?.previewLink || null,
+          isVideo,
+          videoSource,
           spend: parseFloat(r.spend || 0),
           impressions: parseInt(r.impressions || 0),
           reach: parseInt(r.reach || 0),
@@ -1247,10 +1311,11 @@ function CreativeTab({ data, brand }) {
         };
       })
       .filter(Boolean)
+      .filter(c => typeFilter === 'all' || (typeFilter === 'video' ? c.isVideo : !c.isVideo))
       .sort((a, b) => lowerBetter ? (a[sortMetric] || 0) - (b[sortMetric] || 0) : (b[sortMetric] || 0) - (a[sortMetric] || 0));
-  }, [data, creativeMap, sortMetric, campaignFilter]);
+  }, [data, creativeMap, sortMetric, campaignFilter, typeFilter]);
 
-  const filteredCards = useMemo(() => applyMetricFilter(cards, mFilter), [cards, mFilter]);
+  const filteredCards = useMemo(() => applyMetricFilter(cards, mFilters), [cards, mFilters]);
 
   const avgMetric = useMemo(() => {
     if (!filteredCards.length) return 0;
@@ -1302,6 +1367,19 @@ function CreativeTab({ data, brand }) {
             </select>
           </div>
           <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Type</label>
+            <select
+              value={typeFilter}
+              onChange={e => setTypeFilter(e.target.value)}
+              className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none"
+              style={{borderColor: '#f0f0f2'}}
+            >
+              <option value="all">All Types</option>
+              <option value="video">Video</option>
+              <option value="image">Image</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Rank by</label>
             <select
               value={sortMetric}
@@ -1315,7 +1393,7 @@ function CreativeTab({ data, brand }) {
         </div>
         <span className="text-xs text-gray-400">{filteredCards.length} of {cards.length} ads</span>
       </div>
-      <MetricFilter value={mFilter} onChange={setMFilter} />
+      <MetricFilter filters={mFilters} onChange={setMFilters} />
 
       {filteredCards.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
@@ -1345,8 +1423,20 @@ function CreativeTab({ data, brand }) {
                       {i + 1}
                     </span>
                   </div>
+                  {card.isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <span className="w-10 h-10 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
+                        <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-2.5">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${card.isVideo ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                      {card.isVideo ? 'Video' : 'Image'}
+                    </span>
+                  </div>
                   <h4 className="text-xs font-semibold text-gray-900 truncate leading-tight">{card.name}</h4>
                   <p className="text-[10px] text-gray-400 truncate mt-0.5 mb-2">{card.campaign}</p>
                   <div className="flex items-center justify-between py-1.5 px-2 rounded-md mb-2" style={{backgroundColor: i < 3 ? b.primaryLight : (isGood ? '#f0fdf4' : '#fef2f2')}}>
@@ -1397,7 +1487,9 @@ function VideoTab({ data, brand }) {
   const videoData = data?.videoInsights;
   if (!videoData?.length) return <EmptyState brand={brand} />;
   const b = BRANDS[brand];
-  const [mFilter, setMFilter] = useState({ metric: '', min: '', max: '' });
+  const [mFilters, setMFilters] = useState([{ metric: '', min: '', max: '' }]);
+  const [viewMode, setViewMode] = useState('cards');
+  const [sortBy, setSortBy] = useState('spend');
 
   const rows = useMemo(() => {
     return videoData
@@ -1424,30 +1516,19 @@ function VideoTab({ data, brand }) {
         return {
           adName: r.ad_name,
           campaign: r.campaign_name,
-          spend,
-          impressions,
-          videoPlays,
-          thruPlays,
-          thumbStopRate,
-          hookRate,
-          holdRate,
-          completionRate,
-          p25, p50, p75, p95, p100,
-          avgWatchTime,
+          spend, impressions, videoPlays, thruPlays,
+          thumbStopRate, hookRate, holdRate, completionRate,
+          p25, p50, p75, p95, p100, avgWatchTime,
         };
       })
       .sort((a, b) => b.spend - a.spend);
   }, [videoData]);
 
-  const filteredRows = useMemo(() => {
-    if (!mFilter.metric) return rows;
-    return rows.filter(r => {
-      const v = r[mFilter.metric] || 0;
-      if (mFilter.min !== '' && v < parseFloat(mFilter.min)) return false;
-      if (mFilter.max !== '' && v > parseFloat(mFilter.max)) return false;
-      return true;
-    });
-  }, [rows, mFilter]);
+  const filteredRows = useMemo(() => applyMetricFilter(rows, mFilters), [rows, mFilters]);
+
+  const sortedRows = useMemo(() => {
+    return [...filteredRows].sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
+  }, [filteredRows, sortBy]);
 
   const summary = useMemo(() => {
     if (!filteredRows.length) return { totalSpend: 0, avgThumbStop: 0, avgHookRate: 0, avgCompletion: 0 };
@@ -1458,11 +1539,42 @@ function VideoTab({ data, brand }) {
     return { totalSpend, avgThumbStop, avgHookRate, avgCompletion };
   }, [filteredRows]);
 
-  const pctColor = (v, thresholds) => {
-    if (v >= (thresholds?.good || 50)) return 'text-emerald-600 bg-emerald-50';
-    if (v >= (thresholds?.mid || 25)) return 'text-amber-600 bg-amber-50';
-    return 'text-red-600 bg-red-50';
-  };
+  const funnel = useMemo(() => {
+    const f = { impressions: 0, plays: 0, p25: 0, p50: 0, p75: 0, thruPlays: 0, p100: 0 };
+    filteredRows.forEach(r => {
+      f.impressions += r.impressions;
+      f.plays += r.videoPlays;
+      f.p25 += r.p25;
+      f.p50 += r.p50;
+      f.p75 += r.p75;
+      f.thruPlays += r.thruPlays;
+      f.p100 += r.p100;
+    });
+    return f;
+  }, [filteredRows]);
+
+  const funnelStages = [
+    { label: 'Impressions', value: funnel.impressions, pct: 100 },
+    { label: 'Plays', value: funnel.plays, pct: funnel.impressions > 0 ? (funnel.plays / funnel.impressions) * 100 : 0 },
+    { label: '25% Watched', value: funnel.p25, pct: funnel.plays > 0 ? (funnel.p25 / funnel.plays) * 100 : 0 },
+    { label: '50% Watched', value: funnel.p50, pct: funnel.plays > 0 ? (funnel.p50 / funnel.plays) * 100 : 0 },
+    { label: '75% Watched', value: funnel.p75, pct: funnel.plays > 0 ? (funnel.p75 / funnel.plays) * 100 : 0 },
+    { label: 'ThruPlay', value: funnel.thruPlays, pct: funnel.plays > 0 ? (funnel.thruPlays / funnel.plays) * 100 : 0 },
+    { label: 'Completed', value: funnel.p100, pct: funnel.plays > 0 ? (funnel.p100 / funnel.plays) * 100 : 0 },
+  ];
+
+  const rateBarColor = (v) => v >= 50 ? '#059669' : v >= 25 ? '#d97706' : '#dc2626';
+  const pctColor = (v) => v >= 50 ? 'text-emerald-600 bg-emerald-50' : v >= 25 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
+
+  const sortOptions = [
+    { value: 'spend', label: 'Spend' },
+    { value: 'thumbStopRate', label: 'Thumb Stop' },
+    { value: 'hookRate', label: 'Hook Rate' },
+    { value: 'holdRate', label: 'Hold Rate' },
+    { value: 'completionRate', label: 'Completion' },
+    { value: 'videoPlays', label: 'Video Plays' },
+    { value: 'avgWatchTime', label: 'Avg Watch Time' },
+  ];
 
   const columns = [
     { key: 'adName', label: 'Ad Name', bold: true, sortable: true, render: v => <span className="block truncate max-w-[160px]" title={v}>{v}</span> },
@@ -1473,33 +1585,9 @@ function VideoTab({ data, brand }) {
     { key: 'thumbStopRate', label: 'Thumb Stop %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
     { key: 'hookRate', label: 'Hook %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
     { key: 'holdRate', label: 'Hold %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
-    { key: 'p25', label: '25%', align: 'right', sortable: true, render: v => fmt.number(v) },
-    { key: 'p50', label: '50%', align: 'right', sortable: true, render: v => fmt.number(v) },
-    { key: 'p75', label: '75%', align: 'right', sortable: true, render: v => fmt.number(v) },
-    { key: 'p100', label: '100%', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'completionRate', label: 'Complete %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
     { key: 'avgWatchTime', label: 'Avg Watch (s)', align: 'right', sortable: true, render: v => v > 0 ? v.toFixed(1) + 's' : '-' },
   ];
-
-  const videoFilterComp = (
-    <div className="flex items-center gap-2 flex-wrap">
-      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Filter</label>
-      <select value={mFilter.metric} onChange={e => setMFilter({...mFilter, metric: e.target.value, min: '', max: ''})}
-        className="px-2 py-1.5 text-xs border rounded-lg bg-white focus:outline-none" style={{borderColor: '#f0f0f2'}}>
-        <option value="">None</option>
-        {VIDEO_FILTER_METRICS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
-      </select>
-      {mFilter.metric && (
-        <>
-          <span className="text-[10px] text-gray-400">min</span>
-          <input type="number" step="any" value={mFilter.min} onChange={e => setMFilter({...mFilter, min: e.target.value})}
-            placeholder="0" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
-          <span className="text-[10px] text-gray-400">max</span>
-          <input type="number" step="any" value={mFilter.max} onChange={e => setMFilter({...mFilter, max: e.target.value})}
-            placeholder="-" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
-        </>
-      )}
-    </div>
-  );
 
   return (
     <div className="space-y-4 fade-in">
@@ -1522,8 +1610,110 @@ function VideoTab({ data, brand }) {
           <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgCompletion)}</div>
         </div>
       </div>
-      {videoFilterComp}
-      <SortableTable columns={columns} data={filteredRows} brand={brand} />
+
+      {/* Retention Funnel */}
+      <div className="dash-card p-5 sm:p-6">
+        <h3 className="font-display text-lg font-bold text-gray-900 mb-5">Audience Retention Funnel</h3>
+        <div className="flex items-end gap-2 sm:gap-3" style={{height: '200px'}}>
+          {funnelStages.map((stage, i) => {
+            const barPct = i === 0 ? 100 : Math.min(100, stage.pct);
+            const barH = Math.max(6, (barPct / 100) * 160);
+            const opacity = 1 - (i * 0.08);
+            return (
+              <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group cursor-default">
+                <div className="text-[10px] font-bold text-gray-700 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">{fmt.number(stage.value)}</div>
+                <div className="text-[10px] font-semibold mb-1" style={{color: b.primary}}>{i === 0 ? '' : fmt.pct(barPct)}</div>
+                <div className="w-full rounded-t-lg transition-all hover:opacity-100" style={{
+                  height: barH + 'px',
+                  backgroundColor: b.primary,
+                  opacity,
+                }} />
+                <div className="text-[8px] sm:text-[9px] text-gray-500 mt-2 text-center font-medium leading-tight" style={{minHeight: '24px'}}>{stage.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex rounded-lg overflow-hidden border" style={{borderColor: '#e5e7eb'}}>
+            <button onClick={() => setViewMode('cards')}
+              className="px-3 py-1.5 text-xs font-semibold transition-all flex items-center gap-1"
+              style={{ backgroundColor: viewMode === 'cards' ? b.primary : 'transparent', color: viewMode === 'cards' ? '#fff' : '#6b7280' }}>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+              Cards
+            </button>
+            <button onClick={() => setViewMode('table')}
+              className="px-3 py-1.5 text-xs font-semibold transition-all flex items-center gap-1"
+              style={{ backgroundColor: viewMode === 'table' ? b.primary : 'transparent', color: viewMode === 'table' ? '#fff' : '#6b7280' }}>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18M3 18h18M3 6h18" /></svg>
+              Table
+            </button>
+          </div>
+          {viewMode === 'cards' && (
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Sort by</label>
+              <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                className="px-3 py-1.5 text-sm border rounded-lg bg-white focus:outline-none" style={{borderColor: '#f0f0f2'}}>
+                {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          )}
+        </div>
+        <span className="text-xs text-gray-400">{filteredRows.length} video ads</span>
+      </div>
+
+      <MetricFilter filters={mFilters} onChange={setMFilters} metricOptions={VIDEO_FILTER_METRICS} />
+
+      {/* Cards View */}
+      {viewMode === 'cards' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 stagger">
+          {sortedRows.map((row, i) => {
+            const rates = [
+              { label: 'Thumb Stop', value: row.thumbStopRate },
+              { label: 'Hook Rate', value: row.hookRate },
+              { label: 'Hold Rate', value: row.holdRate },
+              { label: 'Completion', value: row.completionRate },
+            ];
+            return (
+              <div key={i} className="dash-card p-4 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-semibold text-gray-900 truncate leading-tight" title={row.adName}>{row.adName}</h4>
+                    <p className="text-[10px] text-gray-400 truncate mt-0.5" title={row.campaign}>{row.campaign}</p>
+                  </div>
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-bold ml-2 flex-shrink-0" style={{backgroundColor: b.primary + 'cc'}}>
+                    {i + 1}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 mb-3 pb-3 border-b" style={{borderColor: '#f0f0f2'}}>
+                  <div><span className="text-[9px] text-gray-400 uppercase">Spend</span><div className="text-xs font-bold text-gray-700">{fmt.currency(row.spend)}</div></div>
+                  <div><span className="text-[9px] text-gray-400 uppercase">Plays</span><div className="text-xs font-bold text-gray-700">{fmt.number(row.videoPlays)}</div></div>
+                  {row.avgWatchTime > 0 && <div><span className="text-[9px] text-gray-400 uppercase">Avg Watch</span><div className="text-xs font-bold text-gray-700">{row.avgWatchTime.toFixed(1)}s</div></div>}
+                </div>
+                <div className="space-y-2.5">
+                  {rates.map((m, j) => (
+                    <div key={j}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[9px] text-gray-500 uppercase tracking-wide font-medium">{m.label}</span>
+                        <span className="text-[11px] font-bold tabular-nums" style={{color: rateBarColor(m.value)}}>{fmt.pct(m.value)}</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-500" style={{width: Math.min(100, m.value) + '%', backgroundColor: rateBarColor(m.value)}} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Table View */}
+      {viewMode === 'table' && <SortableTable columns={columns} data={filteredRows} brand={brand} />}
     </div>
   );
 }
@@ -1765,6 +1955,14 @@ function App() {
   useEffect(() => {
     if (token && !data && !loading) fetchData();
   }, [token]);
+
+  useEffect(() => {
+    if (token && data) fetchData();
+  }, [datePreset]);
+
+  useEffect(() => {
+    if (token && data && datePreset === 'custom' && customDates.since && customDates.until) fetchData();
+  }, [customDates.since, customDates.until]);
 
   if (!token) return <TokenScreen onSave={setToken} brand={brand} />;
 
