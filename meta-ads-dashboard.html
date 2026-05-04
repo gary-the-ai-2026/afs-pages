@@ -1496,6 +1496,7 @@ function VideoTab({ data, brand }) {
   const [mFilters, setMFilters] = useState([{ metric: '', min: '', max: '' }]);
   const [viewMode, setViewMode] = useState('cards');
   const [sortBy, setSortBy] = useState('spend');
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const creativeMap = useMemo(() => {
     const map = {};
@@ -1699,9 +1700,7 @@ function VideoTab({ data, brand }) {
             return (
               <div key={i} className="dash-card overflow-hidden hover:shadow-md transition-all">
                 {row.thumbnail && (
-                  <div className="relative bg-gray-950 flex items-center justify-center cursor-pointer" onClick={() => {
-                    if (row.videoSource) { window.open(row.videoSource, '_blank'); }
-                  }}>
+                  <div className="relative bg-gray-950 flex items-center justify-center cursor-pointer" onClick={() => setSelectedVideo(row)}>
                     <img src={row.thumbnail} alt={row.adName} className="w-full object-contain" style={{maxHeight: '140px', minHeight: '80px'}} loading="lazy" />
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <span className="w-9 h-9 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm opacity-80 group-hover:opacity-100">
@@ -1758,6 +1757,55 @@ function VideoTab({ data, brand }) {
 
       {/* Table View */}
       {viewMode === 'table' && <SortableTable columns={columns} data={filteredRows} brand={brand} />}
+
+      {/* Video Playback Modal */}
+      {selectedVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6" onClick={() => setSelectedVideo(null)} style={{fontFamily: b.bodyFont}}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedVideo(null)} className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors backdrop-blur-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div className="bg-black rounded-t-2xl">
+              {selectedVideo.videoSource ? (
+                <video src={selectedVideo.videoSource} poster={selectedVideo.thumbnail} controls autoPlay className="w-full object-contain rounded-t-2xl" style={{maxHeight: '55vh'}} />
+              ) : selectedVideo.thumbnail ? (
+                <img src={selectedVideo.thumbnail} alt={selectedVideo.adName} className="w-full object-contain rounded-t-2xl" style={{maxHeight: '55vh'}} />
+              ) : (
+                <div className="flex items-center justify-center py-20 text-gray-500 text-sm">No video available</div>
+              )}
+            </div>
+            <div className="p-5">
+              <h3 className="font-display text-base font-bold text-gray-900 mb-1 leading-snug">{selectedVideo.adName}</h3>
+              <p className="text-xs text-gray-400 mb-4">{selectedVideo.campaign}</p>
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                <div className="text-center"><div className="text-[9px] text-gray-400 uppercase mb-0.5">Spend</div><div className="text-sm font-bold">{fmt.currency(selectedVideo.spend)}</div></div>
+                <div className="text-center"><div className="text-[9px] text-gray-400 uppercase mb-0.5">Plays</div><div className="text-sm font-bold">{fmt.number(selectedVideo.videoPlays)}</div></div>
+                <div className="text-center"><div className="text-[9px] text-gray-400 uppercase mb-0.5">ThruPlays</div><div className="text-sm font-bold">{fmt.number(selectedVideo.thruPlays)}</div></div>
+                <div className="text-center"><div className="text-[9px] text-gray-400 uppercase mb-0.5">Avg Watch</div><div className="text-sm font-bold">{selectedVideo.avgWatchTime > 0 ? selectedVideo.avgWatchTime.toFixed(1) + 's' : '-'}</div></div>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { label: 'Thumb Stop', value: selectedVideo.thumbStopRate },
+                  { label: 'Hook Rate', value: selectedVideo.hookRate },
+                  { label: 'Hold Rate', value: selectedVideo.holdRate },
+                  { label: 'Completion', value: selectedVideo.completionRate },
+                ].map((m, j) => (
+                  <div key={j}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">{m.label}</span>
+                      <span className="text-xs font-bold tabular-nums" style={{color: rateBarColor(m.value)}}>{fmt.pct(m.value)}</span>
+                    </div>
+                    <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500" style={{width: Math.min(100, m.value) + '%', backgroundColor: rateBarColor(m.value)}} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
