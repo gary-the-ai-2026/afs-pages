@@ -141,6 +141,10 @@ function getDateRange(preset, custom) {
       const end = new Date(today.getFullYear(), today.getMonth(), 0);
       return { since: pad(start), until: pad(end) };
     }
+    case 'last_12m': {
+      const start = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate() + 1);
+      return { since: pad(start), until: pad(today) };
+    }
     case 'custom': return { since: custom.since, until: custom.until };
     default: return { since: pad(daysAgo(29)), until: pad(today) };
   }
@@ -191,7 +195,7 @@ async function fetchAdsCreatives(adIds, token) {
   for (let i = 0; i < adIds.length; i += batchSize) {
     const batch = adIds.slice(i, i + batchSize);
     const ids = batch.join(',');
-    const res = await fetch(`${META_API}/?ids=${ids}&fields=id,name,status,creative{id}&access_token=${token}`);
+    const res = await fetch(`${META_API}/?ids=${ids}&fields=id,name,status,creative{id},preview_shareable_link&access_token=${token}`);
     if (!res.ok) continue;
     const json = await res.json();
     allAds.push(...Object.values(json));
@@ -228,11 +232,11 @@ function getComparisonRange(since, until) {
   return { since: compStart.toISOString().slice(0,10), until: compEnd.toISOString().slice(0,10) };
 }
 
-async function fetchDailyInsights(accountId, since, until, token) {
+async function fetchDailyInsights(accountId, since, until, token, timeIncrement = 1) {
   const fields = 'spend,impressions,reach,clicks,ctr,cpm,cpc,frequency,actions,action_values,outbound_clicks';
   const timeRange = JSON.stringify({since, until});
   return fetchAllPages(
-    `/${accountId}/insights?fields=${fields}&level=account&time_range=${timeRange}&time_increment=1&limit=500`,
+    `/${accountId}/insights?fields=${fields}&level=account&time_range=${timeRange}&time_increment=${timeIncrement}&limit=500`,
     token
   );
 }
@@ -241,12 +245,40 @@ async function fetchCampaignMeta(accountId, token) {
   return fetchAllPages(`/${accountId}/campaigns?fields=id,name,objective,status&limit=500`, token);
 }
 
+async function fetchVideoInsights(accountId, since, until, token) {
+  const fields = 'campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,spend,impressions,reach,clicks,ctr,actions,video_thruplay_watched_actions,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p95_watched_actions,video_p100_watched_actions,video_avg_time_watched_actions,video_play_actions';
+  const timeRange = JSON.stringify({since, until});
+  return fetchAllPages(
+    `/${accountId}/insights?fields=${fields}&level=ad&time_range=${timeRange}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]`,
+    token
+  );
+}
+
+async function fetchBreakdownInsights(accountId, since, until, token, breakdown) {
+  const fields = 'spend,impressions,reach,clicks,ctr,cpc,cpm,actions,action_values,outbound_clicks';
+  const timeRange = JSON.stringify({since, until});
+  return fetchAllPages(
+    `/${accountId}/insights?fields=${fields}&level=account&time_range=${timeRange}&breakdowns=${breakdown}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]`,
+    token
+  );
+}
+
 const OBJECTIVE_MAP = {
   OUTCOME_SALES: 'conversion', CONVERSIONS: 'conversion', CATALOG_SALES: 'conversion', PRODUCT_CATALOG_SALES: 'conversion',
   OUTCOME_TRAFFIC: 'traffic', LINK_CLICKS: 'traffic',
   OUTCOME_AWARENESS: 'awareness', REACH: 'awareness', BRAND_AWARENESS: 'awareness',
   OUTCOME_ENGAGEMENT: 'engagement', POST_ENGAGEMENT: 'engagement', VIDEO_VIEWS: 'engagement',
   OUTCOME_LEADS: 'leads', LEAD_GENERATION: 'leads',
+};
+
+const OBJECTIVE_LABELS = {
+  OUTCOME_SALES: 'Sales', CONVERSIONS: 'Conversions', CATALOG_SALES: 'Catalogue Sales', PRODUCT_CATALOG_SALES: 'Catalogue Sales',
+  OUTCOME_TRAFFIC: 'Traffic', LINK_CLICKS: 'Traffic',
+  OUTCOME_AWARENESS: 'Awareness', REACH: 'Reach', BRAND_AWARENESS: 'Brand Awareness',
+  OUTCOME_ENGAGEMENT: 'Engagement', POST_ENGAGEMENT: 'Engagement', VIDEO_VIEWS: 'Video Views',
+  OUTCOME_LEADS: 'Leads', LEAD_GENERATION: 'Lead Gen',
+  OUTCOME_APP_PROMOTION: 'App Promo', APP_INSTALLS: 'App Installs',
+  MESSAGES: 'Messages', STORE_TRAFFIC: 'Store Traffic',
 };
 
 function classifyCampaign(row, avgMetrics, objective) {
@@ -370,7 +402,7 @@ function KpiCard({ label, value, icon, brand, delta, invertDelta }) {
 }
 
 // ─── Trend Chart ───
-function TrendChart({ dailyData, brand }) {
+function TrendChart({ dailyData, brand, datePreset }) {
   const [metric, setMetric] = useState('spend');
   const [hover, setHover] = useState(null);
   const b = BRANDS[brand];
@@ -403,20 +435,133 @@ function TrendChart({ dailyData, brand }) {
     });
   }, [dailyData]);
 
-  if (points.length < 2) return null;
+  // Aggregate by month for last_12m
+  const monthlyPoints = useMemo(() => {
+    if (datePreset !== 'last_12m' || !points.length) return [];
+    const buckets = {};
+    points.forEach(p => {
+      const key = p.date.slice(0, 7); // YYYY-MM
+      if (!buckets[key]) buckets[key] = { month: key, spend: 0, impressions: 0, reach: 0, clicks: 0, purchases: 0, revenue: 0, days: 0, ctrSum: 0, cpmSum: 0 };
+      const b = buckets[key];
+      b.spend += p.spend;
+      b.impressions += p.impressions;
+      b.reach += p.reach;
+      b.clicks += p.clicks;
+      b.purchases += p.purchases;
+      b.revenue += p.revenue;
+      b.ctrSum += p.ctr;
+      b.cpmSum += p.cpm;
+      b.days += 1;
+    });
+    return Object.values(buckets)
+      .sort((a, b) => a.month.localeCompare(b.month))
+      .map(m => ({
+        ...m,
+        ctr: m.impressions > 0 ? (m.clicks / m.impressions) * 100 : 0,
+        cpm: m.impressions > 0 ? (m.spend / m.impressions) * 1000 : 0,
+        roas: m.spend > 0 ? m.revenue / m.spend : 0,
+      }));
+  }, [points, datePreset]);
+
+  const isBarChart = datePreset === 'last_12m' && monthlyPoints.length > 0;
+  const chartPoints = isBarChart ? monthlyPoints : points;
+
+  if (chartPoints.length < 2) return null;
 
   const W = 800, H = 220;
   const PAD = { top: 20, right: 20, bottom: 30, left: 60 };
   const chartW = W - PAD.left - PAD.right;
   const chartH = H - PAD.top - PAD.bottom;
 
-  const values = points.map(p => p[metric]);
+  const values = chartPoints.map(p => p[metric]);
   const max = Math.max(...values, 0.01);
-  const min = Math.min(...values, 0);
+  const min = isBarChart ? 0 : Math.min(...values, 0);
   const range = max - min || 1;
   const avg = values.reduce((a, c) => a + c, 0) / values.length;
   const fmtFn = metricDefs.find(m => m.key === metric)?.format || fmt.number;
 
+  // Bar chart rendering
+  if (isBarChart) {
+    const barCount = monthlyPoints.length;
+    const barGap = 8;
+    const barWidth = Math.max(12, (chartW - barGap * (barCount - 1)) / barCount);
+    const totalBarsWidth = barCount * barWidth + (barCount - 1) * barGap;
+    const offsetX = PAD.left + (chartW - totalBarsWidth) / 2;
+
+    const getBarX = i => offsetX + i * (barWidth + barGap);
+    const getBarH = v => ((v - min) / range) * chartH;
+    const getBarY = v => PAD.top + chartH - getBarH(v);
+    const avgY = getBarY(avg);
+    const peakVal = max;
+    const lowVal = Math.min(...values);
+
+    return (
+      <div className="dash-card p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h3 className="font-display text-lg font-bold text-gray-900">Monthly Performance</h3>
+          <div className="flex gap-1 flex-wrap">
+            {metricDefs.map(m => (
+              <button key={m.key} onClick={() => { setMetric(m.key); setHover(null); }}
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${metric === m.key ? 'text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+                style={metric === m.key ? { backgroundColor: b.primary } : {}}
+              >{m.label}</button>
+            ))}
+          </div>
+        </div>
+        <div className="relative">
+          <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{maxHeight: '280px'}}>
+            {[0, 0.25, 0.5, 0.75, 1].map(frac => {
+              const y = PAD.top + chartH * (1 - frac);
+              return (
+                <g key={frac}>
+                  <line x1={PAD.left} y1={y} x2={PAD.left + chartW} y2={y} stroke="#f0f0f2" strokeWidth="1" />
+                  <text x={PAD.left - 8} y={y + 4} textAnchor="end" fill="#9ca3af" fontSize="9" fontFamily="Open Sans">{fmtFn(min + range * frac)}</text>
+                </g>
+              );
+            })}
+            <line x1={PAD.left} y1={avgY} x2={PAD.left + chartW} y2={avgY} stroke={b.primary} strokeWidth="1" strokeDasharray="6 4" opacity="0.4" />
+            {monthlyPoints.map((p, i) => {
+              const x = getBarX(i);
+              const barH = getBarH(p[metric]);
+              const y = getBarY(p[metric]);
+              const radius = Math.min(4, barWidth / 3);
+              const isHovered = hover === i;
+              return (
+                <g key={i}>
+                  <clipPath id={`bar-clip-${i}`}>
+                    <rect x={x} y={y} width={barWidth} height={barH} rx={radius} ry={radius} />
+                  </clipPath>
+                  <rect x={x} y={y} width={barWidth} height={barH} rx={radius} ry={radius}
+                    fill={b.primary} opacity={isHovered ? 1 : 0.75}
+                    style={{transition: 'opacity 0.15s ease'}} />
+                  <rect x={x} y={PAD.top} width={barWidth} height={chartH}
+                    fill="transparent" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} />
+                  <text x={x + barWidth / 2} y={H - 5} textAnchor="middle" fill="#9ca3af" fontSize="9" fontFamily="Open Sans">
+                    {new Date(p.month + '-01T00:00:00').toLocaleDateString('en-AU', { month: 'short' })}
+                  </text>
+                </g>
+              );
+            })}
+            {hover !== null && monthlyPoints[hover] && (
+              <g>
+                <rect x={getBarX(hover) + barWidth / 2 - 50} y={Math.max(PAD.top, getBarY(monthlyPoints[hover][metric]) - 28)} width="100" height="22" rx="6" fill="#1f2937" opacity="0.9" />
+                <text x={getBarX(hover) + barWidth / 2} y={Math.max(PAD.top + 14, getBarY(monthlyPoints[hover][metric]) - 14)} textAnchor="middle" fill="white" fontSize="10" fontFamily="Open Sans" fontWeight="600">
+                  {fmtFn(monthlyPoints[hover][metric])}
+                </text>
+              </g>
+            )}
+          </svg>
+        </div>
+        <div className="flex items-center gap-6 mt-3 pt-3 border-t" style={{borderColor: '#f0f0f2'}}>
+          <div><span className="text-[10px] text-gray-400 uppercase tracking-wider">Avg</span><span className="text-sm font-bold text-gray-700 ml-2 tabular-nums">{fmtFn(avg)}</span></div>
+          <div><span className="text-[10px] text-gray-400 uppercase tracking-wider">Peak</span><span className="text-sm font-bold text-gray-700 ml-2 tabular-nums">{fmtFn(peakVal)}</span></div>
+          <div><span className="text-[10px] text-gray-400 uppercase tracking-wider">Low</span><span className="text-sm font-bold text-gray-700 ml-2 tabular-nums">{fmtFn(lowVal)}</span></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Line chart (default)
   const getX = i => PAD.left + (i / (points.length - 1)) * chartW;
   const getY = v => PAD.top + chartH - ((v - min) / range) * chartH;
 
@@ -497,6 +642,56 @@ function TierBadge({ tier, metric, label }) {
       {names[tier]} <span className="opacity-60">({label})</span>
     </span>
   );
+}
+
+// ─── Metric Filter ───
+const FILTER_METRICS = [
+  { key: 'spend', label: 'Spend', fmt: '$' },
+  { key: 'impressions', label: 'Impressions' },
+  { key: 'reach', label: 'Reach' },
+  { key: 'clicks', label: 'Clicks' },
+  { key: 'ctr', label: 'CTR (%)' },
+  { key: 'cpc', label: 'CPC ($)' },
+  { key: 'cpm', label: 'CPM ($)' },
+  { key: 'outboundClicks', label: 'Outbound Clicks' },
+  { key: 'frequency', label: 'Frequency' },
+  { key: 'conversions', label: 'Conversions' },
+  { key: 'costPerConv', label: 'CPA ($)' },
+  { key: 'revenue', label: 'Revenue ($)' },
+  { key: 'roas', label: 'ROAS (x)' },
+];
+
+function MetricFilter({ value, onChange }) {
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Filter</label>
+      <select value={value.metric} onChange={e => onChange({...value, metric: e.target.value, min: '', max: ''})}
+        className="px-2 py-1.5 text-xs border rounded-lg bg-white focus:outline-none" style={{borderColor: '#f0f0f2'}}>
+        <option value="">None</option>
+        {FILTER_METRICS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
+      </select>
+      {value.metric && (
+        <>
+          <span className="text-[10px] text-gray-400">min</span>
+          <input type="number" step="any" value={value.min} onChange={e => onChange({...value, min: e.target.value})}
+            placeholder="0" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
+          <span className="text-[10px] text-gray-400">max</span>
+          <input type="number" step="any" value={value.max} onChange={e => onChange({...value, max: e.target.value})}
+            placeholder="-" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function applyMetricFilter(rows, filter) {
+  if (!filter.metric) return rows;
+  return rows.filter(r => {
+    const v = r[filter.metric] || 0;
+    if (filter.min !== '' && v < parseFloat(filter.min)) return false;
+    if (filter.max !== '' && v > parseFloat(filter.max)) return false;
+    return true;
+  });
 }
 
 // ─── Sortable Table ───
@@ -580,7 +775,7 @@ function StatusBadge({ status }) {
 }
 
 // ─── Overview Tab ───
-function OverviewTab({ data, brand }) {
+function OverviewTab({ data, brand, datePreset }) {
   if (!data?.campaignInsights?.length) return <EmptyState brand={brand} />;
 
   const sumInsights = (rows) => {
@@ -676,7 +871,7 @@ function OverviewTab({ data, brand }) {
       </div>
 
       {/* Trend Chart */}
-      {data.dailyInsights?.length > 1 && <TrendChart dailyData={data.dailyInsights} brand={brand} />}
+      {data.dailyInsights?.length > 1 && <TrendChart dailyData={data.dailyInsights} brand={brand} datePreset={datePreset} />}
 
       {/* Budget Waste Alert */}
       {wasteSpend > 0 && (
@@ -772,13 +967,21 @@ function OverviewTab({ data, brand }) {
 function CampaignsTab({ data, brand }) {
   if (!data?.campaignInsights?.length) return <EmptyState brand={brand} />;
   const [statusFilter, setStatusFilter] = useState('all');
+  const [mFilter, setMFilter] = useState({ metric: '', min: '', max: '' });
+  const objMap = useMemo(() => {
+    const m = {};
+    (data.campaignMeta || []).forEach(c => { m[c.id] = c.objective; });
+    return m;
+  }, [data]);
   const rows = useMemo(() => data.campaignInsights.map(r => {
     const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
     const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
     const costPerConv = getActionValue(r.cost_per_action_type, 'purchase') + getActionValue(r.cost_per_action_type, 'omni_purchase');
     const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+    const rawObj = objMap[r.campaign_id] || '';
     return {
       name: r.campaign_name,
+      objective: OBJECTIVE_LABELS[rawObj] || rawObj.replace(/^OUTCOME_/, '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) || '-',
       spend: parseFloat(r.spend || 0),
       impressions: parseInt(r.impressions || 0),
       reach: parseInt(r.reach || 0),
@@ -793,10 +996,13 @@ function CampaignsTab({ data, brand }) {
       revenue,
       roas: parseFloat(r.spend) > 0 ? revenue / parseFloat(r.spend) : 0,
     };
-  }), [data]);
+  }), [data, objMap]);
+
+  const objColors = { Sales: 'text-emerald-600 bg-emerald-50', Conversions: 'text-emerald-600 bg-emerald-50', 'Catalogue Sales': 'text-emerald-600 bg-emerald-50', Traffic: 'text-blue-600 bg-blue-50', Awareness: 'text-purple-600 bg-purple-50', Reach: 'text-purple-600 bg-purple-50', 'Brand Awareness': 'text-purple-600 bg-purple-50', Engagement: 'text-amber-600 bg-amber-50', 'Video Views': 'text-amber-600 bg-amber-50', Leads: 'text-cyan-600 bg-cyan-50', 'Lead Gen': 'text-cyan-600 bg-cyan-50' };
 
   const columns = [
     { key: 'name', label: 'Campaign', bold: true, sortable: true },
+    { key: 'objective', label: 'Objective', sortable: true, render: v => <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${objColors[v] || 'text-gray-500 bg-gray-100'}`}>{v}</span> },
     { key: 'spend', label: 'Spend', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
     { key: 'reach', label: 'Reach', align: 'right', sortable: true, render: v => fmt.number(v) },
@@ -812,9 +1018,12 @@ function CampaignsTab({ data, brand }) {
     { key: 'roas', label: 'ROAS', align: 'right', sortable: true, render: v => v > 0 ? fmt.roas(v) : '-' },
   ];
 
+  const filteredRows = useMemo(() => applyMetricFilter(rows, mFilter), [rows, mFilter]);
+
   return (
-    <div className="fade-in">
-      <SortableTable columns={columns} data={rows} brand={brand} />
+    <div className="space-y-4 fade-in">
+      <MetricFilter value={mFilter} onChange={setMFilter} />
+      <SortableTable columns={columns} data={filteredRows} brand={brand} />
     </div>
   );
 }
@@ -823,6 +1032,7 @@ function CampaignsTab({ data, brand }) {
 function AdSetsTab({ data, brand }) {
   if (!data?.adsetInsights?.length) return <EmptyState brand={brand} />;
   const [campaignFilter, setCampaignFilter] = useState('all');
+  const [mFilter, setMFilter] = useState({ metric: '', min: '', max: '' });
   const campaigns = useMemo(() => [...new Set(data.adsetInsights.map(r => r.campaign_name))].sort(), [data]);
   const b = BRANDS[brand];
 
@@ -855,7 +1065,7 @@ function AdSetsTab({ data, brand }) {
 
   const columns = [
     { key: 'campaign', label: 'Campaign', sortable: true, render: v => <span className="text-gray-400 text-xs">{v}</span> },
-    { key: 'name', label: 'Ad Set', bold: true, sortable: true },
+    { key: 'name', label: 'Ad Set', bold: true, sortable: true, render: v => <span className="block truncate max-w-[180px]" title={v}>{v}</span> },
     { key: 'spend', label: 'Spend', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
     { key: 'reach', label: 'Reach', align: 'right', sortable: true, render: v => fmt.number(v) },
@@ -883,15 +1093,17 @@ function AdSetsTab({ data, brand }) {
           {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
-      <SortableTable columns={columns} data={rows} brand={brand} />
+      <MetricFilter value={mFilter} onChange={setMFilter} />
+      <SortableTable columns={columns} data={applyMetricFilter(rows, mFilter)} brand={brand} />
     </div>
   );
 }
 
 // ─── Creative Detail Modal ───
-function CreativeModal({ card, rank, brand, onClose }) {
+function CreativeModal({ card, rank, brand, onClose, accountId }) {
   if (!card) return null;
   const b = BRANDS[brand];
+  const adsManagerUrl = card.adId ? `https://www.facebook.com/adsmanager/manage/ads?act=${accountId}&selected_ad_ids=${card.adId}` : null;
   useEffect(() => {
     const handler = e => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
@@ -953,6 +1165,24 @@ function CreativeModal({ card, rank, brand, onClose }) {
               {card.body && <p className="text-xs text-gray-500 whitespace-pre-line leading-relaxed">{card.body}</p>}
             </div>
           )}
+          <div className="flex items-center gap-2 mt-4 pt-3 border-t" style={{borderColor: '#f0f0f2'}}>
+            {card.previewLink && (
+              <a href={card.previewLink} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all hover:opacity-90"
+                style={{backgroundColor: b.primary}}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                Preview Ad
+              </a>
+            )}
+            {adsManagerUrl && (
+              <a href={adsManagerUrl} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all hover:bg-gray-50"
+                style={{borderColor: '#e5e7eb', color: '#374151'}}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                Ads Manager
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>,
@@ -960,7 +1190,7 @@ function CreativeModal({ card, rank, brand, onClose }) {
   );
 }
 
-// ─── Creative Performance Tab ───
+// ─── Creative Performance (Ads) Tab ───
 function CreativeTab({ data, brand }) {
   if (!data?.adInsights?.length) return <EmptyState brand={brand} />;
   const [sortMetric, setSortMetric] = useState('roas');
@@ -969,16 +1199,21 @@ function CreativeTab({ data, brand }) {
   const b = BRANDS[brand];
   const campaigns = useMemo(() => [...new Set(data.adInsights.map(r => r.campaign_name))].sort(), [data]);
 
+  const [mFilter, setMFilter] = useState({ metric: '', min: '', max: '' });
+
   const creativeMap = useMemo(() => {
     const map = {};
     (data.adsCreatives || []).forEach(ad => {
-      if (ad.creative) map[ad.id] = ad.creative;
+      if (ad.creative) map[ad.id] = { ...ad.creative, previewLink: ad.preview_shareable_link || null };
     });
     return map;
   }, [data]);
 
+  const accountId = BRANDS[brand].accountId.replace('act_', '');
+
   const cards = useMemo(() => {
     const filtered = campaignFilter === 'all' ? data.adInsights : data.adInsights.filter(r => r.campaign_name === campaignFilter);
+    const lowerBetter = sortMetric === 'cpc' || sortMetric === 'costPerConv' || sortMetric === 'cpm';
     return filtered
       .map(r => {
         const creative = creativeMap[r.ad_id];
@@ -988,12 +1223,14 @@ function CreativeTab({ data, brand }) {
         const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
         const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
         return {
+          adId: r.ad_id,
           name: r.ad_name,
           campaign: r.campaign_name,
           adset: r.adset_name,
           thumbnail: thumb,
           title: creative?.title || '',
           body: creative?.body || '',
+          previewLink: creative?.previewLink || null,
           spend: parseFloat(r.spend || 0),
           impressions: parseInt(r.impressions || 0),
           reach: parseInt(r.reach || 0),
@@ -1010,13 +1247,15 @@ function CreativeTab({ data, brand }) {
         };
       })
       .filter(Boolean)
-      .sort((a, b) => (b[sortMetric] || 0) - (a[sortMetric] || 0));
+      .sort((a, b) => lowerBetter ? (a[sortMetric] || 0) - (b[sortMetric] || 0) : (b[sortMetric] || 0) - (a[sortMetric] || 0));
   }, [data, creativeMap, sortMetric, campaignFilter]);
 
+  const filteredCards = useMemo(() => applyMetricFilter(cards, mFilter), [cards, mFilter]);
+
   const avgMetric = useMemo(() => {
-    if (!cards.length) return 0;
-    return cards.reduce((s, c) => s + (c[sortMetric] || 0), 0) / cards.length;
-  }, [cards, sortMetric]);
+    if (!filteredCards.length) return 0;
+    return filteredCards.reduce((s, c) => s + (c[sortMetric] || 0), 0) / filteredCards.length;
+  }, [filteredCards, sortMetric]);
 
   const metricOptions = [
     { value: 'roas', label: 'ROAS' },
@@ -1074,16 +1313,17 @@ function CreativeTab({ data, brand }) {
             </select>
           </div>
         </div>
-        <span className="text-xs text-gray-400">{cards.length} creatives with thumbnails</span>
+        <span className="text-xs text-gray-400">{filteredCards.length} of {cards.length} ads</span>
       </div>
+      <MetricFilter value={mFilter} onChange={setMFilter} />
 
-      {cards.length === 0 ? (
+      {filteredCards.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
           No ad creatives with thumbnails found. Creative thumbnails require active or recently paused ads.
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 stagger">
-          {cards.map((card, i) => {
+          {filteredCards.map((card, i) => {
             const val = card[sortMetric] || 0;
             const isGood = isLowerBetter ? val < avgMetric : val > avgMetric;
             const perfColor = i < 3 ? b.primary : (isGood ? '#059669' : '#dc2626');
@@ -1128,9 +1368,300 @@ function CreativeTab({ data, brand }) {
         </div>
       )}
 
-      {selected !== null && cards[selected] && (
-        <CreativeModal card={cards[selected]} rank={selected + 1} brand={brand} onClose={() => setSelected(null)} />
+      {selected !== null && filteredCards[selected] && (
+        <CreativeModal card={filteredCards[selected]} rank={selected + 1} brand={brand} accountId={accountId} onClose={() => setSelected(null)} />
       )}
+    </div>
+  );
+}
+
+// ─── Video Performance Tab ───
+const VIDEO_FILTER_METRICS = [
+  { key: 'spend', label: 'Spend', fmt: '$' },
+  { key: 'impressions', label: 'Impressions' },
+  { key: 'videoPlays', label: 'Video Plays' },
+  { key: 'thumbStopRate', label: 'Thumb Stop (%)' },
+  { key: 'hookRate', label: 'Hook Rate (%)' },
+  { key: 'holdRate', label: 'Hold Rate (%)' },
+  { key: 'completionRate', label: 'Completion (%)' },
+  { key: 'avgWatchTime', label: 'Avg Watch Time (s)' },
+];
+
+function getVideoActionValue(actions, type) {
+  if (!actions) return 0;
+  const a = actions.find(x => x.action_type === type || x.action_type === 'video_view');
+  return a ? parseFloat(a.value) : 0;
+}
+
+function VideoTab({ data, brand }) {
+  const videoData = data?.videoInsights;
+  if (!videoData?.length) return <EmptyState brand={brand} />;
+  const b = BRANDS[brand];
+  const [mFilter, setMFilter] = useState({ metric: '', min: '', max: '' });
+
+  const rows = useMemo(() => {
+    return videoData
+      .filter(r => {
+        const hasThruplay = r.video_thruplay_watched_actions && r.video_thruplay_watched_actions.length > 0;
+        const hasPlays = r.video_play_actions && r.video_play_actions.length > 0;
+        return hasThruplay || hasPlays;
+      })
+      .map(r => {
+        const spend = parseFloat(r.spend || 0);
+        const impressions = parseInt(r.impressions || 0);
+        const videoPlays = getVideoActionValue(r.video_play_actions, 'video_view');
+        const thruPlays = getVideoActionValue(r.video_thruplay_watched_actions, 'video_view');
+        const p25 = getVideoActionValue(r.video_p25_watched_actions, 'video_view');
+        const p50 = getVideoActionValue(r.video_p50_watched_actions, 'video_view');
+        const p75 = getVideoActionValue(r.video_p75_watched_actions, 'video_view');
+        const p95 = getVideoActionValue(r.video_p95_watched_actions, 'video_view');
+        const p100 = getVideoActionValue(r.video_p100_watched_actions, 'video_view');
+        const avgWatchTime = getVideoActionValue(r.video_avg_time_watched_actions, 'video_view');
+        const thumbStopRate = impressions > 0 ? (videoPlays / impressions) * 100 : 0;
+        const hookRate = videoPlays > 0 ? (thruPlays / videoPlays) * 100 : 0;
+        const holdRate = videoPlays > 0 ? (p75 / videoPlays) * 100 : 0;
+        const completionRate = videoPlays > 0 ? (p100 / videoPlays) * 100 : 0;
+        return {
+          adName: r.ad_name,
+          campaign: r.campaign_name,
+          spend,
+          impressions,
+          videoPlays,
+          thruPlays,
+          thumbStopRate,
+          hookRate,
+          holdRate,
+          completionRate,
+          p25, p50, p75, p95, p100,
+          avgWatchTime,
+        };
+      })
+      .sort((a, b) => b.spend - a.spend);
+  }, [videoData]);
+
+  const filteredRows = useMemo(() => {
+    if (!mFilter.metric) return rows;
+    return rows.filter(r => {
+      const v = r[mFilter.metric] || 0;
+      if (mFilter.min !== '' && v < parseFloat(mFilter.min)) return false;
+      if (mFilter.max !== '' && v > parseFloat(mFilter.max)) return false;
+      return true;
+    });
+  }, [rows, mFilter]);
+
+  const summary = useMemo(() => {
+    if (!filteredRows.length) return { totalSpend: 0, avgThumbStop: 0, avgHookRate: 0, avgCompletion: 0 };
+    const totalSpend = filteredRows.reduce((s, r) => s + r.spend, 0);
+    const avgThumbStop = filteredRows.reduce((s, r) => s + r.thumbStopRate, 0) / filteredRows.length;
+    const avgHookRate = filteredRows.reduce((s, r) => s + r.hookRate, 0) / filteredRows.length;
+    const avgCompletion = filteredRows.reduce((s, r) => s + r.completionRate, 0) / filteredRows.length;
+    return { totalSpend, avgThumbStop, avgHookRate, avgCompletion };
+  }, [filteredRows]);
+
+  const pctColor = (v, thresholds) => {
+    if (v >= (thresholds?.good || 50)) return 'text-emerald-600 bg-emerald-50';
+    if (v >= (thresholds?.mid || 25)) return 'text-amber-600 bg-amber-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  const columns = [
+    { key: 'adName', label: 'Ad Name', bold: true, sortable: true, render: v => <span className="block truncate max-w-[160px]" title={v}>{v}</span> },
+    { key: 'campaign', label: 'Campaign', sortable: true, render: v => <span className="text-gray-400 text-xs block truncate max-w-[120px]" title={v}>{v}</span> },
+    { key: 'spend', label: 'Spend', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'videoPlays', label: 'Plays', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'thumbStopRate', label: 'Thumb Stop %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
+    { key: 'hookRate', label: 'Hook %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
+    { key: 'holdRate', label: 'Hold %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
+    { key: 'p25', label: '25%', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'p50', label: '50%', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'p75', label: '75%', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'p100', label: '100%', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'avgWatchTime', label: 'Avg Watch (s)', align: 'right', sortable: true, render: v => v > 0 ? v.toFixed(1) + 's' : '-' },
+  ];
+
+  const videoFilterComp = (
+    <div className="flex items-center gap-2 flex-wrap">
+      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Filter</label>
+      <select value={mFilter.metric} onChange={e => setMFilter({...mFilter, metric: e.target.value, min: '', max: ''})}
+        className="px-2 py-1.5 text-xs border rounded-lg bg-white focus:outline-none" style={{borderColor: '#f0f0f2'}}>
+        <option value="">None</option>
+        {VIDEO_FILTER_METRICS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
+      </select>
+      {mFilter.metric && (
+        <>
+          <span className="text-[10px] text-gray-400">min</span>
+          <input type="number" step="any" value={mFilter.min} onChange={e => setMFilter({...mFilter, min: e.target.value})}
+            placeholder="0" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
+          <span className="text-[10px] text-gray-400">max</span>
+          <input type="number" step="any" value={mFilter.max} onChange={e => setMFilter({...mFilter, max: e.target.value})}
+            placeholder="-" className="px-2 py-1.5 text-xs border rounded-lg bg-white w-20 focus:outline-none tabular-nums" style={{borderColor: '#f0f0f2'}} />
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 fade-in">
+      {/* KPI Summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 stagger">
+        <div className="dash-card p-3 sm:p-5">
+          <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Total Video Spend</div>
+          <div className="text-lg sm:text-2xl font-bold text-gray-900 font-display tabular-nums">{fmt.currency(summary.totalSpend)}</div>
+        </div>
+        <div className="dash-card p-3 sm:p-5">
+          <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Thumb Stop %</div>
+          <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgThumbStop)}</div>
+        </div>
+        <div className="dash-card p-3 sm:p-5">
+          <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Hook Rate %</div>
+          <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgHookRate)}</div>
+        </div>
+        <div className="dash-card p-3 sm:p-5">
+          <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Completion %</div>
+          <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgCompletion)}</div>
+        </div>
+      </div>
+      {videoFilterComp}
+      <SortableTable columns={columns} data={filteredRows} brand={brand} />
+    </div>
+  );
+}
+
+// ─── Breakdowns Tab ───
+function BreakdownsTab({ data, brand }) {
+  const b = BRANDS[brand];
+  const [subTab, setSubTab] = useState('publisher_platform');
+  const subTabs = [
+    { id: 'publisher_platform', label: 'Platform' },
+    { id: 'platform_position', label: 'Placement' },
+    { id: 'age', label: 'Age' },
+    { id: 'gender', label: 'Gender' },
+    { id: 'country', label: 'Country' },
+  ];
+
+  const dataMap = {
+    publisher_platform: data?.breakdownPlatform || [],
+    platform_position: data?.breakdownPosition || [],
+    age: data?.breakdownAge || [],
+    gender: data?.breakdownGender || [],
+    country: data?.breakdownCountry || [],
+  };
+
+  const dimensionKey = {
+    publisher_platform: 'publisher_platform',
+    platform_position: 'platform_position',
+    age: 'age',
+    gender: 'gender',
+    country: 'country',
+  };
+
+  const rawRows = dataMap[subTab] || [];
+
+  const rows = useMemo(() => {
+    const dimKey = dimensionKey[subTab];
+    return rawRows.map(r => {
+      const spend = parseFloat(r.spend || 0);
+      const impressions = parseInt(r.impressions || 0);
+      const reach = parseInt(r.reach || 0);
+      const clicks = parseInt(r.clicks || 0);
+      const ctr = parseFloat(r.ctr || 0);
+      const cpc = parseFloat(r.cpc || 0);
+      const cpm = parseFloat(r.cpm || 0);
+      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
+      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      const cpa = conversions > 0 ? spend / conversions : 0;
+      const roas = spend > 0 ? revenue / spend : 0;
+      return {
+        dimension: r[dimKey] || 'Unknown',
+        spend, impressions, reach, clicks, ctr, cpc, cpm,
+        conversions, cpa, revenue, roas,
+      };
+    }).sort((a, b) => b.spend - a.spend);
+  }, [rawRows, subTab]);
+
+  const totalSpend = useMemo(() => rows.reduce((s, r) => s + r.spend, 0), [rows]);
+  const maxSpend = useMemo(() => rows.length ? rows[0].spend : 1, [rows]);
+
+  const columns = [
+    { key: 'dimension', label: subTabs.find(t => t.id === subTab)?.label || 'Dimension', bold: true, sortable: true, render: (v, row) => (
+      <div className="flex items-center gap-3 min-w-[140px]">
+        <span className="font-medium text-gray-900">{v}</span>
+      </div>
+    )},
+    { key: 'spend', label: 'Spend', align: 'right', sortable: true, render: (v, row) => (
+      <div className="relative min-w-[100px]">
+        <div className="absolute inset-0 rounded" style={{
+          width: totalSpend > 0 ? Math.max(2, (v / maxSpend) * 100) + '%' : '0%',
+          backgroundColor: b.primary,
+          opacity: 0.1,
+        }} />
+        <span className="relative z-10 font-semibold">{fmt.currency(v)}</span>
+        <span className="relative z-10 text-[10px] text-gray-400 ml-1">({totalSpend > 0 ? ((v / totalSpend) * 100).toFixed(1) : 0}%)</span>
+      </div>
+    )},
+    { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'clicks', label: 'Clicks', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'ctr', label: 'CTR', align: 'right', sortable: true, render: v => fmt.pct(v) },
+    { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'cpm', label: 'CPM', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'conversions', label: 'Conv.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
+    { key: 'cpa', label: 'CPA', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
+    { key: 'revenue', label: 'Revenue', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
+    { key: 'roas', label: 'ROAS', align: 'right', sortable: true, render: v => v > 0 ? fmt.roas(v) : '-' },
+  ];
+
+  if (!rows.length) return (
+    <div className="space-y-4 fade-in">
+      <div className="flex gap-1 flex-wrap bg-white rounded-xl p-1" style={{boxShadow: '0 1px 2px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)'}}>
+        {subTabs.map(t => (
+          <button key={t.id} onClick={() => setSubTab(t.id)}
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+            style={{ backgroundColor: subTab === t.id ? b.primary : 'transparent', color: subTab === t.id ? '#ffffff' : '#6b7280' }}
+          >{t.label}</button>
+        ))}
+      </div>
+      <EmptyState brand={brand} />
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 fade-in">
+      <div className="flex gap-1 flex-wrap bg-white rounded-xl p-1" style={{boxShadow: '0 1px 2px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)'}}>
+        {subTabs.map(t => (
+          <button key={t.id} onClick={() => setSubTab(t.id)}
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+            style={{ backgroundColor: subTab === t.id ? b.primary : 'transparent', color: subTab === t.id ? '#ffffff' : '#6b7280' }}
+          >{t.label}</button>
+        ))}
+      </div>
+
+      {/* Visual bar chart summary */}
+      <div className="dash-card p-5 sm:p-6">
+        <h3 className="font-display text-lg font-bold text-gray-900 mb-4">Spend by {subTabs.find(t => t.id === subTab)?.label}</h3>
+        <div className="space-y-3">
+          {rows.slice(0, 10).map((row, i) => {
+            const pct = maxSpend > 0 ? (row.spend / maxSpend) * 100 : 0;
+            return (
+              <div key={i}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">{row.dimension}</span>
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <span className="font-semibold">{fmt.currency(row.spend)}</span>
+                    <span className="text-gray-400">({totalSpend > 0 ? ((row.spend / totalSpend) * 100).toFixed(1) : 0}%)</span>
+                    {row.roas > 0 && <span>{fmt.roas(row.roas)} ROAS</span>}
+                  </div>
+                </div>
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-700" style={{width: pct + '%', backgroundColor: b.primary, opacity: 0.7 + (0.3 * (1 - i / 10))}} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <SortableTable columns={columns} data={rows} brand={brand} />
     </div>
   );
 }
@@ -1197,19 +1728,28 @@ function App() {
       const accountId = BRANDS[brand].accountId;
       const comp = getComparisonRange(since, until);
 
-      const [campaignInsights, adsetInsights, adInsights, dailyInsights, compInsights, campaignMeta] = await Promise.all([
+      const isLongRange = datePreset === 'last_12m';
+      const dailyIncrement = isLongRange ? 'monthly' : 1;
+
+      const [campaignInsights, adsetInsights, adInsights, dailyInsights, compInsights, campaignMeta, videoInsights, breakdownAge, breakdownGender, breakdownPlatform, breakdownPosition, breakdownCountry] = await Promise.all([
         fetchInsights(accountId, 'campaign', since, until, token),
-        fetchInsights(accountId, 'adset', since, until, token),
-        fetchInsights(accountId, 'ad', since, until, token),
-        fetchDailyInsights(accountId, since, until, token),
+        fetchInsights(accountId, 'adset', since, until, token).catch(() => []),
+        fetchInsights(accountId, 'ad', since, until, token).catch(() => []),
+        fetchDailyInsights(accountId, since, until, token, dailyIncrement),
         fetchInsights(accountId, 'campaign', comp.since, comp.until, token).catch(() => []),
         fetchCampaignMeta(accountId, token).catch(() => []),
+        fetchVideoInsights(accountId, since, until, token).catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'age').catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'gender').catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'publisher_platform').catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'platform_position').catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'country').catch(() => []),
       ]);
 
       const adIds = [...new Set(adInsights.map(r => r.ad_id).filter(Boolean))];
       const adsCreatives = await fetchAdsCreatives(adIds, token);
 
-      setData({ campaignInsights, adsetInsights, adInsights, adsCreatives, dailyInsights, compInsights, campaignMeta });
+      setData({ campaignInsights, adsetInsights, adInsights, adsCreatives, dailyInsights, compInsights, campaignMeta, videoInsights, breakdownAge, breakdownGender, breakdownPlatform, breakdownPosition, breakdownCountry });
       setLastRefresh(new Date());
     } catch (err) {
       setError(err.message);
@@ -1232,7 +1772,9 @@ function App() {
     { id: 'overview', label: 'Overview' },
     { id: 'campaigns', label: 'Campaigns' },
     { id: 'adsets', label: 'Ad Sets' },
-    { id: 'creative', label: 'Creative Performance' },
+    { id: 'creative', label: 'Creative Performance (Ads)' },
+    { id: 'video', label: 'Video Performance' },
+    { id: 'breakdowns', label: 'Breakdowns' },
   ];
 
   const dateOptions = [
@@ -1243,6 +1785,7 @@ function App() {
     { value: 'last_30d', label: 'Last 30 Days' },
     { value: 'this_month', label: 'This Month' },
     { value: 'last_month', label: 'Last Month' },
+    { value: 'last_12m', label: 'Last 12 Months' },
     { value: 'custom', label: 'Custom Range' },
   ];
 
@@ -1380,10 +1923,12 @@ function App() {
             <p className="text-sm">Click Refresh to pull data</p>
           </div>
         )}
-        {tab === 'overview' && data && <OverviewTab data={data} brand={brand} />}
+        {tab === 'overview' && data && <OverviewTab data={data} brand={brand} datePreset={datePreset} />}
         {tab === 'campaigns' && data && <CampaignsTab data={data} brand={brand} />}
         {tab === 'adsets' && data && <AdSetsTab data={data} brand={brand} />}
         {tab === 'creative' && data && <CreativeTab data={data} brand={brand} />}
+        {tab === 'video' && data && <VideoTab data={data} brand={brand} />}
+        {tab === 'breakdowns' && data && <BreakdownsTab data={data} brand={brand} />}
       </main>
 
       {/* Footer */}
