@@ -4,23 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Revel x Harris Real Estate — Partnership Proposal</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --cyan:#1DC0DC;
-  --navy:#003057;
-  --charcoal:#25282A;
-  --grey:#4B4F54;
+  --green:#25B34B;
+  --forest:#485D4D;
+  --black:#000000;
+  --sage:#ABB99C;
   --white:#FFFFFF;
 }
 html{scroll-behavior:smooth}
-body{font-family:'Montserrat',sans-serif;font-weight:400;color:var(--white);background:var(--charcoal)}
+body{font-family:'Montserrat',sans-serif;font-weight:400;color:var(--white);background:#111}
 
 /* Typography */
-h1{font-weight:100;text-transform:uppercase;letter-spacing:.12em;line-height:1.1}
-h2{font-weight:100;text-transform:uppercase;letter-spacing:.08em;line-height:1.15}
-h3{font-weight:500;text-transform:uppercase;letter-spacing:.1em;font-size:.75rem}
+h1{font-weight:700;text-transform:uppercase;letter-spacing:.08em;line-height:1.1}
+h2{font-weight:700;text-transform:uppercase;letter-spacing:.06em;line-height:1.15}
+h3{font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:.75rem}
 p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 
 /* Sections */
@@ -32,59 +32,59 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 .overlay{position:absolute;inset:0}
 
 /* Dot grid motif */
-.dot-grid{position:absolute;width:120px;height:120px;background-image:radial-gradient(circle,rgba(29,192,220,.3) 1.2px,transparent 1.2px);background-size:12px 12px}
+.dot-grid{position:absolute;width:120px;height:120px;background-image:radial-gradient(circle,rgba(37,179,75,.3) 1.2px,transparent 1.2px);background-size:12px 12px}
 
 /* Water drop bg element */
 .drop-bg{position:absolute;opacity:.04;pointer-events:none}
 
 /* Divider line */
-.cyan-rule{width:60px;height:2px;background:var(--cyan);margin:1.5rem 0}
+.green-rule{width:60px;height:2px;background:var(--green);margin:1.5rem 0}
 
 /* Badge */
-.badge{display:inline-block;padding:.4rem 1rem;font-size:.65rem;font-weight:500;text-transform:uppercase;letter-spacing:.15em;border:1px solid rgba(29,192,220,.4);color:var(--cyan);border-radius:2px}
+.badge{display:inline-block;padding:.4rem 1rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;border:1px solid rgba(37,179,75,.4);color:var(--green);border-radius:2px}
 
 /* Stat card */
 .stat{text-align:center;padding:1.5rem}
-.stat-num{font-size:2.5rem;font-weight:100;color:var(--cyan);letter-spacing:.05em}
-.stat-label{font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.45);margin-top:.5rem}
+.stat-num{font-size:2.5rem;font-weight:700;color:var(--green);letter-spacing:.05em}
+.stat-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.45);margin-top:.5rem}
 .stat-source{font-size:.55rem;color:rgba(255,255,255,.2);margin-top:.3rem;text-transform:uppercase;letter-spacing:.08em}
 
 /* Product card */
 .product-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;transition:transform .3s ease,box-shadow .3s ease}
-.product-card:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(29,192,220,.1)}
-.product-img{width:100%;aspect-ratio:1;object-fit:contain;padding:1.5rem;background:linear-gradient(to bottom,rgba(29,192,220,.03),transparent)}
+.product-card:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(37,179,75,.1)}
+.product-img{width:100%;aspect-ratio:1;object-fit:contain;padding:1.5rem;background:linear-gradient(to bottom,rgba(37,179,75,.03),transparent)}
 .product-body{padding:1.5rem}
-.product-name{font-weight:500;font-size:1rem;text-transform:uppercase;letter-spacing:.06em}
-.product-sub{font-size:.7rem;color:var(--cyan);font-weight:500;text-transform:uppercase;letter-spacing:.1em;margin-top:.25rem}
-.product-price{font-size:1.5rem;font-weight:100;color:var(--cyan);margin-top:.75rem}
+.product-name{font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:.06em}
+.product-sub{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:.25rem}
+.product-price{font-size:1.5rem;font-weight:700;color:var(--green);margin-top:.75rem}
 .product-ideal{font-size:.75rem;color:rgba(255,255,255,.4);margin-top:.75rem;line-height:1.5}
 .product-features{list-style:none;margin-top:.75rem}
 .product-features li{font-size:.72rem;color:rgba(255,255,255,.45);padding:.3rem 0;padding-left:1.2rem;position:relative}
-.product-features li::before{content:'';position:absolute;left:0;top:.6rem;width:6px;height:6px;border:1px solid var(--cyan);border-radius:50%}
+.product-features li::before{content:'';position:absolute;left:0;top:.6rem;width:6px;height:6px;border:1px solid var(--green);border-radius:50%}
 
 /* Benefits */
 .benefit{display:flex;gap:1.25rem;align-items:flex-start;margin-bottom:2rem}
-.benefit-num{flex-shrink:0;width:2.5rem;height:2.5rem;border:1px solid rgba(29,192,220,.3);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:500;color:var(--cyan);border-radius:4px}
-.benefit h4{font-size:.85rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--white)}
+.benefit-num{flex-shrink:0;width:2.5rem;height:2.5rem;border:1px solid rgba(37,179,75,.3);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--green);border-radius:4px}
+.benefit h4{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--white)}
 .benefit p{font-size:.78rem;color:rgba(255,255,255,.45);margin-top:.25rem;line-height:1.5}
 
 /* Structure cards */
 .struct-card{padding:2rem;border:1px solid rgba(255,255,255,.06);border-radius:8px;background:rgba(255,255,255,.02)}
-.struct-card h4{font-weight:500;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1.25rem}
-.struct-icon{width:40px;height:40px;border:1px solid rgba(29,192,220,.25);border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.struct-card h4{font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1.25rem}
+.struct-icon{width:40px;height:40px;border:1px solid rgba(37,179,75,.25);border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
 .struct-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem}
 .struct-row:last-child{border-bottom:none}
 .struct-label{color:rgba(255,255,255,.5)}
-.struct-val{color:var(--cyan);font-weight:500}
+.struct-val{color:var(--green);font-weight:700}
 
 /* Timeline */
 .timeline-item{display:flex;gap:1.5rem;align-items:flex-start;position:relative;padding-bottom:2.5rem}
 .timeline-item:last-child{padding-bottom:0}
-.timeline-line{position:absolute;left:15px;top:2.2rem;width:1px;height:calc(100% - 1rem);background:linear-gradient(to bottom,rgba(29,192,220,.3),transparent)}
-.timeline-dot{flex-shrink:0;width:32px;height:32px;border:1px solid rgba(29,192,220,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:500;color:var(--cyan);background:var(--charcoal);position:relative;z-index:1}
-.timeline-content h4{font-size:.85rem;font-weight:500;color:var(--white)}
+.timeline-line{position:absolute;left:15px;top:2.2rem;width:1px;height:calc(100% - 1rem);background:linear-gradient(to bottom,rgba(37,179,75,.3),transparent)}
+.timeline-dot{flex-shrink:0;width:32px;height:32px;border:1px solid rgba(37,179,75,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--green);background:var(--black);position:relative;z-index:1}
+.timeline-content h4{font-size:.85rem;font-weight:700;color:var(--white)}
 .timeline-content p{font-size:.78rem;color:rgba(255,255,255,.45);margin-top:.2rem}
-.timeline-content .time{font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(29,192,220,.6);margin-top:.3rem}
+.timeline-content .time{font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(37,179,75,.6);margin-top:.3rem}
 
 /* Full-bleed image section */
 .img-section{min-height:70vh;position:relative;display:flex;align-items:flex-end}
@@ -125,7 +125,7 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 /* Scrollbar */
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:10px}
+::-webkit-scrollbar-thumb{background:#25B34B;border-radius:10px}
 </style>
 </head>
 <body>
@@ -133,7 +133,7 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 <!-- ===================== HERO ===================== -->
 <section class="section" style="min-height:100vh">
   <img class="img-cover" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/revel-aura2P-24.jpg?v=1769789361" alt="Revel Sauna lifestyle">
-  <div class="overlay" style="background:linear-gradient(135deg,rgba(37,40,42,.92) 40%,rgba(37,40,42,.6) 70%,rgba(37,40,42,.3))"></div>
+  <div class="overlay" style="background:linear-gradient(135deg,rgba(0,0,0,.92) 40%,rgba(0,0,0,.6) 70%,rgba(0,0,0,.3))"></div>
   <div class="dot-grid" style="top:2rem;right:2rem"></div>
   <div class="drop-bg" style="right:-80px;bottom:-80px;width:400px;height:400px">
     <img src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo_Icon_f9894379-f5b2-45a6-8c22-7de8cf21404e.png?v=1691241102" style="width:100%;height:100%;object-fit:contain" alt="">
@@ -150,15 +150,15 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
       </div>
     </div>
     <div class="reveal" style="transition-delay:.2s">
-      <h1>Revel Saunas<br><span style="color:var(--cyan)">x</span> Harris<br>Real Estate</h1>
+      <h1>Revel Saunas<br><span style="color:var(--green)">x</span> Harris<br>Real Estate</h1>
     </div>
     <div class="reveal" style="transition-delay:.3s">
-      <div class="cyan-rule"></div>
+      <div class="green-rule"></div>
       <p style="max-width:480px;font-size:.95rem">A trial partnership to bring premium wellness into the new homeowner journey.</p>
     </div>
-    <div class="reveal" style="transition-delay:.4s;margin-top:3rem;display:flex;gap:2.5rem;flex-wrap:wrap;font-size:.65rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.3);font-weight:500">
+    <div class="reveal" style="transition-delay:.4s;margin-top:3rem;display:flex;gap:2.5rem;flex-wrap:wrap;font-size:.65rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.3);font-weight:700">
       <span>May 2026</span>
-      <span style="color:rgba(29,192,220,.4)">|</span>
+      <span style="color:rgba(37,179,75,.4)">|</span>
       <span>Prepared for Simon Tanner</span>
     </div>
   </div>
@@ -167,17 +167,17 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 <!-- ===================== FULL IMAGE BREAK ===================== -->
 <section class="img-section">
   <img class="img-cover" src="marty-fox-revel.jpg" alt="Revel x The Block - Marty Fox collaboration" style="object-position:center 30%">
-  <div class="overlay" style="background:linear-gradient(to top,var(--charcoal) 0%,rgba(37,40,42,.4) 40%,transparent 100%)"></div>
+  <div class="overlay" style="background:linear-gradient(to top,var(--black) 0%,rgba(0,0,0,.4) 40%,transparent 100%)"></div>
   <div class="content">
     <div class="reveal">
-      <h3 style="color:var(--cyan)">About Revel</h3>
+      <h3 style="color:var(--green)">About Revel</h3>
       <h2 style="margin-top:.5rem">Making wellness<br>accessible to all.</h2>
     </div>
   </div>
 </section>
 
 <!-- ===================== ABOUT ===================== -->
-<section class="section" style="min-height:auto;background:var(--charcoal)">
+<section class="section" style="min-height:auto;background:var(--black)">
   <div class="section-pad" style="width:100%">
     <div class="grid-2" style="align-items:center">
       <div class="reveal">
@@ -213,17 +213,17 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 <!-- ===================== OPPORTUNITY IMAGE ===================== -->
 <section class="img-section">
   <img class="img-cover" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/revel-aurora-G2-35.jpg?v=1769789458" alt="Aurora barrel sauna outdoor">
-  <div class="overlay" style="background:linear-gradient(to top,var(--navy) 0%,rgba(0,48,87,.5) 40%,transparent 100%)"></div>
+  <div class="overlay" style="background:linear-gradient(to top,var(--forest) 0%,rgba(72,93,77,.5) 40%,transparent 100%)"></div>
   <div class="content">
     <div class="reveal">
-      <h3 style="color:var(--cyan)">The Opportunity</h3>
+      <h3 style="color:var(--green)">The Opportunity</h3>
       <h2 style="margin-top:.5rem">New homes deserve<br>wellness spaces.</h2>
     </div>
   </div>
 </section>
 
 <!-- ===================== OPPORTUNITY STATS ===================== -->
-<section class="section" style="min-height:auto;background:var(--navy)">
+<section class="section" style="min-height:auto;background:var(--forest)">
   <div class="section-pad" style="width:100%">
     <div class="reveal">
       <p style="max-width:600px;font-size:.95rem;margin-bottom:3rem">
@@ -231,24 +231,24 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
       </p>
     </div>
     <div class="grid-3 reveal" style="transition-delay:.15s">
-      <div style="border-top:2px solid var(--cyan);padding-top:1.5rem">
+      <div style="border-top:2px solid var(--green);padding-top:1.5rem">
         <div class="stat-num" style="text-align:left">55%</div>
         <p style="font-size:.85rem;margin-top:.5rem">of sauna users are open to buying one for their home</p>
         <div class="stat-source" style="margin-top:.75rem">AFS Health & Fitness Study</div>
       </div>
-      <div style="border-top:2px solid var(--cyan);padding-top:1.5rem">
+      <div style="border-top:2px solid var(--green);padding-top:1.5rem">
         <div class="stat-num" style="text-align:left">64%</div>
         <p style="font-size:.85rem;margin-top:.5rem">cite cost as the primary barrier, not desire</p>
         <div class="stat-source" style="margin-top:.75rem">AFS Research 2021</div>
       </div>
-      <div style="border-top:2px solid var(--cyan);padding-top:1.5rem">
+      <div style="border-top:2px solid var(--green);padding-top:1.5rem">
         <div class="stat-num" style="text-align:left">+13.4%</div>
         <p style="font-size:.85rem;margin-top:.5rem">Health & Beauty eCommerce growth year-on-year</p>
         <div class="stat-source" style="margin-top:.75rem">AusPost 2025</div>
       </div>
     </div>
 
-    <div class="reveal" style="transition-delay:.3s;margin-top:3rem;padding:1.5rem 2rem;border-left:3px solid var(--cyan);background:rgba(29,192,220,.05);border-radius:0 6px 6px 0;max-width:700px">
+    <div class="reveal" style="transition-delay:.3s;margin-top:3rem;padding:1.5rem 2rem;border-left:3px solid var(--green);background:rgba(37,179,75,.05);border-radius:0 6px 6px 0;max-width:700px">
       <p style="font-size:.9rem;font-style:italic;color:rgba(255,255,255,.6)">
         Moving house is the #1 trigger for home wellness investment. New homeowners are furnishing, renovating, and designing their ideal living space. A sauna isn't an afterthought; it's a lifestyle upgrade they're already considering.
       </p>
@@ -259,73 +259,73 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 <!-- ===================== INSIGHT IMAGE ===================== -->
 <section class="img-section">
   <img class="img-cover" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/Aura-2P-G2-15.jpg?v=1769789350" alt="Aura sauna lifestyle">
-  <div class="overlay" style="background:linear-gradient(to top,var(--charcoal) 0%,rgba(37,40,42,.5) 40%,transparent 100%)"></div>
+  <div class="overlay" style="background:linear-gradient(to top,var(--black) 0%,rgba(0,0,0,.5) 40%,transparent 100%)"></div>
   <div class="content">
     <div class="reveal">
-      <h3 style="color:var(--cyan)">Customer Insight</h3>
+      <h3 style="color:var(--green)">Customer Insight</h3>
       <h2 style="margin-top:.5rem">Why Harris buyers are<br>Revel's ideal customer.</h2>
     </div>
   </div>
 </section>
 
 <!-- ===================== INSIGHT DETAIL ===================== -->
-<section class="section" style="min-height:auto;background:var(--charcoal)">
+<section class="section" style="min-height:auto;background:var(--black)">
   <div class="section-pad" style="width:100%">
     <div class="grid-2">
       <div class="reveal">
-        <h3 style="color:rgba(29,192,220,.7);margin-bottom:1.5rem">Our Home Buyer/Renovator Archetype</h3>
+        <h3 style="color:rgba(37,179,75,.7);margin-bottom:1.5rem">Our Home Buyer/Renovator Archetype</h3>
         <div style="space-y:0">
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">Highest average order value of all customer segments</p>
           </div>
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">Investing in their "forever home" or dream space</p>
           </div>
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">Wellness is a lifestyle priority, not a luxury</p>
           </div>
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">Actively researching and ready to purchase</p>
           </div>
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">Values quality, brand trust, and expert recommendation</p>
           </div>
         </div>
         <p style="font-size:.65rem;color:rgba(255,255,255,.25);margin-top:1rem;font-style:italic">*Archetype formed from analysis of over 1,400 customer phone calls</p>
       </div>
       <div class="reveal" style="transition-delay:.15s">
-        <h3 style="color:rgba(29,192,220,.7);margin-bottom:1.5rem">The Harris Connection</h3>
+        <h3 style="color:rgba(37,179,75,.7);margin-bottom:1.5rem">The Harris Connection</h3>
         <div>
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">Harris clients are purchasing premium Adelaide properties</p>
           </div>
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">Moving guide is the perfect moment for wellness discovery</p>
           </div>
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">Trusted agent recommendation carries enormous weight</p>
           </div>
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">No hard sell; a curated lifestyle suggestion</p>
           </div>
           <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:.55rem"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:.55rem"></div>
             <p style="font-size:.85rem">Australia's #1 agency (REIA 2022-2024) signals shared quality</p>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="reveal" style="transition-delay:.3s;margin-top:3rem;padding:1.5rem 2rem;border-left:3px solid var(--cyan);background:rgba(29,192,220,.04);border-radius:0 6px 6px 0;max-width:700px">
+    <div class="reveal" style="transition-delay:.3s;margin-top:3rem;padding:1.5rem 2rem;border-left:3px solid var(--green);background:rgba(37,179,75,.04);border-radius:0 6px 6px 0;max-width:700px">
       <p style="font-size:.9rem;font-style:italic;color:rgba(255,255,255,.6)">
         "Our call data shows buyers want wellness spaces in new homes. Harris agents are the trusted voice at exactly the right moment."
       </p>
@@ -334,12 +334,12 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 </section>
 
 <!-- ===================== PRODUCT COLLAGE ===================== -->
-<section class="section" style="min-height:auto;background:var(--charcoal);padding:4rem 2rem">
+<section class="section" style="min-height:auto;background:var(--black);padding:4rem 2rem">
   <div style="width:100%;max-width:1200px;margin:0 auto">
     <div class="reveal" style="text-align:center;margin-bottom:2.5rem">
       <span class="badge">Saunas & Ice Baths</span>
       <h2 style="margin-top:1.5rem">Designed for the<br>modern home.</h2>
-      <div class="cyan-rule" style="margin:1.5rem auto"></div>
+      <div class="green-rule" style="margin:1.5rem auto"></div>
     </div>
     <div class="reveal" style="transition-delay:.15s;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem">
       <div style="border-radius:8px;overflow:hidden;aspect-ratio:3/4">
@@ -362,13 +362,13 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
       </div>
     </div>
     <div class="reveal" style="transition-delay:.3s;text-align:center;margin-top:2rem">
-      <a href="https://revelsaunas.com.au" target="_blank" style="display:inline-block;padding:.9rem 2.5rem;font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.15em;color:var(--white);background:var(--cyan);border-radius:4px;text-decoration:none;transition:background .3s ease">Full product range available at revelsaunas.com.au</a>
+      <a href="https://revelsaunas.com.au" target="_blank" style="display:inline-block;padding:.9rem 2.5rem;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--white);background:var(--green);border-radius:4px;text-decoration:none;transition:background .3s ease">Full product range available at revelsaunas.com.au</a>
     </div>
   </div>
 </section>
 
 <!-- ===================== PARTNERSHIP STRUCTURE ===================== -->
-<section class="section" style="min-height:auto;background:var(--charcoal)">
+<section class="section" style="min-height:auto;background:var(--black)">
   <div class="section-pad" style="width:100%">
     <div class="reveal" style="text-align:center;margin-bottom:3rem">
       <span class="badge">Partnership Structure</span>
@@ -377,12 +377,12 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 
     <div class="grid-3 reveal" style="transition-delay:.15s">
       <!-- Commission -->
-      <div class="struct-card" style="border-color:rgba(29,192,220,.15)">
+      <div class="struct-card" style="border-color:rgba(37,179,75,.15)">
         <div class="struct-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <h4 style="color:var(--white)">Commission</h4>
-        <div style="font-size:2.5rem;font-weight:100;color:var(--cyan);margin:.75rem 0">10%</div>
+        <div style="font-size:2.5rem;font-weight:700;color:var(--green);margin:.75rem 0">10%</div>
         <p style="font-size:.72rem;color:rgba(255,255,255,.4);margin-bottom:1rem">of every attributed sale</p>
         <div style="height:1px;background:rgba(255,255,255,.06);margin:.75rem 0"></div>
         <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.25);margin-bottom:.5rem">Example earnings</p>
@@ -399,33 +399,33 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
       <!-- Tracking & Buyer Incentive -->
       <div class="struct-card">
         <div class="struct-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5"><path d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5"><path d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"/></svg>
         </div>
         <h4 style="color:var(--white)">Buyer Incentive & Tracking</h4>
-        <div style="margin-top:.75rem;padding:1rem;background:rgba(29,192,220,.06);border:1px solid rgba(29,192,220,.15);border-radius:6px;text-align:center">
+        <div style="margin-top:.75rem;padding:1rem;background:rgba(37,179,75,.06);border:1px solid rgba(37,179,75,.15);border-radius:6px;text-align:center">
           <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.3);margin-bottom:.3rem">Exclusive buyer code</p>
-          <p style="font-size:1.8rem;font-weight:500;color:var(--cyan);letter-spacing:.1em">HARRIS5</p>
+          <p style="font-size:1.8rem;font-weight:700;color:var(--green);letter-spacing:.1em">HARRIS5</p>
           <p style="font-size:.78rem;color:rgba(255,255,255,.6);margin-top:.4rem">5% off for every Harris buyer</p>
         </div>
         <p style="font-size:.78rem;color:rgba(255,255,255,.45);margin-top:1rem;line-height:1.6">Harris gives their clients something of real value. The code tracks attribution and builds goodwill at the same time.</p>
         <div style="height:1px;background:rgba(255,255,255,.06);margin:1rem 0"></div>
         <div style="margin-bottom:.75rem">
-          <p style="font-size:.82rem;color:rgba(255,255,255,.7);font-weight:500">UTM-tagged landing page</p>
+          <p style="font-size:.82rem;color:rgba(255,255,255,.7);font-weight:700">UTM-tagged landing page</p>
           <p style="font-size:.72rem;color:rgba(255,255,255,.3)">revelsaunas.com.au/harris</p>
         </div>
         <div>
-          <p style="font-size:.82rem;color:rgba(255,255,255,.7);font-weight:500">Monthly reporting</p>
+          <p style="font-size:.82rem;color:rgba(255,255,255,.7);font-weight:700">Monthly reporting</p>
           <p style="font-size:.72rem;color:rgba(255,255,255,.3)">Full transparency on conversions</p>
         </div>
       </div>
 
       <!-- Trial -->
-      <div class="struct-card" style="background:rgba(29,192,220,.04);border-color:rgba(29,192,220,.12)">
+      <div class="struct-card" style="background:rgba(37,179,75,.04);border-color:rgba(37,179,75,.12)">
         <div class="struct-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
         </div>
         <h4 style="color:var(--white)">Trial Period</h4>
-        <div style="font-size:3rem;font-weight:100;color:var(--cyan);margin-top:.5rem">6 Months</div>
+        <div style="font-size:3rem;font-weight:700;color:var(--green);margin-top:.5rem">6 Months</div>
         <p style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.5rem">Pilot duration with review gate</p>
         <div style="height:1px;background:rgba(255,255,255,.06);margin:1rem 0"></div>
         <p style="font-size:.82rem;color:rgba(255,255,255,.5)">Review at 6 months to assess performance, refine approach, and discuss extension or scaling.</p>
@@ -437,18 +437,18 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 <!-- ===================== LIFESTYLE BREAK ===================== -->
 <section class="img-section" style="min-height:50vh">
   <img class="img-cover" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/revel-aurora-G2-29.jpg?v=1769789434" alt="Aurora lifestyle">
-  <div class="overlay" style="background:linear-gradient(to bottom,var(--charcoal) 0%,transparent 30%,transparent 70%,var(--navy) 100%)"></div>
+  <div class="overlay" style="background:linear-gradient(to bottom,var(--black) 0%,transparent 30%,transparent 70%,var(--forest) 100%)"></div>
 </section>
 
 <!-- ===================== HARRIS BENEFITS ===================== -->
-<section class="section" style="min-height:auto;background:var(--navy)">
+<section class="section" style="min-height:auto;background:var(--forest)">
   <div class="section-pad" style="width:100%">
     <div class="grid-2" style="align-items:start">
       <div>
         <div class="reveal">
           <span class="badge">What Harris Gets</span>
           <h2 style="margin-top:1.5rem">Elevate the buyer<br>experience.</h2>
-          <div class="cyan-rule"></div>
+          <div class="green-rule"></div>
         </div>
 
         <div style="margin-top:2rem">
@@ -508,7 +508,7 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
 </section>
 
 <!-- ===================== NEXT STEPS ===================== -->
-<section class="section" style="min-height:auto;background:var(--charcoal)">
+<section class="section" style="min-height:auto;background:var(--black)">
   <div class="dot-grid" style="top:3rem;right:3rem"></div>
   <div class="drop-bg" style="right:-60px;bottom:-60px;width:350px;height:350px">
     <img src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo_Icon_f9894379-f5b2-45a6-8c22-7de8cf21404e.png?v=1691241102" style="width:100%;height:100%;object-fit:contain" alt="">
@@ -517,7 +517,7 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
     <div class="reveal">
       <span class="badge">Next Steps</span>
       <h2 style="margin-top:1.5rem">Let's bring wellness<br>home.</h2>
-      <div class="cyan-rule"></div>
+      <div class="green-rule"></div>
     </div>
 
     <div style="max-width:600px;margin-top:2rem">
@@ -558,19 +558,19 @@ p{font-weight:400;line-height:1.7;color:rgba(255,255,255,.7)}
       </div>
     </div>
 
-    <div style="height:1px;background:rgba(29,192,220,.15);margin:3rem 0;max-width:600px"></div>
+    <div style="height:1px;background:rgba(37,179,75,.15);margin:3rem 0;max-width:600px"></div>
 
     <div class="reveal">
       <div>
         <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.25);margin-bottom:.3rem">Revel Contact</p>
-        <p style="font-size:.9rem;font-weight:500;color:rgba(255,255,255,.8)">Josh Hancock</p>
+        <p style="font-size:.9rem;font-weight:700;color:rgba(255,255,255,.8)">Josh Hancock</p>
         <p style="font-size:.8rem;color:rgba(255,255,255,.4)">josh@theafsgroup.org</p>
       </div>
     </div>
 
     <div style="margin-top:3rem">
       <img src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-White-02.png?v=1691241102" style="height:20px;opacity:.35" alt="Revel">
-      <p style="margin-top:.75rem;font-size:.6rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.15);font-weight:500">Step Into Wellness</p>
+      <p style="margin-top:.75rem;font-size:.6rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.15);font-weight:700">Step Into Wellness</p>
     </div>
   </div>
 </section>
