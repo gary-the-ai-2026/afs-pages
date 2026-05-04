@@ -237,13 +237,13 @@ async function fetchAdsCreatives(adIds, token) {
       }
     } catch(e) { console.warn('[Meta] Video source fetch error:', e); }
   }
-  console.log('[Meta] Video sources fetched:', Object.keys(videoSources).length);
-  return allAds.map(ad => {
+  console.log('[Meta] Video sources fetched:', Object.keys(videoSources).length, 'for IDs:', Object.keys(videoSources).slice(0, 3));
+  const result = allAds.map(ad => {
     const detail = creativeDetails[adCreativeMap[ad.id]] || {};
     const spec = detail.object_story_spec;
-    const isVideo = !!spec?.video_data;
-    const rawVid = ad.creative?.video_id || spec?.video_data?.video_id || null;
-    const videoId = rawVid && /^\d+$/.test(String(rawVid)) ? String(rawVid) : null;
+    const isVideo = !!spec?.video_data || !!ad.creative?.video_id;
+    const candidateIds = [ad.creative?.video_id, spec?.video_data?.video_id].filter(Boolean).map(String);
+    const videoId = candidateIds.find(id => /^\d+$/.test(id)) || null;
     return {
       ...ad,
       creative: {
@@ -255,6 +255,15 @@ async function fetchAdsCreatives(adIds, token) {
       preview_shareable_link: ad.preview_shareable_link,
     };
   });
+  const withSource = result.filter(a => a.creative.videoSource);
+  const withId = result.filter(a => a.creative.videoId);
+  const isVid = result.filter(a => a.creative.isVideo);
+  console.log('[Meta] Ads mapped:', result.length, '| isVideo:', isVid.length, '| hasVideoId:', withId.length, '| hasSource:', withSource.length);
+  if (withId.length > 0 && withSource.length === 0) {
+    const sample = result.find(a => a.creative.videoId);
+    console.log('[Meta] Sample videoId:', sample.creative.videoId, '| in videoSources?', sample.creative.videoId in videoSources, '| videoSources keys sample:', Object.keys(videoSources).slice(0, 3));
+  }
+  return result;
 }
 
 // ─── Comparison & Daily Fetch ───
