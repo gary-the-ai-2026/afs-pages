@@ -214,10 +214,14 @@ async function fetchAdsCreatives(adIds, token) {
   for (let i = 0; i < creativeIds.length; i += batchSize) {
     const batch = creativeIds.slice(i, i + batchSize);
     const ids = batch.join(',');
-    const res = await fetch(`${META_API}/?ids=${ids}&fields=thumbnail_url,image_url,body,title,name&thumbnail_width=480&thumbnail_height=480&access_token=${token}`);
+    const res = await fetch(`${META_API}/?ids=${ids}&fields=thumbnail_url,image_url,body,title,name,effective_object_story_spec&thumbnail_width=480&thumbnail_height=480&access_token=${token}`);
     if (!res.ok) continue;
     const json = await res.json();
-    Object.values(json).forEach(c => { creativeDetails[c.id] = c; });
+    Object.values(json).forEach(c => {
+      creativeDetails[c.id] = c;
+      const specVideoId = c.effective_object_story_spec?.video_data?.video_id;
+      if (specVideoId) videoIdSet.add(String(specVideoId));
+    });
   }
   const videoSources = {};
   const videoIds = [...videoIdSet];
@@ -233,12 +237,16 @@ async function fetchAdsCreatives(adIds, token) {
     } catch(e) {}
   }
   return allAds.map(ad => {
-    const videoId = ad.creative?.video_id || null;
+    const detail = creativeDetails[adCreativeMap[ad.id]] || {};
+    const spec = detail.effective_object_story_spec;
+    const isVideo = !!spec?.video_data;
+    const videoId = ad.creative?.video_id || (spec?.video_data?.video_id ? String(spec.video_data.video_id) : null);
     return {
       ...ad,
       creative: {
-        ...(creativeDetails[adCreativeMap[ad.id]] || ad.creative || {}),
+        ...(detail || ad.creative || {}),
         videoId,
+        isVideo,
         videoSource: videoId ? (videoSources[videoId] || null) : null,
       },
       preview_shareable_link: ad.preview_shareable_link,
@@ -1181,7 +1189,7 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
         </button>
         <div className="relative bg-gray-950 rounded-t-2xl flex items-center justify-center" style={{minHeight: '200px'}}>
           {card.videoSource ? (
-            <video src={card.videoSource} poster={card.thumbnail} controls className="w-full object-contain" style={{maxHeight: '55vh'}} />
+            <video src={card.videoSource} poster={card.thumbnail} controls autoPlay className="w-full object-contain" style={{maxHeight: '55vh'}} />
           ) : (
             <img src={card.thumbnail} alt={card.name} className="w-full object-contain" style={{maxHeight: '55vh'}} />
           )}
@@ -1285,7 +1293,7 @@ function CreativeTab({ data, brand }) {
         const creative = creativeMap[r.ad_id];
         const thumb = creative?.image_url || creative?.thumbnail_url;
         if (!thumb) return null;
-        const isVideo = !!creative?.videoId || videoAdIds.has(r.ad_id);
+        const isVideo = !!creative?.isVideo || !!creative?.videoId || videoAdIds.has(r.ad_id);
         const videoSource = creative?.videoSource || null;
         const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
         const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
@@ -1759,18 +1767,18 @@ function VideoTab({ data, brand }) {
       {viewMode === 'table' && <SortableTable columns={columns} data={filteredRows} brand={brand} />}
 
       {/* Video Playback Modal */}
-      {selectedVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6" onClick={() => setSelectedVideo(null)} style={{fontFamily: b.bodyFont}}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      {selectedVideo && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8" onClick={() => setSelectedVideo(null)} style={{fontFamily: b.bodyFont}}>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <button onClick={() => setSelectedVideo(null)} className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors backdrop-blur-sm">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             <div className="bg-black rounded-t-2xl">
               {selectedVideo.videoSource ? (
-                <video src={selectedVideo.videoSource} poster={selectedVideo.thumbnail} controls autoPlay className="w-full object-contain rounded-t-2xl" style={{maxHeight: '55vh'}} />
+                <video src={selectedVideo.videoSource} poster={selectedVideo.thumbnail} controls autoPlay className="w-full object-contain rounded-t-2xl" style={{maxHeight: '50vh'}} />
               ) : selectedVideo.thumbnail ? (
-                <img src={selectedVideo.thumbnail} alt={selectedVideo.adName} className="w-full object-contain rounded-t-2xl" style={{maxHeight: '55vh'}} />
+                <img src={selectedVideo.thumbnail} alt={selectedVideo.adName} className="w-full object-contain rounded-t-2xl" style={{maxHeight: '50vh'}} />
               ) : (
                 <div className="flex items-center justify-center py-20 text-gray-500 text-sm">No video available</div>
               )}
@@ -1804,7 +1812,9 @@ function VideoTab({ data, brand }) {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
+      )
       )}
     </div>
   );
