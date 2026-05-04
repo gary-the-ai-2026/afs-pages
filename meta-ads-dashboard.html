@@ -220,7 +220,7 @@ async function fetchAdsCreatives(adIds, token) {
     Object.values(json).forEach(c => {
       creativeDetails[c.id] = c;
       const specVideoId = c.object_story_spec?.video_data?.video_id;
-      if (specVideoId) videoIdSet.add(String(specVideoId));
+      if (specVideoId && /^\d+$/.test(String(specVideoId))) videoIdSet.add(String(specVideoId));
     });
   }
   console.log('[Meta] Video IDs collected:', videoIdSet.size, [...videoIdSet].slice(0, 5));
@@ -1157,10 +1157,12 @@ function AdSetsTab({ data, brand }) {
 }
 
 // ─── Video Player (lazy-loads source URL) ───
-function VideoPlayer({ videoId, videoSource: initialSource, poster, className, style, autoPlay }) {
+function VideoPlayer({ videoId, videoSource: initialSource, poster, className, style }) {
   const [src, setSrc] = useState(initialSource || null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [playError, setPlayError] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const videoRef = React.useRef(null);
 
   useEffect(() => {
     if (src || !videoId) return;
@@ -1168,20 +1170,60 @@ function VideoPlayer({ videoId, videoSource: initialSource, poster, className, s
     if (!token) return;
     setLoading(true);
     fetch(`${META_API}/${videoId}?fields=source&access_token=${token}`)
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => { if (d.source) setSrc(d.source); else setError(true); })
-      .catch(() => setError(true))
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(d => { if (d.source) setSrc(d.source); else setPlayError(true); })
+      .catch(() => setPlayError(true))
       .finally(() => setLoading(false));
   }, [videoId, src]);
 
   if (loading) return (
-    <div className={className} style={{...style, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000'}}>
+    <div className={className} style={{...style, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000', minHeight: '200px'}}>
       <div className="text-white text-sm animate-pulse">Loading video...</div>
     </div>
   );
-  if (src) return <video src={src} poster={poster} controls autoPlay={autoPlay} playsInline className={className} style={style} />;
-  if (poster) return <img src={poster} alt="" className={className} style={style} />;
-  return <div className={className} style={{...style, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000'}}><span className="text-gray-500 text-sm">No video available</span></div>;
+
+  if (src && !playError) return (
+    <div className="relative" style={style}>
+      <video
+        ref={videoRef}
+        src={src}
+        poster={poster}
+        controls
+        muted={muted}
+        autoPlay
+        playsInline
+        className={className}
+        style={style}
+        onError={() => setPlayError(true)}
+      />
+      {muted && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setMuted(false); if (videoRef.current) { videoRef.current.muted = false; } }}
+          className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/60 text-white text-[10px] font-semibold backdrop-blur-sm hover:bg-black/80 transition-colors flex items-center gap-1"
+        >
+          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+          Unmute
+        </button>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={className} style={{...style, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000', minHeight: '200px'}}>
+      {poster && <img src={poster} alt="" className="w-full object-contain" style={{maxHeight: style?.maxHeight || '55vh', opacity: 0.6}} />}
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+        {src ? (
+          <a href={src} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+            className="px-4 py-2 rounded-lg bg-white/90 text-gray-800 text-sm font-semibold hover:bg-white transition-colors flex items-center gap-2">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            Open video in new tab
+          </a>
+        ) : (
+          <span className="px-3 py-1.5 rounded-lg bg-black/50 text-gray-300 text-xs backdrop-blur-sm">Video source unavailable</span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ─── Creative Detail Modal ───
@@ -1219,7 +1261,7 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
         </button>
         <div className="relative bg-gray-950 rounded-t-2xl flex items-center justify-center" style={{minHeight: '200px'}}>
           {(card.isVideo && (card.videoSource || card.videoId)) ? (
-            <VideoPlayer videoId={card.videoId} videoSource={card.videoSource} poster={card.thumbnail} autoPlay className="w-full object-contain" style={{maxHeight: '55vh'}} />
+            <VideoPlayer videoId={card.videoId} videoSource={card.videoSource} poster={card.thumbnail} className="w-full object-contain" style={{maxHeight: '55vh'}} />
           ) : (
             <img src={card.thumbnail} alt={card.name} className="w-full object-contain" style={{maxHeight: '55vh'}} />
           )}
@@ -1808,7 +1850,7 @@ function VideoTab({ data, brand }) {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             <div className="bg-black rounded-t-2xl">
-              <VideoPlayer videoId={selectedVideo.videoId} videoSource={selectedVideo.videoSource} poster={selectedVideo.thumbnail} autoPlay className="w-full object-contain rounded-t-2xl" style={{maxHeight: '50vh'}} />
+              <VideoPlayer videoId={selectedVideo.videoId} videoSource={selectedVideo.videoSource} poster={selectedVideo.thumbnail} className="w-full object-contain rounded-t-2xl" style={{maxHeight: '50vh'}} />
             </div>
             <div className="p-5">
               <h3 className="font-display text-base font-bold text-gray-900 mb-1 leading-snug">{selectedVideo.adName}</h3>
