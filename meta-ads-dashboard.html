@@ -1593,10 +1593,12 @@ function VideoTab({ data, brand }) {
   const creativeMap = useMemo(() => {
     const map = {};
     (data.adsCreatives || []).forEach(ad => {
-      if (ad.creative) map[ad.id] = ad.creative;
+      if (ad.creative) map[ad.id] = { ...ad.creative, previewLink: ad.preview_shareable_link || null };
     });
     return map;
   }, [data]);
+
+  const accountId = BRANDS[brand].accountId.replace('act_', '');
 
   const rows = useMemo(() => {
     return videoData
@@ -1624,11 +1626,12 @@ function VideoTab({ data, brand }) {
         const thumbnail = creative?.image_url || creative?.thumbnail_url || null;
         const videoId = creative?.videoId || null;
         const videoSource = creative?.videoSource || null;
+        const previewLink = creative?.previewLink || null;
         return {
           adName: r.ad_name,
           adId: r.ad_id,
           campaign: r.campaign_name,
-          thumbnail, videoId, videoSource,
+          thumbnail, videoId, videoSource, previewLink,
           spend, impressions, videoPlays, thruPlays,
           thumbStopRate, hookRate, holdRate, completionRate,
           p25, p50, p75, p95, p100, avgWatchTime,
@@ -1651,30 +1654,6 @@ function VideoTab({ data, brand }) {
     const avgCompletion = filteredRows.reduce((s, r) => s + r.completionRate, 0) / filteredRows.length;
     return { totalSpend, avgThumbStop, avgHookRate, avgCompletion };
   }, [filteredRows]);
-
-  const funnel = useMemo(() => {
-    const f = { impressions: 0, plays: 0, p25: 0, p50: 0, p75: 0, thruPlays: 0, p100: 0 };
-    filteredRows.forEach(r => {
-      f.impressions += r.impressions;
-      f.plays += r.videoPlays;
-      f.p25 += r.p25;
-      f.p50 += r.p50;
-      f.p75 += r.p75;
-      f.thruPlays += r.thruPlays;
-      f.p100 += r.p100;
-    });
-    return f;
-  }, [filteredRows]);
-
-  const funnelStages = [
-    { label: 'Impressions', value: funnel.impressions, pct: 100 },
-    { label: 'Plays', value: funnel.plays, pct: funnel.impressions > 0 ? (funnel.plays / funnel.impressions) * 100 : 0 },
-    { label: '25% Watched', value: funnel.p25, pct: funnel.plays > 0 ? (funnel.p25 / funnel.plays) * 100 : 0 },
-    { label: '50% Watched', value: funnel.p50, pct: funnel.plays > 0 ? (funnel.p50 / funnel.plays) * 100 : 0 },
-    { label: '75% Watched', value: funnel.p75, pct: funnel.plays > 0 ? (funnel.p75 / funnel.plays) * 100 : 0 },
-    { label: 'ThruPlay', value: funnel.thruPlays, pct: funnel.plays > 0 ? (funnel.thruPlays / funnel.plays) * 100 : 0 },
-    { label: 'Completed', value: funnel.p100, pct: funnel.plays > 0 ? (funnel.p100 / funnel.plays) * 100 : 0 },
-  ];
 
   const rateBarColor = (v) => v >= 50 ? '#059669' : v >= 25 ? '#d97706' : '#dc2626';
   const pctColor = (v) => v >= 50 ? 'text-emerald-600 bg-emerald-50' : v >= 25 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
@@ -1721,30 +1700,6 @@ function VideoTab({ data, brand }) {
         <div className="dash-card p-3 sm:p-5">
           <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Completion %</div>
           <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgCompletion)}</div>
-        </div>
-      </div>
-
-      {/* Retention Funnel */}
-      <div className="dash-card p-5 sm:p-6">
-        <h3 className="font-display text-lg font-bold text-gray-900 mb-5">Audience Retention Funnel</h3>
-        <div className="flex items-end gap-2 sm:gap-3" style={{height: '200px'}}>
-          {funnelStages.map((stage, i) => {
-            const barPct = i === 0 ? 100 : Math.min(100, stage.pct);
-            const barH = Math.max(6, (barPct / 100) * 160);
-            const opacity = 1 - (i * 0.08);
-            return (
-              <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group cursor-default">
-                <div className="text-[10px] font-bold text-gray-700 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">{fmt.number(stage.value)}</div>
-                <div className="text-[10px] font-semibold mb-1" style={{color: b.primary}}>{i === 0 ? '' : fmt.pct(barPct)}</div>
-                <div className="w-full rounded-t-lg transition-all hover:opacity-100" style={{
-                  height: barH + 'px',
-                  backgroundColor: b.primary,
-                  opacity,
-                }} />
-                <div className="text-[8px] sm:text-[9px] text-gray-500 mt-2 text-center font-medium leading-tight" style={{minHeight: '24px'}}>{stage.label}</div>
-              </div>
-            );
-          })}
         </div>
       </div>
 
@@ -1888,6 +1843,24 @@ function VideoTab({ data, brand }) {
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className="flex items-center gap-2 mt-4 pt-3 border-t" style={{borderColor: '#f0f0f2'}}>
+                {selectedVideo.previewLink && (
+                  <a href={selectedVideo.previewLink} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all hover:opacity-90"
+                    style={{backgroundColor: b.primary}} onClick={e => e.stopPropagation()}>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                    Preview Ad
+                  </a>
+                )}
+                {selectedVideo.adId && (
+                  <a href={`https://www.facebook.com/adsmanager/manage/ads?act=${accountId}&selected_ad_ids=${selectedVideo.adId}`} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all hover:bg-gray-50"
+                    style={{borderColor: '#e5e7eb', color: '#374151'}} onClick={e => e.stopPropagation()}>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    Ads Manager
+                  </a>
+                )}
               </div>
             </div>
           </div>
