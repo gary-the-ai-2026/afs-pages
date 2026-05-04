@@ -207,7 +207,7 @@ async function fetchAdsCreatives(adIds, token) {
     if (ad.creative?.id) {
       adCreativeMap[ad.id] = ad.creative.id;
       if (!creativeIds.includes(ad.creative.id)) creativeIds.push(ad.creative.id);
-      if (ad.creative.video_id) videoIdSet.add(ad.creative.video_id);
+      if (ad.creative.video_id && /^\d+$/.test(String(ad.creative.video_id))) videoIdSet.add(String(ad.creative.video_id));
     }
   });
   const creativeDetails = {};
@@ -242,7 +242,8 @@ async function fetchAdsCreatives(adIds, token) {
     const detail = creativeDetails[adCreativeMap[ad.id]] || {};
     const spec = detail.object_story_spec;
     const isVideo = !!spec?.video_data;
-    const videoId = ad.creative?.video_id || (spec?.video_data?.video_id ? String(spec.video_data.video_id) : null);
+    const rawVid = ad.creative?.video_id || spec?.video_data?.video_id || null;
+    const videoId = rawVid && /^\d+$/.test(String(rawVid)) ? String(rawVid) : null;
     return {
       ...ad,
       creative: {
