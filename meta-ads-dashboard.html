@@ -751,9 +751,10 @@ const METRIC_TOOLTIPS = {
   objective: 'Campaign objective set in Meta Ads Manager',
   videoPlays: 'Number of times your video started playing (3-second views)',
   thumbStopRate: 'Thumb stop rate: video plays / impressions',
-  hookRate: 'Hook rate: ThruPlays (15s+ views) / video plays',
-  holdRate: 'Hold rate: 75% watched / video plays',
-  completionRate: 'Completion rate: 100% watched / video plays',
+  p25Rate: '25% played: viewers who watched at least 25% of the video / video plays',
+  p50Rate: '50% played: viewers who watched at least 50% of the video / video plays',
+  p75Rate: '75% played: viewers who watched at least 75% of the video / video plays',
+  completionRate: 'Completion rate: viewers who watched 100% of the video / video plays',
   avgWatchTime: 'Average time people watched your video',
   thruPlays: 'Views of 15 seconds or more (or to completion if shorter)',
 };
@@ -1681,8 +1682,9 @@ const VIDEO_FILTER_METRICS = [
   { key: 'impressions', label: 'Impressions' },
   { key: 'videoPlays', label: 'Video Plays' },
   { key: 'thumbStopRate', label: 'Thumb Stop (%)' },
-  { key: 'hookRate', label: 'Hook Rate (%)' },
-  { key: 'holdRate', label: 'Hold Rate (%)' },
+  { key: 'p25Rate', label: '25% Played (%)' },
+  { key: 'p50Rate', label: '50% Played (%)' },
+  { key: 'p75Rate', label: '75% Played (%)' },
   { key: 'completionRate', label: 'Completion (%)' },
   { key: 'avgWatchTime', label: 'Avg Watch Time (s)' },
   { key: 'atc', label: 'Add to Cart' },
@@ -1735,8 +1737,9 @@ function VideoTab({ data, brand }) {
         const p100 = getVideoActionValue(r.video_p100_watched_actions, 'video_view');
         const avgWatchTime = getVideoActionValue(r.video_avg_time_watched_actions, 'video_view');
         const thumbStopRate = impressions > 0 ? (videoPlays / impressions) * 100 : 0;
-        const hookRate = videoPlays > 0 ? (thruPlays / videoPlays) * 100 : 0;
-        const holdRate = videoPlays > 0 ? (p75 / videoPlays) * 100 : 0;
+        const p25Rate = videoPlays > 0 ? (p25 / videoPlays) * 100 : 0;
+        const p50Rate = videoPlays > 0 ? (p50 / videoPlays) * 100 : 0;
+        const p75Rate = videoPlays > 0 ? (p75 / videoPlays) * 100 : 0;
         const completionRate = videoPlays > 0 ? (p100 / videoPlays) * 100 : 0;
         const creative = creativeMap[r.ad_id];
         const thumbnail = creative?.image_url || creative?.thumbnail_url || null;
@@ -1752,7 +1755,7 @@ function VideoTab({ data, brand }) {
           campaign: r.campaign_name,
           thumbnail, videoId, videoSource, previewLink,
           spend, impressions, videoPlays, thruPlays,
-          thumbStopRate, hookRate, holdRate, completionRate,
+          thumbStopRate, p25Rate, p50Rate, p75Rate, completionRate,
           p25, p50, p75, p95, p100, avgWatchTime,
           atc,
           atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
@@ -1770,12 +1773,12 @@ function VideoTab({ data, brand }) {
   }, [filteredRows, sortBy]);
 
   const summary = useMemo(() => {
-    if (!filteredRows.length) return { totalSpend: 0, avgThumbStop: 0, avgHookRate: 0, avgCompletion: 0 };
+    if (!filteredRows.length) return { totalSpend: 0, avgThumbStop: 0, avgP50Rate: 0, avgCompletion: 0 };
     const totalSpend = filteredRows.reduce((s, r) => s + r.spend, 0);
     const avgThumbStop = filteredRows.reduce((s, r) => s + r.thumbStopRate, 0) / filteredRows.length;
-    const avgHookRate = filteredRows.reduce((s, r) => s + r.hookRate, 0) / filteredRows.length;
+    const avgP50Rate = filteredRows.reduce((s, r) => s + r.p50Rate, 0) / filteredRows.length;
     const avgCompletion = filteredRows.reduce((s, r) => s + r.completionRate, 0) / filteredRows.length;
-    return { totalSpend, avgThumbStop, avgHookRate, avgCompletion };
+    return { totalSpend, avgThumbStop, avgP50Rate, avgCompletion };
   }, [filteredRows]);
 
   const rateBarColor = (v) => v >= 50 ? '#059669' : v >= 25 ? '#d97706' : '#dc2626';
@@ -1784,8 +1787,9 @@ function VideoTab({ data, brand }) {
   const sortOptions = [
     { value: 'spend', label: 'Spend' },
     { value: 'thumbStopRate', label: 'Thumb Stop' },
-    { value: 'hookRate', label: 'Hook Rate' },
-    { value: 'holdRate', label: 'Hold Rate' },
+    { value: 'p25Rate', label: '25% Played' },
+    { value: 'p50Rate', label: '50% Played' },
+    { value: 'p75Rate', label: '75% Played' },
     { value: 'completionRate', label: 'Completion' },
     { value: 'videoPlays', label: 'Video Plays' },
     { value: 'avgWatchTime', label: 'Avg Watch Time' },
@@ -1798,8 +1802,9 @@ function VideoTab({ data, brand }) {
     { key: 'impressions', label: 'Impr.', align: 'right', sortable: true, render: v => fmt.number(v) },
     { key: 'videoPlays', label: 'Plays', align: 'right', sortable: true, render: v => fmt.number(v) },
     { key: 'thumbStopRate', label: 'Thumb Stop %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
-    { key: 'hookRate', label: 'Hook %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
-    { key: 'holdRate', label: 'Hold %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
+    { key: 'p25Rate', label: '25% Played', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
+    { key: 'p50Rate', label: '50% Played', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
+    { key: 'p75Rate', label: '75% Played', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
     { key: 'completionRate', label: 'Complete %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
     { key: 'avgWatchTime', label: 'Avg Watch (s)', align: 'right', sortable: true, render: v => v > 0 ? v.toFixed(1) + 's' : '-' },
     { key: 'atc', label: 'ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
@@ -1820,9 +1825,9 @@ function VideoTab({ data, brand }) {
           <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Thumb Stop %</div>
           <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgThumbStop)}</div>
         </div>
-        <div className="dash-card p-3 sm:p-5" title={METRIC_TOOLTIPS.hookRate}>
-          <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Hook Rate %</div>
-          <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgHookRate)}</div>
+        <div className="dash-card p-3 sm:p-5" title={METRIC_TOOLTIPS.p50Rate}>
+          <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg 50% Played</div>
+          <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgP50Rate)}</div>
         </div>
         <div className="dash-card p-3 sm:p-5" title={METRIC_TOOLTIPS.completionRate}>
           <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Completion %</div>
@@ -1868,8 +1873,9 @@ function VideoTab({ data, brand }) {
           {sortedRows.map((row, i) => {
             const rates = [
               { label: 'Thumb Stop', value: row.thumbStopRate, tip: METRIC_TOOLTIPS.thumbStopRate },
-              { label: 'Hook Rate', value: row.hookRate, tip: METRIC_TOOLTIPS.hookRate },
-              { label: 'Hold Rate', value: row.holdRate, tip: METRIC_TOOLTIPS.holdRate },
+              { label: '25% Played', value: row.p25Rate, tip: METRIC_TOOLTIPS.p25Rate },
+              { label: '50% Played', value: row.p50Rate, tip: METRIC_TOOLTIPS.p50Rate },
+              { label: '75% Played', value: row.p75Rate, tip: METRIC_TOOLTIPS.p75Rate },
               { label: 'Completion', value: row.completionRate, tip: METRIC_TOOLTIPS.completionRate },
             ];
             return (
@@ -1956,8 +1962,9 @@ function VideoTab({ data, brand }) {
               <div className="space-y-2">
                 {[
                   { label: 'Thumb Stop', value: selectedVideo.thumbStopRate, tip: METRIC_TOOLTIPS.thumbStopRate },
-                  { label: 'Hook Rate', value: selectedVideo.hookRate, tip: METRIC_TOOLTIPS.hookRate },
-                  { label: 'Hold Rate', value: selectedVideo.holdRate, tip: METRIC_TOOLTIPS.holdRate },
+                  { label: '25% Played', value: selectedVideo.p25Rate, tip: METRIC_TOOLTIPS.p25Rate },
+                  { label: '50% Played', value: selectedVideo.p50Rate, tip: METRIC_TOOLTIPS.p50Rate },
+                  { label: '75% Played', value: selectedVideo.p75Rate, tip: METRIC_TOOLTIPS.p75Rate },
                   { label: 'Completion', value: selectedVideo.completionRate, tip: METRIC_TOOLTIPS.completionRate },
                 ].map((m, j) => (
                   <div key={j} title={m.tip}>
