@@ -421,13 +421,13 @@ function TokenScreen({ onSave, brand }) {
 }
 
 // ─── KPI Card ───
-function KpiCard({ label, value, icon, brand, delta, invertDelta }) {
+function KpiCard({ label, value, icon, brand, delta, invertDelta, tooltip }) {
   const b = BRANDS[brand];
   const hasDelta = delta !== undefined && delta !== null && isFinite(delta);
   const isPositive = invertDelta ? delta < 0 : delta > 0;
   const isNeutral = hasDelta && Math.abs(delta) < 0.5;
   return (
-    <div className="dash-card p-3 sm:p-5 transition-all group">
+    <div className="dash-card p-3 sm:p-5 transition-all group" title={tooltip || ''}>
       <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
         <span className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider leading-tight">{label}</span>
       </div>
@@ -723,6 +723,35 @@ const OBJECTIVE_BADGE_STYLES = {
   Conversion: 'bg-emerald-50 text-emerald-600',
 };
 
+const METRIC_TOOLTIPS = {
+  spend: 'Total amount spent on ads',
+  impressions: 'Number of times your ads were shown',
+  reach: 'Number of unique people who saw your ads',
+  clicks: 'All clicks on the ad (link, profile, reactions, comments, shares)',
+  ctr: 'Click-through rate: clicks / impressions',
+  cpc: 'Cost per click: spend / clicks',
+  cpm: 'Cost per 1,000 impressions: (spend / impressions) x 1,000',
+  frequency: 'Average number of times each person saw your ad',
+  outboundClicks: 'Clicks that lead people off Meta (to your website)',
+  conversions: 'Purchases attributed to your ads',
+  costPerConv: 'Cost per purchase: spend / conversions',
+  revenue: 'Total purchase revenue attributed to your ads',
+  roas: 'Return on ad spend: revenue / spend',
+  atc: 'Number of add-to-cart actions attributed to your ads',
+  atcRate: 'Add-to-cart rate: add to carts / outbound clicks',
+  costPerAtc: 'Cost per add-to-cart: spend / add to carts',
+  engagements: 'Post engagements: reactions, comments, shares, saves, clicks',
+  engagementRate: 'Engagement rate: post engagements / impressions',
+  objective: 'Campaign objective set in Meta Ads Manager',
+  videoPlays: 'Number of times your video started playing (3-second views)',
+  thumbStopRate: 'Thumb stop rate: video plays / impressions',
+  hookRate: 'Hook rate: ThruPlays (15s+ views) / video plays',
+  holdRate: 'Hold rate: 75% watched / video plays',
+  completionRate: 'Completion rate: 100% watched / video plays',
+  avgWatchTime: 'Average time people watched your video',
+  thruPlays: 'Views of 15 seconds or more (or to completion if shorter)',
+};
+
 function MetricFilter({ filters, onChange, metricOptions }) {
   const options = metricOptions || FILTER_METRICS;
   const addFilter = () => onChange([...filters, { metric: '', min: '', max: '' }]);
@@ -813,6 +842,7 @@ function SortableTable({ columns, data, brand, onRowClick }) {
               <th key={col.key}
                 onClick={() => col.sortable !== false && handleSort(col.key)}
                 className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400 whitespace-nowrap ${col.sortable !== false ? 'cursor-pointer hover:text-gray-600 select-none' : ''} ${col.align === 'right' ? 'text-right' : ''}`}
+                title={METRIC_TOOLTIPS[col.key] || ''}
               >
                 <span className="inline-flex items-center gap-1">
                   {col.label}
@@ -885,21 +915,21 @@ function OverviewTab({ data, brand, datePreset }) {
   const pctChange = (cur, prev) => prev && prev !== 0 ? ((cur - prev) / Math.abs(prev)) * 100 : undefined;
 
   const kpis = [
-    { label: 'Total Spend', value: fmt.currency(totals.spend), delta: pctChange(totals.spend, prevTotals?.spend) },
-    { label: 'Impressions', value: fmt.number(totals.impressions), delta: pctChange(totals.impressions, prevTotals?.impressions) },
-    { label: 'Reach', value: fmt.number(totals.reach), delta: pctChange(totals.reach, prevTotals?.reach) },
-    { label: 'Clicks', value: fmt.number(totals.clicks), delta: pctChange(totals.clicks, prevTotals?.clicks) },
-    { label: 'CTR', value: fmt.pct(totals.clicks / totals.impressions * 100), delta: pctChange(totals.clicks / totals.impressions, prevTotals ? prevTotals.clicks / (prevTotals.impressions || 1) : undefined) },
-    { label: 'CPC', value: fmt.currency(totals.spend / totals.clicks), delta: pctChange(totals.spend / totals.clicks, prevTotals ? prevTotals.spend / (prevTotals.clicks || 1) : undefined), invertDelta: true },
-    { label: 'CPM', value: fmt.currency(totals.spend / totals.impressions * 1000), delta: pctChange(totals.spend / totals.impressions, prevTotals ? prevTotals.spend / (prevTotals.impressions || 1) : undefined), invertDelta: true },
-    { label: 'Outbound Clicks', value: fmt.number(totals.outboundClicks), delta: pctChange(totals.outboundClicks, prevTotals?.outboundClicks) },
-    { label: 'Add to Cart', value: fmt.number(totals.atc), delta: pctChange(totals.atc, prevTotals?.atc) },
-    { label: 'ATC Rate', value: totals.outboundClicks > 0 ? fmt.pct(totals.atc / totals.outboundClicks * 100) : '-', delta: totals.outboundClicks > 0 && prevTotals?.outboundClicks > 0 ? pctChange(totals.atc / totals.outboundClicks, prevTotals.atc / prevTotals.outboundClicks) : undefined },
-    { label: 'Cost / ATC', value: totals.atc > 0 ? fmt.currency(totals.spend / totals.atc) : '-', delta: totals.atc > 0 && prevTotals?.atc > 0 ? pctChange(totals.spend / totals.atc, prevTotals.spend / prevTotals.atc) : undefined, invertDelta: true },
-    { label: 'Conversions', value: fmt.number(totals.conversions), delta: pctChange(totals.conversions, prevTotals?.conversions) },
-    { label: 'Cost / Conv.', value: totals.conversions > 0 ? fmt.currency(totals.spend / totals.conversions) : '-', delta: totals.conversions > 0 && prevTotals?.conversions > 0 ? pctChange(totals.spend / totals.conversions, prevTotals.spend / prevTotals.conversions) : undefined, invertDelta: true },
-    { label: 'Revenue', value: fmt.currency(totals.revenue), delta: pctChange(totals.revenue, prevTotals?.revenue) },
-    { label: 'ROAS', value: totals.spend > 0 ? fmt.roas(totals.revenue / totals.spend) : '-', delta: totals.spend > 0 && prevTotals?.spend > 0 ? pctChange(totals.revenue / totals.spend, prevTotals.revenue / prevTotals.spend) : undefined },
+    { label: 'Total Spend', value: fmt.currency(totals.spend), delta: pctChange(totals.spend, prevTotals?.spend), tooltip: METRIC_TOOLTIPS.spend },
+    { label: 'Impressions', value: fmt.number(totals.impressions), delta: pctChange(totals.impressions, prevTotals?.impressions), tooltip: METRIC_TOOLTIPS.impressions },
+    { label: 'Reach', value: fmt.number(totals.reach), delta: pctChange(totals.reach, prevTotals?.reach), tooltip: METRIC_TOOLTIPS.reach },
+    { label: 'Clicks', value: fmt.number(totals.clicks), delta: pctChange(totals.clicks, prevTotals?.clicks), tooltip: METRIC_TOOLTIPS.clicks },
+    { label: 'CTR', value: fmt.pct(totals.clicks / totals.impressions * 100), delta: pctChange(totals.clicks / totals.impressions, prevTotals ? prevTotals.clicks / (prevTotals.impressions || 1) : undefined), tooltip: METRIC_TOOLTIPS.ctr },
+    { label: 'CPC', value: fmt.currency(totals.spend / totals.clicks), delta: pctChange(totals.spend / totals.clicks, prevTotals ? prevTotals.spend / (prevTotals.clicks || 1) : undefined), invertDelta: true, tooltip: METRIC_TOOLTIPS.cpc },
+    { label: 'CPM', value: fmt.currency(totals.spend / totals.impressions * 1000), delta: pctChange(totals.spend / totals.impressions, prevTotals ? prevTotals.spend / (prevTotals.impressions || 1) : undefined), invertDelta: true, tooltip: METRIC_TOOLTIPS.cpm },
+    { label: 'Outbound Clicks', value: fmt.number(totals.outboundClicks), delta: pctChange(totals.outboundClicks, prevTotals?.outboundClicks), tooltip: METRIC_TOOLTIPS.outboundClicks },
+    { label: 'Add to Cart', value: fmt.number(totals.atc), delta: pctChange(totals.atc, prevTotals?.atc), tooltip: METRIC_TOOLTIPS.atc },
+    { label: 'ATC Rate', value: totals.outboundClicks > 0 ? fmt.pct(totals.atc / totals.outboundClicks * 100) : '-', delta: totals.outboundClicks > 0 && prevTotals?.outboundClicks > 0 ? pctChange(totals.atc / totals.outboundClicks, prevTotals.atc / prevTotals.outboundClicks) : undefined, tooltip: METRIC_TOOLTIPS.atcRate },
+    { label: 'Cost / ATC', value: totals.atc > 0 ? fmt.currency(totals.spend / totals.atc) : '-', delta: totals.atc > 0 && prevTotals?.atc > 0 ? pctChange(totals.spend / totals.atc, prevTotals.spend / prevTotals.atc) : undefined, invertDelta: true, tooltip: METRIC_TOOLTIPS.costPerAtc },
+    { label: 'Conversions', value: fmt.number(totals.conversions), delta: pctChange(totals.conversions, prevTotals?.conversions), tooltip: METRIC_TOOLTIPS.conversions },
+    { label: 'Cost / Conv.', value: totals.conversions > 0 ? fmt.currency(totals.spend / totals.conversions) : '-', delta: totals.conversions > 0 && prevTotals?.conversions > 0 ? pctChange(totals.spend / totals.conversions, prevTotals.spend / prevTotals.conversions) : undefined, invertDelta: true, tooltip: METRIC_TOOLTIPS.costPerConv },
+    { label: 'Revenue', value: fmt.currency(totals.revenue), delta: pctChange(totals.revenue, prevTotals?.revenue), tooltip: METRIC_TOOLTIPS.revenue },
+    { label: 'ROAS', value: totals.spend > 0 ? fmt.roas(totals.revenue / totals.spend) : '-', delta: totals.spend > 0 && prevTotals?.spend > 0 ? pctChange(totals.revenue / totals.spend, prevTotals.revenue / prevTotals.spend) : undefined, tooltip: METRIC_TOOLTIPS.roas },
   ];
 
   const b = BRANDS[brand];
@@ -1287,24 +1317,24 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
     return () => { document.removeEventListener('keydown', handler); document.body.style.overflow = ''; };
   }, [onClose]);
   const stats = [
-    { label: 'Spend', value: fmt.currency(card.spend), primary: true },
-    { label: 'ROAS', value: card.roas > 0 ? fmt.roas(card.roas) : '-', primary: true },
-    { label: 'Revenue', value: card.revenue > 0 ? fmt.currency(card.revenue) : '-', primary: true },
-    { label: 'Conversions', value: card.conversions > 0 ? fmt.number(card.conversions) : '-', primary: true },
-    { label: 'CPA', value: card.costPerConv > 0 ? fmt.currency(card.costPerConv) : '-', primary: true },
-    { label: 'Add to Cart', value: card.atc > 0 ? fmt.number(card.atc) : '-', primary: true },
-    { label: 'ATC Rate', value: card.atcRate > 0 ? fmt.pct(card.atcRate) : '-', primary: true },
-    { label: 'Cost / ATC', value: card.costPerAtc > 0 ? fmt.currency(card.costPerAtc) : '-', primary: true },
-    { label: 'Impressions', value: fmt.number(card.impressions) },
-    { label: 'Reach', value: fmt.number(card.reach) },
-    { label: 'Clicks', value: fmt.number(card.clicks) },
-    { label: 'CTR', value: fmt.pct(card.ctr) },
-    { label: 'CPC', value: fmt.currency(card.cpc) },
-    { label: 'CPM', value: fmt.currency(card.cpm) },
-    { label: 'Outbound Clicks', value: fmt.number(card.outboundClicks) },
-    { label: 'Engagements', value: card.engagements > 0 ? fmt.number(card.engagements) : '-' },
-    { label: 'Eng. Rate', value: card.engagementRate > 0 ? fmt.pct(card.engagementRate) : '-' },
-    { label: 'Frequency', value: fmt.decimal(card.frequency) },
+    { label: 'Spend', value: fmt.currency(card.spend), primary: true, tip: METRIC_TOOLTIPS.spend },
+    { label: 'ROAS', value: card.roas > 0 ? fmt.roas(card.roas) : '-', primary: true, tip: METRIC_TOOLTIPS.roas },
+    { label: 'Revenue', value: card.revenue > 0 ? fmt.currency(card.revenue) : '-', primary: true, tip: METRIC_TOOLTIPS.revenue },
+    { label: 'Conversions', value: card.conversions > 0 ? fmt.number(card.conversions) : '-', primary: true, tip: METRIC_TOOLTIPS.conversions },
+    { label: 'CPA', value: card.costPerConv > 0 ? fmt.currency(card.costPerConv) : '-', primary: true, tip: METRIC_TOOLTIPS.costPerConv },
+    { label: 'Add to Cart', value: card.atc > 0 ? fmt.number(card.atc) : '-', primary: true, tip: METRIC_TOOLTIPS.atc },
+    { label: 'ATC Rate', value: card.atcRate > 0 ? fmt.pct(card.atcRate) : '-', primary: true, tip: METRIC_TOOLTIPS.atcRate },
+    { label: 'Cost / ATC', value: card.costPerAtc > 0 ? fmt.currency(card.costPerAtc) : '-', primary: true, tip: METRIC_TOOLTIPS.costPerAtc },
+    { label: 'Impressions', value: fmt.number(card.impressions), tip: METRIC_TOOLTIPS.impressions },
+    { label: 'Reach', value: fmt.number(card.reach), tip: METRIC_TOOLTIPS.reach },
+    { label: 'Clicks', value: fmt.number(card.clicks), tip: METRIC_TOOLTIPS.clicks },
+    { label: 'CTR', value: fmt.pct(card.ctr), tip: METRIC_TOOLTIPS.ctr },
+    { label: 'CPC', value: fmt.currency(card.cpc), tip: METRIC_TOOLTIPS.cpc },
+    { label: 'CPM', value: fmt.currency(card.cpm), tip: METRIC_TOOLTIPS.cpm },
+    { label: 'Outbound Clicks', value: fmt.number(card.outboundClicks), tip: METRIC_TOOLTIPS.outboundClicks },
+    { label: 'Engagements', value: card.engagements > 0 ? fmt.number(card.engagements) : '-', tip: METRIC_TOOLTIPS.engagements },
+    { label: 'Eng. Rate', value: card.engagementRate > 0 ? fmt.pct(card.engagementRate) : '-', tip: METRIC_TOOLTIPS.engagementRate },
+    { label: 'Frequency', value: fmt.decimal(card.frequency), tip: METRIC_TOOLTIPS.frequency },
   ];
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6" onClick={onClose} style={{fontFamily: b.bodyFont}}>
@@ -1337,7 +1367,7 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
           <p className="text-[10px] text-gray-300 mb-4">{card.adset}</p>
           <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-3">
             {stats.filter(s => s.primary).map(s => (
-              <div key={s.label} className="text-center py-2 px-1 rounded-lg" style={{backgroundColor: b.primaryLight}}>
+              <div key={s.label} className="text-center py-2 px-1 rounded-lg" style={{backgroundColor: b.primaryLight}} title={s.tip || ''}>
                 <div className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-wide">{s.label}</div>
                 <div className="text-xs sm:text-sm font-bold mt-0.5" style={{color: b.primary}}>{s.value}</div>
               </div>
@@ -1345,7 +1375,7 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
           </div>
           <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
             {stats.filter(s => !s.primary).map(s => (
-              <div key={s.label} className="text-center py-2 px-1 rounded-lg bg-gray-50">
+              <div key={s.label} className="text-center py-2 px-1 rounded-lg bg-gray-50" title={s.tip || ''}>
                 <div className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-wide">{s.label}</div>
                 <div className="text-xs sm:text-sm font-bold text-gray-700 mt-0.5">{s.value}</div>
               </div>
@@ -1572,16 +1602,16 @@ function CreativeTab({ data, brand }) {
             const perfColor = i < 3 ? b.primary : (isGood ? '#059669' : '#dc2626');
             const borderStyle = i < 3 ? `2px solid ${b.primary}` : `1px solid ${isGood ? '#d1fae5' : '#fee2e2'}`;
             const cardStats = [
-              { label: 'Spend', value: fmt.currency(card.spend) },
-              { label: 'ATC', value: card.atc > 0 ? fmt.number(card.atc) : '-' },
-              { label: 'ATC Rate', value: card.atcRate > 0 ? fmt.pct(card.atcRate) : '-' },
-              { label: 'Eng.', value: card.engagements > 0 ? fmt.number(card.engagements) : '-' },
-              { label: 'Eng. Rate', value: card.engagementRate > 0 ? fmt.pct(card.engagementRate) : '-' },
-              { label: 'Conv.', value: card.conversions > 0 ? fmt.number(card.conversions) : '-' },
-              { label: 'ROAS', value: card.roas > 0 ? fmt.roas(card.roas) : '-' },
-              { label: 'CTR', value: fmt.pct(card.ctr) },
-              { label: 'CPC', value: fmt.currency(card.cpc) },
-              { label: 'Revenue', value: card.revenue > 0 ? fmt.currency(card.revenue) : '-' },
+              { label: 'Spend', value: fmt.currency(card.spend), tip: METRIC_TOOLTIPS.spend },
+              { label: 'ATC', value: card.atc > 0 ? fmt.number(card.atc) : '-', tip: METRIC_TOOLTIPS.atc },
+              { label: 'ATC Rate', value: card.atcRate > 0 ? fmt.pct(card.atcRate) : '-', tip: METRIC_TOOLTIPS.atcRate },
+              { label: 'Eng.', value: card.engagements > 0 ? fmt.number(card.engagements) : '-', tip: METRIC_TOOLTIPS.engagements },
+              { label: 'Eng. Rate', value: card.engagementRate > 0 ? fmt.pct(card.engagementRate) : '-', tip: METRIC_TOOLTIPS.engagementRate },
+              { label: 'Conv.', value: card.conversions > 0 ? fmt.number(card.conversions) : '-', tip: METRIC_TOOLTIPS.conversions },
+              { label: 'ROAS', value: card.roas > 0 ? fmt.roas(card.roas) : '-', tip: METRIC_TOOLTIPS.roas },
+              { label: 'CTR', value: fmt.pct(card.ctr), tip: METRIC_TOOLTIPS.ctr },
+              { label: 'CPC', value: fmt.currency(card.cpc), tip: METRIC_TOOLTIPS.cpc },
+              { label: 'Revenue', value: card.revenue > 0 ? fmt.currency(card.revenue) : '-', tip: METRIC_TOOLTIPS.revenue },
             ];
             return (
               <div key={i} className="creative-card bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all cursor-pointer group" style={{border: borderStyle}} onClick={() => setSelected(i)}>
@@ -1619,7 +1649,7 @@ function CreativeTab({ data, brand }) {
                   </div>
                   <div className="grid grid-cols-5 gap-x-1.5 gap-y-1">
                     {cardStats.map(s => (
-                      <div key={s.label} className="text-center">
+                      <div key={s.label} className="text-center" title={s.tip || ''}>
                         <div className="text-[8px] text-gray-400 uppercase tracking-wide leading-tight">{s.label}</div>
                         <div className="text-[10px] font-semibold text-gray-700 tabular-nums leading-tight">{s.value}</div>
                       </div>
@@ -1776,19 +1806,19 @@ function VideoTab({ data, brand }) {
     <div className="space-y-4 fade-in">
       {/* KPI Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 stagger">
-        <div className="dash-card p-3 sm:p-5">
+        <div className="dash-card p-3 sm:p-5" title={METRIC_TOOLTIPS.spend}>
           <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Total Video Spend</div>
           <div className="text-lg sm:text-2xl font-bold text-gray-900 font-display tabular-nums">{fmt.currency(summary.totalSpend)}</div>
         </div>
-        <div className="dash-card p-3 sm:p-5">
+        <div className="dash-card p-3 sm:p-5" title={METRIC_TOOLTIPS.thumbStopRate}>
           <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Thumb Stop %</div>
           <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgThumbStop)}</div>
         </div>
-        <div className="dash-card p-3 sm:p-5">
+        <div className="dash-card p-3 sm:p-5" title={METRIC_TOOLTIPS.hookRate}>
           <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Hook Rate %</div>
           <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgHookRate)}</div>
         </div>
-        <div className="dash-card p-3 sm:p-5">
+        <div className="dash-card p-3 sm:p-5" title={METRIC_TOOLTIPS.completionRate}>
           <div className="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Avg Completion %</div>
           <div className="text-lg sm:text-2xl font-bold font-display tabular-nums" style={{color: b.primary}}>{fmt.pct(summary.avgCompletion)}</div>
         </div>
@@ -1831,10 +1861,10 @@ function VideoTab({ data, brand }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 stagger">
           {sortedRows.map((row, i) => {
             const rates = [
-              { label: 'Thumb Stop', value: row.thumbStopRate },
-              { label: 'Hook Rate', value: row.hookRate },
-              { label: 'Hold Rate', value: row.holdRate },
-              { label: 'Completion', value: row.completionRate },
+              { label: 'Thumb Stop', value: row.thumbStopRate, tip: METRIC_TOOLTIPS.thumbStopRate },
+              { label: 'Hook Rate', value: row.hookRate, tip: METRIC_TOOLTIPS.hookRate },
+              { label: 'Hold Rate', value: row.holdRate, tip: METRIC_TOOLTIPS.holdRate },
+              { label: 'Completion', value: row.completionRate, tip: METRIC_TOOLTIPS.completionRate },
             ];
             return (
               <div key={i} className="dash-card overflow-hidden hover:shadow-md transition-all">
@@ -1870,13 +1900,13 @@ function VideoTab({ data, brand }) {
                   </div>
                 )}
                 <div className="flex items-center gap-3 mb-3 pb-3 border-b" style={{borderColor: '#f0f0f2'}}>
-                  <div><span className="text-[9px] text-gray-400 uppercase">Spend</span><div className="text-xs font-bold text-gray-700">{fmt.currency(row.spend)}</div></div>
-                  <div><span className="text-[9px] text-gray-400 uppercase">Plays</span><div className="text-xs font-bold text-gray-700">{fmt.number(row.videoPlays)}</div></div>
-                  {row.avgWatchTime > 0 && <div><span className="text-[9px] text-gray-400 uppercase">Avg Watch</span><div className="text-xs font-bold text-gray-700">{row.avgWatchTime.toFixed(1)}s</div></div>}
+                  <div title={METRIC_TOOLTIPS.spend}><span className="text-[9px] text-gray-400 uppercase">Spend</span><div className="text-xs font-bold text-gray-700">{fmt.currency(row.spend)}</div></div>
+                  <div title={METRIC_TOOLTIPS.videoPlays}><span className="text-[9px] text-gray-400 uppercase">Plays</span><div className="text-xs font-bold text-gray-700">{fmt.number(row.videoPlays)}</div></div>
+                  {row.avgWatchTime > 0 && <div title={METRIC_TOOLTIPS.avgWatchTime}><span className="text-[9px] text-gray-400 uppercase">Avg Watch</span><div className="text-xs font-bold text-gray-700">{row.avgWatchTime.toFixed(1)}s</div></div>}
                 </div>
                 <div className="space-y-2.5">
                   {rates.map((m, j) => (
-                    <div key={j}>
+                    <div key={j} title={m.tip || ''}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-[9px] text-gray-500 uppercase tracking-wide font-medium">{m.label}</span>
                         <span className="text-[11px] font-bold tabular-nums" style={{color: rateBarColor(m.value)}}>{fmt.pct(m.value)}</span>
@@ -2272,13 +2302,6 @@ function App() {
                 ))}
               </div>
 
-              <button
-                onClick={handleLogout}
-                className="p-1.5 sm:p-2 rounded-lg transition-colors hover:bg-gray-100 text-gray-400 hover:text-gray-600"
-                title="Change token"
-              >
-                {Icons.logout}
-              </button>
             </div>
           </div>
         </div>
