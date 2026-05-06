@@ -289,7 +289,7 @@ async function fetchCampaignMeta(accountId, token) {
 }
 
 async function fetchVideoInsights(accountId, since, until, token) {
-  const fields = 'campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,spend,impressions,reach,clicks,ctr,actions,video_thruplay_watched_actions,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p95_watched_actions,video_p100_watched_actions,video_avg_time_watched_actions,video_play_actions';
+  const fields = 'campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,spend,impressions,reach,clicks,ctr,actions,outbound_clicks,video_thruplay_watched_actions,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p95_watched_actions,video_p100_watched_actions,video_avg_time_watched_actions,video_play_actions';
   const timeRange = JSON.stringify({since, until});
   return fetchAllPages(
     `/${accountId}/insights?fields=${fields}&level=ad&time_range=${timeRange}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]`,
@@ -698,11 +698,30 @@ const FILTER_METRICS = [
   { key: 'cpm', label: 'CPM ($)' },
   { key: 'outboundClicks', label: 'Outbound Clicks' },
   { key: 'frequency', label: 'Frequency' },
+  { key: 'atc', label: 'Add to Cart' },
+  { key: 'atcRate', label: 'ATC Rate (%)' },
+  { key: 'costPerAtc', label: 'Cost / ATC ($)' },
   { key: 'conversions', label: 'Conversions' },
   { key: 'costPerConv', label: 'CPA ($)' },
   { key: 'revenue', label: 'Revenue ($)' },
   { key: 'roas', label: 'ROAS (x)' },
 ];
+
+const OBJECTIVE_BADGE_MAP = {
+  OUTCOME_SALES: 'Conversion', CONVERSIONS: 'Conversion', CATALOG_SALES: 'Conversion', PRODUCT_CATALOG_SALES: 'Conversion',
+  OUTCOME_LEADS: 'Conversion', LEAD_GENERATION: 'Conversion',
+  OUTCOME_TRAFFIC: 'Traffic', LINK_CLICKS: 'Traffic',
+  OUTCOME_AWARENESS: 'Awareness', REACH: 'Awareness', BRAND_AWARENESS: 'Awareness',
+  OUTCOME_ENGAGEMENT: 'Awareness', POST_ENGAGEMENT: 'Awareness', VIDEO_VIEWS: 'Awareness',
+  OUTCOME_APP_PROMOTION: 'Traffic', APP_INSTALLS: 'Traffic',
+  MESSAGES: 'Conversion', STORE_TRAFFIC: 'Traffic',
+};
+
+const OBJECTIVE_BADGE_STYLES = {
+  Awareness: 'bg-purple-50 text-purple-600',
+  Traffic: 'bg-blue-50 text-blue-600',
+  Conversion: 'bg-emerald-50 text-emerald-600',
+};
 
 function MetricFilter({ filters, onChange, metricOptions }) {
   const options = metricOptions || FILTER_METRICS;
@@ -846,7 +865,7 @@ function OverviewTab({ data, brand, datePreset }) {
   if (!data?.campaignInsights?.length) return <EmptyState brand={brand} />;
 
   const sumInsights = (rows) => {
-    const t = { spend: 0, impressions: 0, reach: 0, clicks: 0, conversions: 0, revenue: 0, outboundClicks: 0 };
+    const t = { spend: 0, impressions: 0, reach: 0, clicks: 0, conversions: 0, revenue: 0, outboundClicks: 0, atc: 0 };
     rows.forEach(r => {
       t.spend += parseFloat(r.spend || 0);
       t.impressions += parseInt(r.impressions || 0);
@@ -855,6 +874,7 @@ function OverviewTab({ data, brand, datePreset }) {
       t.conversions += getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
       t.revenue += getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
       t.outboundClicks += getActionValue(r.outbound_clicks, 'outbound_click');
+      t.atc += getActionValue(r.actions, 'add_to_cart');
     });
     return t;
   };
@@ -873,6 +893,9 @@ function OverviewTab({ data, brand, datePreset }) {
     { label: 'CPC', value: fmt.currency(totals.spend / totals.clicks), delta: pctChange(totals.spend / totals.clicks, prevTotals ? prevTotals.spend / (prevTotals.clicks || 1) : undefined), invertDelta: true },
     { label: 'CPM', value: fmt.currency(totals.spend / totals.impressions * 1000), delta: pctChange(totals.spend / totals.impressions, prevTotals ? prevTotals.spend / (prevTotals.impressions || 1) : undefined), invertDelta: true },
     { label: 'Outbound Clicks', value: fmt.number(totals.outboundClicks), delta: pctChange(totals.outboundClicks, prevTotals?.outboundClicks) },
+    { label: 'Add to Cart', value: fmt.number(totals.atc), delta: pctChange(totals.atc, prevTotals?.atc) },
+    { label: 'ATC Rate', value: totals.outboundClicks > 0 ? fmt.pct(totals.atc / totals.outboundClicks * 100) : '-', delta: totals.outboundClicks > 0 && prevTotals?.outboundClicks > 0 ? pctChange(totals.atc / totals.outboundClicks, prevTotals.atc / prevTotals.outboundClicks) : undefined },
+    { label: 'Cost / ATC', value: totals.atc > 0 ? fmt.currency(totals.spend / totals.atc) : '-', delta: totals.atc > 0 && prevTotals?.atc > 0 ? pctChange(totals.spend / totals.atc, prevTotals.spend / prevTotals.atc) : undefined, invertDelta: true },
     { label: 'Conversions', value: fmt.number(totals.conversions), delta: pctChange(totals.conversions, prevTotals?.conversions) },
     { label: 'Cost / Conv.', value: totals.conversions > 0 ? fmt.currency(totals.spend / totals.conversions) : '-', delta: totals.conversions > 0 && prevTotals?.conversions > 0 ? pctChange(totals.spend / totals.conversions, prevTotals.spend / prevTotals.conversions) : undefined, invertDelta: true },
     { label: 'Revenue', value: fmt.currency(totals.revenue), delta: pctChange(totals.revenue, prevTotals?.revenue) },
@@ -1045,11 +1068,13 @@ function CampaignsTab({ data, brand }) {
     const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
     const costPerConv = getActionValue(r.cost_per_action_type, 'purchase') + getActionValue(r.cost_per_action_type, 'omni_purchase');
     const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+    const atc = getActionValue(r.actions, 'add_to_cart');
+    const spend = parseFloat(r.spend || 0);
     const rawObj = objMap[r.campaign_id] || '';
     return {
       name: r.campaign_name,
       objective: OBJECTIVE_LABELS[rawObj] || rawObj.replace(/^OUTCOME_/, '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) || '-',
-      spend: parseFloat(r.spend || 0),
+      spend,
       impressions: parseInt(r.impressions || 0),
       reach: parseInt(r.reach || 0),
       clicks: parseInt(r.clicks || 0),
@@ -1058,10 +1083,13 @@ function CampaignsTab({ data, brand }) {
       cpm: parseFloat(r.cpm || 0),
       frequency: parseFloat(r.frequency || 0),
       outboundClicks: outbound,
+      atc,
+      atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
+      costPerAtc: atc > 0 ? spend / atc : 0,
       conversions,
-      costPerConv: costPerConv || (conversions > 0 ? parseFloat(r.spend)/conversions : 0),
+      costPerConv: costPerConv || (conversions > 0 ? spend / conversions : 0),
       revenue,
-      roas: parseFloat(r.spend) > 0 ? revenue / parseFloat(r.spend) : 0,
+      roas: spend > 0 ? revenue / spend : 0,
     };
   }), [data, objMap]);
 
@@ -1079,6 +1107,9 @@ function CampaignsTab({ data, brand }) {
     { key: 'cpm', label: 'CPM', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'outboundClicks', label: 'Outbound', align: 'right', sortable: true, render: v => fmt.number(v) },
     { key: 'frequency', label: 'Freq.', align: 'right', sortable: true, render: v => fmt.decimal(v) },
+    { key: 'atc', label: 'ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
+    { key: 'atcRate', label: 'ATC Rate', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
+    { key: 'costPerAtc', label: 'Cost/ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
     { key: 'conversions', label: 'Conv.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'costPerConv', label: 'CPA', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
     { key: 'revenue', label: 'Revenue', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
@@ -1110,10 +1141,12 @@ function AdSetsTab({ data, brand }) {
       const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
       const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
       const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+      const atc = getActionValue(r.actions, 'add_to_cart');
+      const spend = parseFloat(r.spend || 0);
       return {
         campaign: r.campaign_name,
         name: r.adset_name,
-        spend: parseFloat(r.spend || 0),
+        spend,
         impressions: parseInt(r.impressions || 0),
         reach: parseInt(r.reach || 0),
         clicks: parseInt(r.clicks || 0),
@@ -1122,10 +1155,13 @@ function AdSetsTab({ data, brand }) {
         cpm: parseFloat(r.cpm || 0),
         frequency: parseFloat(r.frequency || 0),
         outboundClicks: outbound,
+        atc,
+        atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
+        costPerAtc: atc > 0 ? spend / atc : 0,
         conversions,
-        costPerConv: conversions > 0 ? parseFloat(r.spend)/conversions : 0,
+        costPerConv: conversions > 0 ? spend / conversions : 0,
         revenue,
-        roas: parseFloat(r.spend) > 0 ? revenue / parseFloat(r.spend) : 0,
+        roas: spend > 0 ? revenue / spend : 0,
       };
     });
   }, [data, campaignFilter]);
@@ -1141,6 +1177,9 @@ function AdSetsTab({ data, brand }) {
     { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'outboundClicks', label: 'Outbound', align: 'right', sortable: true, render: v => fmt.number(v) },
     { key: 'frequency', label: 'Freq.', align: 'right', sortable: true, render: v => fmt.decimal(v) },
+    { key: 'atc', label: 'ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
+    { key: 'atcRate', label: 'ATC Rate', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
+    { key: 'costPerAtc', label: 'Cost/ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
     { key: 'conversions', label: 'Conv.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'costPerConv', label: 'CPA', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
     { key: 'roas', label: 'ROAS', align: 'right', sortable: true, render: v => v > 0 ? fmt.roas(v) : '-' },
@@ -1253,6 +1292,9 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
     { label: 'Revenue', value: card.revenue > 0 ? fmt.currency(card.revenue) : '-', primary: true },
     { label: 'Conversions', value: card.conversions > 0 ? fmt.number(card.conversions) : '-', primary: true },
     { label: 'CPA', value: card.costPerConv > 0 ? fmt.currency(card.costPerConv) : '-', primary: true },
+    { label: 'Add to Cart', value: card.atc > 0 ? fmt.number(card.atc) : '-', primary: true },
+    { label: 'ATC Rate', value: card.atcRate > 0 ? fmt.pct(card.atcRate) : '-', primary: true },
+    { label: 'Cost / ATC', value: card.costPerAtc > 0 ? fmt.currency(card.costPerAtc) : '-', primary: true },
     { label: 'Impressions', value: fmt.number(card.impressions) },
     { label: 'Reach', value: fmt.number(card.reach) },
     { label: 'Clicks', value: fmt.number(card.clicks) },
@@ -1291,7 +1333,7 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
           <h3 className="font-display text-base sm:text-lg font-bold text-gray-900 mb-0.5 leading-tight">{card.name}</h3>
           <p className="text-xs text-gray-400 mb-0.5">{card.campaign}</p>
           <p className="text-[10px] text-gray-300 mb-4">{card.adset}</p>
-          <div className="grid grid-cols-5 gap-1.5 sm:gap-2 mb-3">
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-3">
             {stats.filter(s => s.primary).map(s => (
               <div key={s.label} className="text-center py-2 px-1 rounded-lg" style={{backgroundColor: b.primaryLight}}>
                 <div className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-wide">{s.label}</div>
@@ -1359,6 +1401,12 @@ function CreativeTab({ data, brand }) {
     return map;
   }, [data]);
 
+  const objMap = useMemo(() => {
+    const m = {};
+    (data.campaignMeta || []).forEach(c => { m[c.id] = c.objective; });
+    return m;
+  }, [data]);
+
   const videoAdIds = useMemo(() => {
     const ids = new Set();
     (data.videoInsights || []).forEach(r => { if (r.ad_id) ids.add(r.ad_id); });
@@ -1369,7 +1417,7 @@ function CreativeTab({ data, brand }) {
 
   const cards = useMemo(() => {
     const filtered = campaignFilter === 'all' ? data.adInsights : data.adInsights.filter(r => r.campaign_name === campaignFilter);
-    const lowerBetter = sortMetric === 'cpc' || sortMetric === 'costPerConv' || sortMetric === 'cpm';
+    const lowerBetter = sortMetric === 'cpc' || sortMetric === 'costPerConv' || sortMetric === 'cpm' || sortMetric === 'costPerAtc';
     return filtered
       .map(r => {
         const creative = creativeMap[r.ad_id];
@@ -1381,6 +1429,10 @@ function CreativeTab({ data, brand }) {
         const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
         const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
         const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+        const atc = getActionValue(r.actions, 'add_to_cart');
+        const spend = parseFloat(r.spend || 0);
+        const rawObj = objMap[r.campaign_id] || '';
+        const objectiveBadge = OBJECTIVE_BADGE_MAP[rawObj] || null;
         return {
           adId: r.ad_id,
           name: r.ad_name,
@@ -1393,7 +1445,8 @@ function CreativeTab({ data, brand }) {
           isVideo,
           videoId,
           videoSource,
-          spend: parseFloat(r.spend || 0),
+          objectiveBadge,
+          spend,
           impressions: parseInt(r.impressions || 0),
           reach: parseInt(r.reach || 0),
           clicks: parseInt(r.clicks || 0),
@@ -1402,16 +1455,19 @@ function CreativeTab({ data, brand }) {
           cpm: parseFloat(r.cpm || 0),
           frequency: parseFloat(r.frequency || 0),
           outboundClicks: outbound,
+          atc,
+          atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
+          costPerAtc: atc > 0 ? spend / atc : 0,
           conversions,
-          costPerConv: conversions > 0 ? parseFloat(r.spend)/conversions : 0,
+          costPerConv: conversions > 0 ? spend / conversions : 0,
           revenue,
-          roas: parseFloat(r.spend) > 0 ? revenue / parseFloat(r.spend) : 0,
+          roas: spend > 0 ? revenue / spend : 0,
         };
       })
       .filter(Boolean)
       .filter(c => typeFilter === 'all' || (typeFilter === 'video' ? c.isVideo : !c.isVideo))
       .sort((a, b) => lowerBetter ? (a[sortMetric] || 0) - (b[sortMetric] || 0) : (b[sortMetric] || 0) - (a[sortMetric] || 0));
-  }, [data, creativeMap, sortMetric, campaignFilter, typeFilter]);
+  }, [data, creativeMap, objMap, sortMetric, campaignFilter, typeFilter]);
 
   const filteredCards = useMemo(() => applyMetricFilter(cards, mFilters), [cards, mFilters]);
 
@@ -1425,6 +1481,9 @@ function CreativeTab({ data, brand }) {
     { value: 'revenue', label: 'Revenue' },
     { value: 'conversions', label: 'Conversions' },
     { value: 'costPerConv', label: 'CPA (low is better)' },
+    { value: 'atc', label: 'Add to Cart' },
+    { value: 'atcRate', label: 'ATC Rate' },
+    { value: 'costPerAtc', label: 'Cost/ATC (low is better)' },
     { value: 'spend', label: 'Spend' },
     { value: 'ctr', label: 'CTR' },
     { value: 'cpc', label: 'CPC (low is better)' },
@@ -1436,13 +1495,13 @@ function CreativeTab({ data, brand }) {
     { value: 'frequency', label: 'Frequency' },
   ];
 
-  const isLowerBetter = sortMetric === 'cpc' || sortMetric === 'costPerConv' || sortMetric === 'cpm';
+  const isLowerBetter = sortMetric === 'cpc' || sortMetric === 'costPerConv' || sortMetric === 'cpm' || sortMetric === 'costPerAtc';
 
   const fmtMetricVal = (card) => {
     const v = card[sortMetric] || 0;
     if (sortMetric === 'roas') return v > 0 ? fmt.roas(v) : '-';
-    if (sortMetric === 'ctr') return fmt.pct(v);
-    if (sortMetric === 'cpc' || sortMetric === 'cpm' || sortMetric === 'costPerConv') return v > 0 ? fmt.currency(v) : '-';
+    if (sortMetric === 'ctr' || sortMetric === 'atcRate') return v > 0 ? fmt.pct(v) : '-';
+    if (sortMetric === 'cpc' || sortMetric === 'cpm' || sortMetric === 'costPerConv' || sortMetric === 'costPerAtc') return v > 0 ? fmt.currency(v) : '-';
     if (sortMetric === 'spend' || sortMetric === 'revenue') return fmt.currency(v);
     if (sortMetric === 'frequency') return fmt.decimal(v);
     return fmt.number(v);
@@ -1506,6 +1565,8 @@ function CreativeTab({ data, brand }) {
             const borderStyle = i < 3 ? `2px solid ${b.primary}` : `1px solid ${isGood ? '#d1fae5' : '#fee2e2'}`;
             const cardStats = [
               { label: 'Spend', value: fmt.currency(card.spend) },
+              { label: 'ATC', value: card.atc > 0 ? fmt.number(card.atc) : '-' },
+              { label: 'ATC Rate', value: card.atcRate > 0 ? fmt.pct(card.atcRate) : '-' },
               { label: 'Conv.', value: card.conversions > 0 ? fmt.number(card.conversions) : '-' },
               { label: 'ROAS', value: card.roas > 0 ? fmt.roas(card.roas) : '-' },
               { label: 'CTR', value: fmt.pct(card.ctr) },
@@ -1534,6 +1595,11 @@ function CreativeTab({ data, brand }) {
                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${card.isVideo ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
                       {card.isVideo ? 'Video' : 'Image'}
                     </span>
+                    {card.objectiveBadge && (
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${OBJECTIVE_BADGE_STYLES[card.objectiveBadge] || 'bg-gray-100 text-gray-500'}`}>
+                        {card.objectiveBadge}
+                      </span>
+                    )}
                   </div>
                   <h4 className="text-xs font-semibold text-gray-900 truncate leading-tight">{card.name}</h4>
                   <p className="text-[10px] text-gray-400 truncate mt-0.5 mb-2">{card.campaign}</p>
@@ -1541,7 +1607,7 @@ function CreativeTab({ data, brand }) {
                     <span className="text-[9px] text-gray-500 uppercase font-medium tracking-wide">{metricOptions.find(o => o.value === sortMetric)?.label?.replace(' (low is better)', '') || sortMetric}</span>
                     <span className="text-xs font-bold tabular-nums" style={{color: perfColor}}>{fmtMetricVal(card)}</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-x-1.5 gap-y-1">
+                  <div className="grid grid-cols-4 gap-x-1.5 gap-y-1">
                     {cardStats.map(s => (
                       <div key={s.label} className="text-center">
                         <div className="text-[8px] text-gray-400 uppercase tracking-wide leading-tight">{s.label}</div>
@@ -1573,6 +1639,8 @@ const VIDEO_FILTER_METRICS = [
   { key: 'holdRate', label: 'Hold Rate (%)' },
   { key: 'completionRate', label: 'Completion (%)' },
   { key: 'avgWatchTime', label: 'Avg Watch Time (s)' },
+  { key: 'atc', label: 'Add to Cart' },
+  { key: 'atcRate', label: 'ATC Rate (%)' },
 ];
 
 function getVideoActionValue(actions, type) {
@@ -1627,6 +1695,8 @@ function VideoTab({ data, brand }) {
         const videoId = creative?.videoId || null;
         const videoSource = creative?.videoSource || null;
         const previewLink = creative?.previewLink || null;
+        const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+        const atc = getActionValue(r.actions, 'add_to_cart');
         return {
           adName: r.ad_name,
           adId: r.ad_id,
@@ -1635,6 +1705,8 @@ function VideoTab({ data, brand }) {
           spend, impressions, videoPlays, thruPlays,
           thumbStopRate, hookRate, holdRate, completionRate,
           p25, p50, p75, p95, p100, avgWatchTime,
+          atc,
+          atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
         };
       })
       .sort((a, b) => b.spend - a.spend);
@@ -1679,6 +1751,8 @@ function VideoTab({ data, brand }) {
     { key: 'holdRate', label: 'Hold %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
     { key: 'completionRate', label: 'Complete %', align: 'right', sortable: true, render: v => <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold ${pctColor(v)}`}>{fmt.pct(v)}</span> },
     { key: 'avgWatchTime', label: 'Avg Watch (s)', align: 'right', sortable: true, render: v => v > 0 ? v.toFixed(1) + 's' : '-' },
+    { key: 'atc', label: 'ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
+    { key: 'atcRate', label: 'ATC Rate', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
   ];
 
   return (
@@ -1914,11 +1988,16 @@ function BreakdownsTab({ data, brand }) {
       const cpm = parseFloat(r.cpm || 0);
       const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
       const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
+      const atc = getActionValue(r.actions, 'add_to_cart');
       const cpa = conversions > 0 ? spend / conversions : 0;
       const roas = spend > 0 ? revenue / spend : 0;
       return {
         dimension: getDimension(r),
         spend, impressions, reach, clicks, ctr, cpc, cpm,
+        atc,
+        atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
+        costPerAtc: atc > 0 ? spend / atc : 0,
         conversions, cpa, revenue, roas,
       };
     }).sort((a, b) => b.spend - a.spend);
@@ -1949,6 +2028,9 @@ function BreakdownsTab({ data, brand }) {
     { key: 'ctr', label: 'CTR', align: 'right', sortable: true, render: v => fmt.pct(v) },
     { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'cpm', label: 'CPM', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'atc', label: 'ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
+    { key: 'atcRate', label: 'ATC Rate', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
+    { key: 'costPerAtc', label: 'Cost/ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
     { key: 'conversions', label: 'Conv.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'cpa', label: 'CPA', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
     { key: 'revenue', label: 'Revenue', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
