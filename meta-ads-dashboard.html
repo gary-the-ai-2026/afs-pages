@@ -1948,19 +1948,19 @@ function VideoTab({ data, brand }) {
               <h3 className="font-display text-base font-bold text-gray-900 mb-1 leading-snug">{selectedVideo.adName}</h3>
               <p className="text-xs text-gray-400 mb-4">{selectedVideo.campaign}</p>
               <div className="grid grid-cols-4 gap-3 mb-4">
-                <div className="text-center"><div className="text-[9px] text-gray-400 uppercase mb-0.5">Spend</div><div className="text-sm font-bold">{fmt.currency(selectedVideo.spend)}</div></div>
-                <div className="text-center"><div className="text-[9px] text-gray-400 uppercase mb-0.5">Plays</div><div className="text-sm font-bold">{fmt.number(selectedVideo.videoPlays)}</div></div>
-                <div className="text-center"><div className="text-[9px] text-gray-400 uppercase mb-0.5">ThruPlays</div><div className="text-sm font-bold">{fmt.number(selectedVideo.thruPlays)}</div></div>
-                <div className="text-center"><div className="text-[9px] text-gray-400 uppercase mb-0.5">Avg Watch</div><div className="text-sm font-bold">{selectedVideo.avgWatchTime > 0 ? selectedVideo.avgWatchTime.toFixed(1) + 's' : '-'}</div></div>
+                <div className="text-center" title={METRIC_TOOLTIPS.spend}><div className="text-[9px] text-gray-400 uppercase mb-0.5">Spend</div><div className="text-sm font-bold">{fmt.currency(selectedVideo.spend)}</div></div>
+                <div className="text-center" title={METRIC_TOOLTIPS.videoPlays}><div className="text-[9px] text-gray-400 uppercase mb-0.5">Plays</div><div className="text-sm font-bold">{fmt.number(selectedVideo.videoPlays)}</div></div>
+                <div className="text-center" title={METRIC_TOOLTIPS.thruPlays}><div className="text-[9px] text-gray-400 uppercase mb-0.5">ThruPlays</div><div className="text-sm font-bold">{fmt.number(selectedVideo.thruPlays)}</div></div>
+                <div className="text-center" title={METRIC_TOOLTIPS.avgWatchTime}><div className="text-[9px] text-gray-400 uppercase mb-0.5">Avg Watch</div><div className="text-sm font-bold">{selectedVideo.avgWatchTime > 0 ? selectedVideo.avgWatchTime.toFixed(1) + 's' : '-'}</div></div>
               </div>
               <div className="space-y-2">
                 {[
-                  { label: 'Thumb Stop', value: selectedVideo.thumbStopRate },
-                  { label: 'Hook Rate', value: selectedVideo.hookRate },
-                  { label: 'Hold Rate', value: selectedVideo.holdRate },
-                  { label: 'Completion', value: selectedVideo.completionRate },
+                  { label: 'Thumb Stop', value: selectedVideo.thumbStopRate, tip: METRIC_TOOLTIPS.thumbStopRate },
+                  { label: 'Hook Rate', value: selectedVideo.hookRate, tip: METRIC_TOOLTIPS.hookRate },
+                  { label: 'Hold Rate', value: selectedVideo.holdRate, tip: METRIC_TOOLTIPS.holdRate },
+                  { label: 'Completion', value: selectedVideo.completionRate, tip: METRIC_TOOLTIPS.completionRate },
                 ].map((m, j) => (
-                  <div key={j}>
+                  <div key={j} title={m.tip}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">{m.label}</span>
                       <span className="text-xs font-bold tabular-nums" style={{color: rateBarColor(m.value)}}>{fmt.pct(m.value)}</span>
