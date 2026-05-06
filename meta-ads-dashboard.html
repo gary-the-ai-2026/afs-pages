@@ -1302,6 +1302,8 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
     { label: 'CPC', value: fmt.currency(card.cpc) },
     { label: 'CPM', value: fmt.currency(card.cpm) },
     { label: 'Outbound Clicks', value: fmt.number(card.outboundClicks) },
+    { label: 'Engagements', value: card.engagements > 0 ? fmt.number(card.engagements) : '-' },
+    { label: 'Eng. Rate', value: card.engagementRate > 0 ? fmt.pct(card.engagementRate) : '-' },
     { label: 'Frequency', value: fmt.decimal(card.frequency) },
   ];
   return ReactDOM.createPortal(
@@ -1430,7 +1432,9 @@ function CreativeTab({ data, brand }) {
         const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
         const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
         const atc = getActionValue(r.actions, 'add_to_cart');
+        const engagements = getActionValue(r.actions, 'post_engagement');
         const spend = parseFloat(r.spend || 0);
+        const impressions = parseInt(r.impressions || 0);
         const rawObj = objMap[r.campaign_id] || '';
         const objectiveBadge = OBJECTIVE_BADGE_MAP[rawObj] || null;
         return {
@@ -1447,7 +1451,7 @@ function CreativeTab({ data, brand }) {
           videoSource,
           objectiveBadge,
           spend,
-          impressions: parseInt(r.impressions || 0),
+          impressions,
           reach: parseInt(r.reach || 0),
           clicks: parseInt(r.clicks || 0),
           ctr: parseFloat(r.ctr || 0),
@@ -1458,6 +1462,8 @@ function CreativeTab({ data, brand }) {
           atc,
           atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
           costPerAtc: atc > 0 ? spend / atc : 0,
+          engagements,
+          engagementRate: impressions > 0 ? (engagements / impressions) * 100 : 0,
           conversions,
           costPerConv: conversions > 0 ? spend / conversions : 0,
           revenue,
@@ -1484,6 +1490,8 @@ function CreativeTab({ data, brand }) {
     { value: 'atc', label: 'Add to Cart' },
     { value: 'atcRate', label: 'ATC Rate' },
     { value: 'costPerAtc', label: 'Cost/ATC (low is better)' },
+    { value: 'engagements', label: 'Engagements' },
+    { value: 'engagementRate', label: 'Engagement Rate' },
     { value: 'spend', label: 'Spend' },
     { value: 'ctr', label: 'CTR' },
     { value: 'cpc', label: 'CPC (low is better)' },
@@ -1500,7 +1508,7 @@ function CreativeTab({ data, brand }) {
   const fmtMetricVal = (card) => {
     const v = card[sortMetric] || 0;
     if (sortMetric === 'roas') return v > 0 ? fmt.roas(v) : '-';
-    if (sortMetric === 'ctr' || sortMetric === 'atcRate') return v > 0 ? fmt.pct(v) : '-';
+    if (sortMetric === 'ctr' || sortMetric === 'atcRate' || sortMetric === 'engagementRate') return v > 0 ? fmt.pct(v) : '-';
     if (sortMetric === 'cpc' || sortMetric === 'cpm' || sortMetric === 'costPerConv' || sortMetric === 'costPerAtc') return v > 0 ? fmt.currency(v) : '-';
     if (sortMetric === 'spend' || sortMetric === 'revenue') return fmt.currency(v);
     if (sortMetric === 'frequency') return fmt.decimal(v);
@@ -1567,6 +1575,8 @@ function CreativeTab({ data, brand }) {
               { label: 'Spend', value: fmt.currency(card.spend) },
               { label: 'ATC', value: card.atc > 0 ? fmt.number(card.atc) : '-' },
               { label: 'ATC Rate', value: card.atcRate > 0 ? fmt.pct(card.atcRate) : '-' },
+              { label: 'Eng.', value: card.engagements > 0 ? fmt.number(card.engagements) : '-' },
+              { label: 'Eng. Rate', value: card.engagementRate > 0 ? fmt.pct(card.engagementRate) : '-' },
               { label: 'Conv.', value: card.conversions > 0 ? fmt.number(card.conversions) : '-' },
               { label: 'ROAS', value: card.roas > 0 ? fmt.roas(card.roas) : '-' },
               { label: 'CTR', value: fmt.pct(card.ctr) },
@@ -1607,7 +1617,7 @@ function CreativeTab({ data, brand }) {
                     <span className="text-[9px] text-gray-500 uppercase font-medium tracking-wide">{metricOptions.find(o => o.value === sortMetric)?.label?.replace(' (low is better)', '') || sortMetric}</span>
                     <span className="text-xs font-bold tabular-nums" style={{color: perfColor}}>{fmtMetricVal(card)}</span>
                   </div>
-                  <div className="grid grid-cols-4 gap-x-1.5 gap-y-1">
+                  <div className="grid grid-cols-5 gap-x-1.5 gap-y-1">
                     {cardStats.map(s => (
                       <div key={s.label} className="text-center">
                         <div className="text-[8px] text-gray-400 uppercase tracking-wide leading-tight">{s.label}</div>
@@ -1641,6 +1651,8 @@ const VIDEO_FILTER_METRICS = [
   { key: 'avgWatchTime', label: 'Avg Watch Time (s)' },
   { key: 'atc', label: 'Add to Cart' },
   { key: 'atcRate', label: 'ATC Rate (%)' },
+  { key: 'engagements', label: 'Engagements' },
+  { key: 'engagementRate', label: 'Engagement Rate (%)' },
 ];
 
 function getVideoActionValue(actions, type) {
@@ -1697,6 +1709,7 @@ function VideoTab({ data, brand }) {
         const previewLink = creative?.previewLink || null;
         const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
         const atc = getActionValue(r.actions, 'add_to_cart');
+        const engagements = getActionValue(r.actions, 'post_engagement');
         return {
           adName: r.ad_name,
           adId: r.ad_id,
@@ -1707,6 +1720,8 @@ function VideoTab({ data, brand }) {
           p25, p50, p75, p95, p100, avgWatchTime,
           atc,
           atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
+          engagements,
+          engagementRate: impressions > 0 ? (engagements / impressions) * 100 : 0,
         };
       })
       .sort((a, b) => b.spend - a.spend);
@@ -1753,6 +1768,8 @@ function VideoTab({ data, brand }) {
     { key: 'avgWatchTime', label: 'Avg Watch (s)', align: 'right', sortable: true, render: v => v > 0 ? v.toFixed(1) + 's' : '-' },
     { key: 'atc', label: 'ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'atcRate', label: 'ATC Rate', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
+    { key: 'engagements', label: 'Eng.', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
+    { key: 'engagementRate', label: 'Eng. Rate', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
   ];
 
   return (
