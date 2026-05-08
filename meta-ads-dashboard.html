@@ -179,11 +179,12 @@ async function fetchAllPages(path, token, maxPages = 50) {
   return all;
 }
 
-async function fetchInsights(accountId, level, since, until, token) {
+async function fetchInsights(accountId, level, since, until, token, attrWindow) {
   const fields = 'campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,spend,impressions,reach,cpm,clicks,ctr,cpc,frequency,outbound_clicks,actions,cost_per_action_type,action_values';
   const timeRange = JSON.stringify({since, until});
+  const attrParam = attrWindow ? `&action_attribution_windows=["${attrWindow}"]` : '';
   return fetchAllPages(
-    `/${accountId}/insights?fields=${fields}&level=${level}&time_range=${timeRange}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]`,
+    `/${accountId}/insights?fields=${fields}&level=${level}&time_range=${timeRange}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]${attrParam}`,
     token
   );
 }
@@ -214,12 +215,12 @@ async function fetchAdsCreatives(adIds, token) {
   for (let i = 0; i < creativeIds.length; i += batchSize) {
     const batch = creativeIds.slice(i, i + batchSize);
     const ids = batch.join(',');
-    const res = await fetch(`${META_API}/?ids=${ids}&fields=thumbnail_url,image_url,body,title,name,object_story_spec&thumbnail_width=480&thumbnail_height=480&access_token=${token}`);
+    const res = await fetch(`${META_API}/?ids=${ids}&fields=thumbnail_url,image_url,body,title,name,object_story_spec,object_type&thumbnail_width=480&thumbnail_height=480&access_token=${token}`);
     if (!res.ok) continue;
     const json = await res.json();
     Object.values(json).forEach(c => {
       creativeDetails[c.id] = c;
-      const specVideoId = c.object_story_spec?.video_data?.video_id;
+      const specVideoId = c.object_story_spec?.video_data?.video_id || c.object_story_spec?.link_data?.video_id;
       if (specVideoId && /^\d+$/.test(String(specVideoId))) videoIdSet.add(String(specVideoId));
     });
   }
@@ -241,8 +242,8 @@ async function fetchAdsCreatives(adIds, token) {
   const result = allAds.map(ad => {
     const detail = creativeDetails[adCreativeMap[ad.id]] || {};
     const spec = detail.object_story_spec;
-    const isVideo = !!spec?.video_data || !!ad.creative?.video_id;
-    const candidateIds = [ad.creative?.video_id, spec?.video_data?.video_id].filter(Boolean).map(String);
+    const isVideo = !!spec?.video_data || !!ad.creative?.video_id || detail.object_type === 'VIDEO';
+    const candidateIds = [ad.creative?.video_id, spec?.video_data?.video_id, spec?.link_data?.video_id].filter(Boolean).map(String);
     const videoId = candidateIds.find(id => /^\d+$/.test(id)) || null;
     return {
       ...ad,
@@ -275,11 +276,12 @@ function getComparisonRange(since, until) {
   return { since: compStart.toISOString().slice(0,10), until: compEnd.toISOString().slice(0,10) };
 }
 
-async function fetchDailyInsights(accountId, since, until, token, timeIncrement = 1) {
+async function fetchDailyInsights(accountId, since, until, token, timeIncrement = 1, attrWindow) {
   const fields = 'spend,impressions,reach,clicks,ctr,cpm,cpc,frequency,actions,action_values,outbound_clicks';
   const timeRange = JSON.stringify({since, until});
+  const attrParam = attrWindow ? `&action_attribution_windows=["${attrWindow}"]` : '';
   return fetchAllPages(
-    `/${accountId}/insights?fields=${fields}&level=account&time_range=${timeRange}&time_increment=${timeIncrement}&limit=500`,
+    `/${accountId}/insights?fields=${fields}&level=account&time_range=${timeRange}&time_increment=${timeIncrement}&limit=500${attrParam}`,
     token
   );
 }
@@ -288,20 +290,22 @@ async function fetchCampaignMeta(accountId, token) {
   return fetchAllPages(`/${accountId}/campaigns?fields=id,name,objective,status&limit=500`, token);
 }
 
-async function fetchVideoInsights(accountId, since, until, token) {
+async function fetchVideoInsights(accountId, since, until, token, attrWindow) {
   const fields = 'campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,spend,impressions,reach,clicks,ctr,actions,outbound_clicks,video_thruplay_watched_actions,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p95_watched_actions,video_p100_watched_actions,video_avg_time_watched_actions,video_play_actions';
   const timeRange = JSON.stringify({since, until});
+  const attrParam = attrWindow ? `&action_attribution_windows=["${attrWindow}"]` : '';
   return fetchAllPages(
-    `/${accountId}/insights?fields=${fields}&level=ad&time_range=${timeRange}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]`,
+    `/${accountId}/insights?fields=${fields}&level=ad&time_range=${timeRange}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]${attrParam}`,
     token
   );
 }
 
-async function fetchBreakdownInsights(accountId, since, until, token, breakdown) {
+async function fetchBreakdownInsights(accountId, since, until, token, breakdown, attrWindow) {
   const fields = 'spend,impressions,reach,clicks,ctr,cpc,cpm,actions,action_values,outbound_clicks';
   const timeRange = JSON.stringify({since, until});
+  const attrParam = attrWindow ? `&action_attribution_windows=["${attrWindow}"]` : '';
   return fetchAllPages(
-    `/${accountId}/insights?fields=${fields}&level=account&time_range=${timeRange}&breakdowns=${breakdown}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]`,
+    `/${accountId}/insights?fields=${fields}&level=account&time_range=${timeRange}&breakdowns=${breakdown}&limit=500&filtering=[{"field":"spend","operator":"GREATER_THAN","value":"0"}]${attrParam}`,
     token
   );
 }
@@ -703,6 +707,8 @@ const FILTER_METRICS = [
   { key: 'cpc', label: 'CPC ($)' },
   { key: 'cpm', label: 'CPM ($)' },
   { key: 'outboundClicks', label: 'Outbound Clicks' },
+  { key: 'outboundCtr', label: 'Outbound CTR (%)' },
+  { key: 'lpv', label: 'Landing Page Views' },
   { key: 'frequency', label: 'Frequency' },
   { key: 'atc', label: 'Add to Cart' },
   { key: 'atcRate', label: 'ATC Rate (%)' },
@@ -739,6 +745,8 @@ const METRIC_TOOLTIPS = {
   cpm: 'Cost per 1,000 impressions: (spend / impressions) x 1,000',
   frequency: 'Average number of times each person saw your ad',
   outboundClicks: 'Clicks that lead people off Meta (to your website)',
+  outboundCtr: 'Outbound CTR: outbound clicks / impressions',
+  lpv: 'Landing page views: people who clicked and waited for your page to load',
   conversions: 'Purchases attributed to your ads',
   costPerConv: 'Cost per purchase: spend / conversions',
   revenue: 'Total purchase revenue attributed to your ads',
@@ -902,7 +910,7 @@ function OverviewTab({ data, brand, datePreset }) {
   if (!data?.campaignInsights?.length) return <EmptyState brand={brand} />;
 
   const sumInsights = (rows) => {
-    const t = { spend: 0, impressions: 0, reach: 0, clicks: 0, conversions: 0, revenue: 0, outboundClicks: 0, atc: 0 };
+    const t = { spend: 0, impressions: 0, reach: 0, clicks: 0, conversions: 0, revenue: 0, outboundClicks: 0, atc: 0, lpv: 0 };
     rows.forEach(r => {
       t.spend += parseFloat(r.spend || 0);
       t.impressions += parseInt(r.impressions || 0);
@@ -912,6 +920,7 @@ function OverviewTab({ data, brand, datePreset }) {
       t.revenue += getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
       t.outboundClicks += getActionValue(r.outbound_clicks, 'outbound_click');
       t.atc += getActionValue(r.actions, 'add_to_cart');
+      t.lpv += getActionValue(r.actions, 'landing_page_view');
     });
     return t;
   };
@@ -930,6 +939,8 @@ function OverviewTab({ data, brand, datePreset }) {
     { label: 'CPC', value: fmt.currency(totals.spend / totals.clicks), delta: pctChange(totals.spend / totals.clicks, prevTotals ? prevTotals.spend / (prevTotals.clicks || 1) : undefined), invertDelta: true, tooltip: METRIC_TOOLTIPS.cpc },
     { label: 'CPM', value: fmt.currency(totals.spend / totals.impressions * 1000), delta: pctChange(totals.spend / totals.impressions, prevTotals ? prevTotals.spend / (prevTotals.impressions || 1) : undefined), invertDelta: true, tooltip: METRIC_TOOLTIPS.cpm },
     { label: 'Outbound Clicks', value: fmt.number(totals.outboundClicks), delta: pctChange(totals.outboundClicks, prevTotals?.outboundClicks), tooltip: METRIC_TOOLTIPS.outboundClicks },
+    { label: 'Outbound CTR', value: totals.impressions > 0 ? fmt.pct(totals.outboundClicks / totals.impressions * 100) : '-', delta: totals.impressions > 0 && prevTotals?.impressions > 0 ? pctChange(totals.outboundClicks / totals.impressions, prevTotals.outboundClicks / prevTotals.impressions) : undefined, tooltip: METRIC_TOOLTIPS.outboundCtr },
+    { label: 'Landing Page Views', value: fmt.number(totals.lpv), delta: pctChange(totals.lpv, prevTotals?.lpv), tooltip: METRIC_TOOLTIPS.lpv },
     { label: 'Add to Cart', value: fmt.number(totals.atc), delta: pctChange(totals.atc, prevTotals?.atc), tooltip: METRIC_TOOLTIPS.atc },
     { label: 'ATC Rate', value: totals.outboundClicks > 0 ? fmt.pct(totals.atc / totals.outboundClicks * 100) : '-', delta: totals.outboundClicks > 0 && prevTotals?.outboundClicks > 0 ? pctChange(totals.atc / totals.outboundClicks, prevTotals.atc / prevTotals.outboundClicks) : undefined, tooltip: METRIC_TOOLTIPS.atcRate },
     { label: 'Cost / ATC', value: totals.atc > 0 ? fmt.currency(totals.spend / totals.atc) : '-', delta: totals.atc > 0 && prevTotals?.atc > 0 ? pctChange(totals.spend / totals.atc, prevTotals.spend / prevTotals.atc) : undefined, invertDelta: true, tooltip: METRIC_TOOLTIPS.costPerAtc },
@@ -1106,13 +1117,15 @@ function CampaignsTab({ data, brand }) {
     const costPerConv = getActionValue(r.cost_per_action_type, 'purchase') + getActionValue(r.cost_per_action_type, 'omni_purchase');
     const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
     const atc = getActionValue(r.actions, 'add_to_cart');
+    const lpv = getActionValue(r.actions, 'landing_page_view');
     const spend = parseFloat(r.spend || 0);
+    const impressions = parseInt(r.impressions || 0);
     const rawObj = objMap[r.campaign_id] || '';
     return {
       name: r.campaign_name,
       objective: OBJECTIVE_LABELS[rawObj] || rawObj.replace(/^OUTCOME_/, '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) || '-',
       spend,
-      impressions: parseInt(r.impressions || 0),
+      impressions,
       reach: parseInt(r.reach || 0),
       clicks: parseInt(r.clicks || 0),
       ctr: parseFloat(r.ctr || 0),
@@ -1120,6 +1133,8 @@ function CampaignsTab({ data, brand }) {
       cpm: parseFloat(r.cpm || 0),
       frequency: parseFloat(r.frequency || 0),
       outboundClicks: outbound,
+      outboundCtr: impressions > 0 ? (outbound / impressions) * 100 : 0,
+      lpv,
       atc,
       atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
       costPerAtc: atc > 0 ? spend / atc : 0,
@@ -1143,6 +1158,8 @@ function CampaignsTab({ data, brand }) {
     { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'cpm', label: 'CPM', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'outboundClicks', label: 'Outbound', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'outboundCtr', label: 'OB CTR', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
+    { key: 'lpv', label: 'LPV', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'frequency', label: 'Freq.', align: 'right', sortable: true, render: v => fmt.decimal(v) },
     { key: 'atc', label: 'ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'atcRate', label: 'ATC Rate', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
@@ -1179,12 +1196,14 @@ function AdSetsTab({ data, brand }) {
       const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
       const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
       const atc = getActionValue(r.actions, 'add_to_cart');
+      const lpv = getActionValue(r.actions, 'landing_page_view');
       const spend = parseFloat(r.spend || 0);
+      const impressions = parseInt(r.impressions || 0);
       return {
         campaign: r.campaign_name,
         name: r.adset_name,
         spend,
-        impressions: parseInt(r.impressions || 0),
+        impressions,
         reach: parseInt(r.reach || 0),
         clicks: parseInt(r.clicks || 0),
         ctr: parseFloat(r.ctr || 0),
@@ -1192,6 +1211,8 @@ function AdSetsTab({ data, brand }) {
         cpm: parseFloat(r.cpm || 0),
         frequency: parseFloat(r.frequency || 0),
         outboundClicks: outbound,
+        outboundCtr: impressions > 0 ? (outbound / impressions) * 100 : 0,
+        lpv,
         atc,
         atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
         costPerAtc: atc > 0 ? spend / atc : 0,
@@ -1213,6 +1234,8 @@ function AdSetsTab({ data, brand }) {
     { key: 'ctr', label: 'CTR', align: 'right', sortable: true, render: v => fmt.pct(v) },
     { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'outboundClicks', label: 'Outbound', align: 'right', sortable: true, render: v => fmt.number(v) },
+    { key: 'outboundCtr', label: 'OB CTR', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
+    { key: 'lpv', label: 'LPV', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'frequency', label: 'Freq.', align: 'right', sortable: true, render: v => fmt.decimal(v) },
     { key: 'atc', label: 'ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'atcRate', label: 'ATC Rate', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
@@ -1339,6 +1362,8 @@ function CreativeModal({ card, rank, brand, onClose, accountId }) {
     { label: 'CPC', value: fmt.currency(card.cpc), tip: METRIC_TOOLTIPS.cpc },
     { label: 'CPM', value: fmt.currency(card.cpm), tip: METRIC_TOOLTIPS.cpm },
     { label: 'Outbound Clicks', value: fmt.number(card.outboundClicks), tip: METRIC_TOOLTIPS.outboundClicks },
+    { label: 'Outbound CTR', value: card.outboundCtr > 0 ? fmt.pct(card.outboundCtr) : '-', tip: METRIC_TOOLTIPS.outboundCtr },
+    { label: 'Landing Page Views', value: card.lpv > 0 ? fmt.number(card.lpv) : '-', tip: METRIC_TOOLTIPS.lpv },
     { label: 'Engagements', value: card.engagements > 0 ? fmt.number(card.engagements) : '-', tip: METRIC_TOOLTIPS.engagements },
     { label: 'Eng. Rate', value: card.engagementRate > 0 ? fmt.pct(card.engagementRate) : '-', tip: METRIC_TOOLTIPS.engagementRate },
     { label: 'Frequency', value: fmt.decimal(card.frequency), tip: METRIC_TOOLTIPS.frequency },
@@ -1469,6 +1494,7 @@ function CreativeTab({ data, brand }) {
         const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
         const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
         const atc = getActionValue(r.actions, 'add_to_cart');
+        const lpv = getActionValue(r.actions, 'landing_page_view');
         const engagements = getActionValue(r.actions, 'post_engagement');
         const spend = parseFloat(r.spend || 0);
         const impressions = parseInt(r.impressions || 0);
@@ -1496,6 +1522,8 @@ function CreativeTab({ data, brand }) {
           cpm: parseFloat(r.cpm || 0),
           frequency: parseFloat(r.frequency || 0),
           outboundClicks: outbound,
+          outboundCtr: impressions > 0 ? (outbound / impressions) * 100 : 0,
+          lpv,
           atc,
           atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
           costPerAtc: atc > 0 ? spend / atc : 0,
@@ -1534,6 +1562,8 @@ function CreativeTab({ data, brand }) {
     { value: 'cpc', label: 'CPC (low is better)' },
     { value: 'cpm', label: 'CPM (low is better)' },
     { value: 'outboundClicks', label: 'Outbound Clicks' },
+    { value: 'outboundCtr', label: 'Outbound CTR' },
+    { value: 'lpv', label: 'Landing Page Views' },
     { value: 'impressions', label: 'Impressions' },
     { value: 'reach', label: 'Reach' },
     { value: 'clicks', label: 'Clicks' },
@@ -1545,7 +1575,7 @@ function CreativeTab({ data, brand }) {
   const fmtMetricVal = (card) => {
     const v = card[sortMetric] || 0;
     if (sortMetric === 'roas') return v > 0 ? fmt.roas(v) : '-';
-    if (sortMetric === 'ctr' || sortMetric === 'atcRate' || sortMetric === 'engagementRate') return v > 0 ? fmt.pct(v) : '-';
+    if (sortMetric === 'ctr' || sortMetric === 'outboundCtr' || sortMetric === 'atcRate' || sortMetric === 'engagementRate') return v > 0 ? fmt.pct(v) : '-';
     if (sortMetric === 'cpc' || sortMetric === 'cpm' || sortMetric === 'costPerConv' || sortMetric === 'costPerAtc') return v > 0 ? fmt.currency(v) : '-';
     if (sortMetric === 'spend' || sortMetric === 'revenue') return fmt.currency(v);
     if (sortMetric === 'frequency') return fmt.decimal(v);
@@ -1617,6 +1647,8 @@ function CreativeTab({ data, brand }) {
               { label: 'Conv.', value: card.conversions > 0 ? fmt.number(card.conversions) : '-', tip: METRIC_TOOLTIPS.conversions },
               { label: 'ROAS', value: card.roas > 0 ? fmt.roas(card.roas) : '-', tip: METRIC_TOOLTIPS.roas },
               { label: 'CTR', value: fmt.pct(card.ctr), tip: METRIC_TOOLTIPS.ctr },
+              { label: 'OB CTR', value: card.outboundCtr > 0 ? fmt.pct(card.outboundCtr) : '-', tip: METRIC_TOOLTIPS.outboundCtr },
+              { label: 'LPV', value: card.lpv > 0 ? fmt.number(card.lpv) : '-', tip: METRIC_TOOLTIPS.lpv },
               { label: 'CPC', value: fmt.currency(card.cpc), tip: METRIC_TOOLTIPS.cpc },
               { label: 'Revenue', value: card.revenue > 0 ? fmt.currency(card.revenue) : '-', tip: METRIC_TOOLTIPS.revenue },
             ];
@@ -1654,7 +1686,7 @@ function CreativeTab({ data, brand }) {
                     <span className="text-[9px] text-gray-500 uppercase font-medium tracking-wide">{metricOptions.find(o => o.value === sortMetric)?.label?.replace(' (low is better)', '') || sortMetric}</span>
                     <span className="text-xs font-bold tabular-nums" style={{color: perfColor}}>{fmtMetricVal(card)}</span>
                   </div>
-                  <div className="grid grid-cols-5 gap-x-1.5 gap-y-1">
+                  <div className="grid grid-cols-6 gap-x-1.5 gap-y-1">
                     {cardStats.map(s => (
                       <div key={s.label} className="text-center" title={s.tip || ''}>
                         <div className="text-[8px] text-gray-400 uppercase tracking-wide leading-tight">{s.label}</div>
@@ -2050,11 +2082,14 @@ function BreakdownsTab({ data, brand }) {
       const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
       const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
       const atc = getActionValue(r.actions, 'add_to_cart');
+      const lpv = getActionValue(r.actions, 'landing_page_view');
       const cpa = conversions > 0 ? spend / conversions : 0;
       const roas = spend > 0 ? revenue / spend : 0;
       return {
         dimension: getDimension(r),
         spend, impressions, reach, clicks, ctr, cpc, cpm,
+        outboundCtr: impressions > 0 ? (outbound / impressions) * 100 : 0,
+        lpv,
         atc,
         atcRate: outbound > 0 ? (atc / outbound) * 100 : 0,
         costPerAtc: atc > 0 ? spend / atc : 0,
@@ -2088,6 +2123,8 @@ function BreakdownsTab({ data, brand }) {
     { key: 'ctr', label: 'CTR', align: 'right', sortable: true, render: v => fmt.pct(v) },
     { key: 'cpc', label: 'CPC', align: 'right', sortable: true, render: v => fmt.currency(v) },
     { key: 'cpm', label: 'CPM', align: 'right', sortable: true, render: v => fmt.currency(v) },
+    { key: 'outboundCtr', label: 'OB CTR', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
+    { key: 'lpv', label: 'LPV', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'atc', label: 'ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.number(v) : '-' },
     { key: 'atcRate', label: 'ATC Rate', align: 'right', sortable: true, render: v => v > 0 ? fmt.pct(v) : '-' },
     { key: 'costPerAtc', label: 'Cost/ATC', align: 'right', sortable: true, render: v => v > 0 ? fmt.currency(v) : '-' },
@@ -2189,6 +2226,7 @@ function App() {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
+  const [attrWindow, setAttrWindow] = useState('7d_click');
 
   const b = BRANDS[brand];
 
@@ -2217,19 +2255,20 @@ function App() {
       const isLongRange = datePreset === 'last_12m';
       const dailyIncrement = isLongRange ? 'monthly' : 1;
 
+      const aw = attrWindow;
       const [campaignInsights, adsetInsights, adInsights, dailyInsights, compInsights, campaignMeta, videoInsights, breakdownAge, breakdownGender, breakdownPlatform, breakdownPosition, breakdownCountry] = await Promise.all([
-        fetchInsights(accountId, 'campaign', since, until, token),
-        fetchInsights(accountId, 'adset', since, until, token).catch(() => []),
-        fetchInsights(accountId, 'ad', since, until, token).catch(() => []),
-        fetchDailyInsights(accountId, since, until, token, dailyIncrement),
-        fetchInsights(accountId, 'campaign', comp.since, comp.until, token).catch(() => []),
+        fetchInsights(accountId, 'campaign', since, until, token, aw),
+        fetchInsights(accountId, 'adset', since, until, token, aw).catch(() => []),
+        fetchInsights(accountId, 'ad', since, until, token, aw).catch(() => []),
+        fetchDailyInsights(accountId, since, until, token, dailyIncrement, aw),
+        fetchInsights(accountId, 'campaign', comp.since, comp.until, token, aw).catch(() => []),
         fetchCampaignMeta(accountId, token).catch(() => []),
-        fetchVideoInsights(accountId, since, until, token).catch(() => []),
-        fetchBreakdownInsights(accountId, since, until, token, 'age').catch(() => []),
-        fetchBreakdownInsights(accountId, since, until, token, 'gender').catch(() => []),
-        fetchBreakdownInsights(accountId, since, until, token, 'publisher_platform').catch(() => []),
-        fetchBreakdownInsights(accountId, since, until, token, 'publisher_platform,platform_position').catch(() => []),
-        fetchBreakdownInsights(accountId, since, until, token, 'region').catch(() => []),
+        fetchVideoInsights(accountId, since, until, token, aw).catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'age', aw).catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'gender', aw).catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'publisher_platform', aw).catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'publisher_platform,platform_position', aw).catch(() => []),
+        fetchBreakdownInsights(accountId, since, until, token, 'region', aw).catch(() => []),
       ]);
 
       const adIds = [...new Set(adInsights.map(r => r.ad_id).filter(Boolean))];
@@ -2242,7 +2281,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [token, brand, datePreset, customDates]);
+  }, [token, brand, datePreset, customDates, attrWindow]);
 
   useEffect(() => {
     if (token) fetchData();
@@ -2257,6 +2296,10 @@ function App() {
   }, [datePreset]);
 
   useEffect(() => {
+    if (token && data) fetchData();
+  }, [attrWindow]);
+
+  useEffect(() => {
     if (token && data && datePreset === 'custom' && customDates.since && customDates.until) fetchData();
   }, [customDates.since, customDates.until]);
 
@@ -2269,6 +2312,14 @@ function App() {
     { id: 'creative', label: 'Creative Performance (Ads)' },
     { id: 'video', label: 'Video Performance' },
     { id: 'breakdowns', label: 'Breakdowns' },
+  ];
+
+  const attrOptions = [
+    { value: '7d_click', label: '7-day click' },
+    { value: '1d_click', label: '1-day click' },
+    { value: '28d_click', label: '28-day click' },
+    { value: '7d_view', label: '7-day view' },
+    { value: '1d_view', label: '1-day view' },
   ];
 
   const dateOptions = [
@@ -2340,8 +2391,18 @@ function App() {
             ))}
           </nav>
 
-          {/* Date + Refresh */}
+          {/* Attribution + Date + Refresh */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            <select
+              value={attrWindow}
+              onChange={e => setAttrWindow(e.target.value)}
+              className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border rounded-lg bg-white focus:outline-none"
+              style={{borderColor: '#e5e7eb'}}
+              title="Attribution window"
+            >
+              {attrOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <div className="h-4 w-px bg-gray-200 hidden sm:block" />
             <select
               value={datePreset}
               onChange={e => setDatePreset(e.target.value)}
@@ -2398,7 +2459,7 @@ function App() {
       {lastRefresh && (
         <div className="max-w-[1600px] mx-auto px-3 sm:px-6 mt-2 sm:mt-3">
           <p className="text-[10px] sm:text-xs text-gray-400">
-            Last refreshed: {lastRefresh.toLocaleTimeString()} ({getDateRange(datePreset, customDates).since} to {getDateRange(datePreset, customDates).until})
+            Last refreshed: {lastRefresh.toLocaleTimeString()} ({getDateRange(datePreset, customDates).since} to {getDateRange(datePreset, customDates).until}) &middot; Attribution: {attrOptions.find(o => o.value === attrWindow)?.label}
           </p>
         </div>
       )}
