@@ -10,8 +10,6 @@
       --gaf-black: #000000;
       --gaf-white: #FFFFFF;
       --gaf-ink: #000000;
-      --gaf-grey-dark: #424242;
-      --gaf-grey-pale: #F0F0F0;
       --gaf-orange: #F26422;
       --gaf-orange-hover: #D85418;
       --gaf-orange-soft: #FDE9DD;
@@ -28,197 +26,141 @@
       --gaf-grey-900: #1A1A1A;
       --font-display: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
       --font-sans: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
-      --radius-md: 6px;
       --radius-lg: 10px;
       --shadow-sm: 0 2px 4px rgba(21,21,19,.06), 0 1px 2px rgba(21,21,19,.04);
       --shadow-md: 0 6px 14px rgba(21,21,19,.08), 0 2px 4px rgba(21,21,19,.04);
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font: 400 16px/1.55 var(--font-sans);
-      background: var(--gaf-grey-50);
-      color: var(--gaf-ink);
-      min-height: 100vh;
-    }
+    body { font: 400 16px/1.55 var(--font-sans); background: var(--gaf-grey-50); color: var(--gaf-ink); }
 
-    .header {
-      background: var(--gaf-ink);
-      padding: 24px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .header-logo {
-      font: 800 22px/1 var(--font-display);
-      color: var(--gaf-white);
-      letter-spacing: -0.02em;
-    }
+    /* Header */
+    .header { background: var(--gaf-ink); padding: 20px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .header-logo { font: 800 20px/1 var(--font-display); color: var(--gaf-white); letter-spacing: -0.02em; }
     .header-logo span { color: var(--gaf-orange); }
-    .header-date {
-      font: 400 14px/1 var(--font-sans);
-      color: var(--gaf-grey-400);
-    }
+    .header-date { font: 400 13px/1 var(--font-sans); color: var(--gaf-grey-400); }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 40px 24px;
-    }
+    /* Container */
+    .container { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
+    .page-title { font: 800 28px/1.2 var(--font-display); margin-bottom: 4px; }
+    .page-subtitle { font: 400 14px/1.4 var(--font-sans); color: var(--gaf-grey-600); margin-bottom: 24px; }
 
-    .page-title {
-      font: 800 32px/1.2 var(--font-display);
-      color: var(--gaf-ink);
-      margin-bottom: 4px;
-    }
-    .page-subtitle {
-      font: 400 16px/1.4 var(--font-sans);
-      color: var(--gaf-grey-600);
-      margin-bottom: 32px;
-    }
+    /* Summary cards */
+    .summary-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+    .card { background: var(--gaf-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 16px; }
+    .card-label { font: 600 10px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.1em; color: var(--gaf-grey-500); margin-bottom: 6px; }
+    .card-value { font: 800 22px/1.1 var(--font-display); }
+    .card-value.highlight { color: var(--gaf-orange); }
+    .card-detail { font: 400 11px/1.3 var(--font-sans); color: var(--gaf-grey-500); margin-top: 4px; }
 
-    .section-header {
-      font: 700 12px/1.3 var(--font-display);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--gaf-orange);
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--gaf-orange);
-      display: inline-block;
-    }
+    /* Section dividers */
+    .section-label { font: 700 11px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--gaf-orange); margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--gaf-orange); }
 
-    .table-wrapper {
-      background: var(--gaf-white);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      overflow: hidden;
-      margin-bottom: 32px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    thead {
-      background: var(--gaf-grey-800);
-    }
-    thead th {
-      font: 600 12px/1 var(--font-display);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--gaf-white);
-      padding: 14px 16px;
-      text-align: left;
-      white-space: nowrap;
-    }
-    thead th.num { text-align: right; }
-
-    tbody tr {
-      border-bottom: 1px solid var(--gaf-grey-200);
-      transition: background 200ms ease;
-    }
-    tbody tr:hover { background: var(--gaf-grey-50); }
-    tbody tr:last-child { border-bottom: none; }
-
-    tbody td {
-      padding: 14px 16px;
-      font: 400 14px/1.4 var(--font-sans);
-      color: var(--gaf-grey-700);
-      vertical-align: middle;
-    }
-    tbody td.num {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-      font-weight: 600;
-      color: var(--gaf-ink);
-    }
-    tbody td.sku {
-      font: 500 13px/1 var(--font-display);
-      color: var(--gaf-grey-500);
-      letter-spacing: 0.02em;
-    }
-    tbody td a {
-      color: var(--gaf-orange);
-      text-decoration: none;
-      font-weight: 600;
-    }
-    tbody td a:hover {
-      color: var(--gaf-orange-hover);
-      text-decoration: underline;
-    }
-
-    .section-divider td {
-      background: var(--gaf-orange-soft);
-      font: 700 12px/1 var(--font-display);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--gaf-orange-700);
-      padding: 10px 16px;
-    }
-
-    tfoot {
-      background: var(--gaf-ink);
-    }
-    tfoot td {
-      padding: 18px 16px;
-      font: 700 15px/1 var(--font-display);
-      color: var(--gaf-white);
-    }
-    tfoot td.num {
-      color: var(--gaf-orange);
-      font-size: 18px;
-    }
-
-    .summary-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-    .card {
+    /* Product cards */
+    .product-card {
       background: var(--gaf-white);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-sm);
-      padding: 24px;
+      margin-bottom: 12px;
+      overflow: hidden;
     }
-    .card-label {
-      font: 600 11px/1 var(--font-display);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--gaf-grey-500);
+    .product-main {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      align-items: flex-start;
+    }
+    .product-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: contain;
+      background: var(--gaf-grey-100);
+      flex-shrink: 0;
+    }
+    .product-info { flex: 1; min-width: 0; }
+    .product-name {
+      font: 600 14px/1.3 var(--font-display);
+      color: var(--gaf-ink);
+      margin-bottom: 4px;
+    }
+    .product-name a { color: var(--gaf-ink); text-decoration: none; }
+    .product-name a:hover { color: var(--gaf-orange); }
+    .product-sku { font: 500 11px/1 var(--font-display); color: var(--gaf-grey-400); letter-spacing: 0.04em; margin-bottom: 8px; }
+    .product-qty { font: 400 12px/1 var(--font-sans); color: var(--gaf-grey-600); margin-bottom: 8px; }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .price-item { text-align: center; }
+    .price-label { font: 500 9px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--gaf-grey-400); margin-bottom: 2px; }
+    .price-val { font: 700 14px/1 var(--font-display); color: var(--gaf-ink); font-variant-numeric: tabular-nums; }
+    .price-val.rrp { color: var(--gaf-grey-400); text-decoration: line-through; font-weight: 400; }
+    .price-val.yours { color: var(--gaf-orange); }
+
+    /* Variant sub-rows inside bumper plate card */
+    .variant-list { border-top: 1px solid var(--gaf-grey-200); }
+    .variant-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--gaf-grey-100);
+      font: 400 13px/1.3 var(--font-sans);
+    }
+    .variant-row:last-child { border-bottom: none; }
+    .variant-label { color: var(--gaf-grey-700); flex: 1; }
+    .variant-label .sku-tag { font: 500 10px/1 var(--font-display); color: var(--gaf-grey-400); margin-left: 6px; }
+    .variant-prices { display: flex; gap: 16px; text-align: right; }
+    .variant-prices .vp { min-width: 56px; }
+    .variant-prices .vp-label { font: 500 8px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--gaf-grey-400); }
+    .variant-prices .vp-val { font: 600 13px/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
+    .variant-prices .vp-val.yours { color: var(--gaf-orange); }
+
+    /* Total bar */
+    .total-bar {
+      background: var(--gaf-ink);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
       margin-bottom: 8px;
     }
-    .card-value {
-      font: 800 28px/1.1 var(--font-display);
-      color: var(--gaf-ink);
-    }
-    .card-value.highlight { color: var(--gaf-orange); }
-    .card-detail {
-      font: 400 13px/1.3 var(--font-sans);
-      color: var(--gaf-grey-500);
-      margin-top: 6px;
-    }
+    .total-label { font: 700 14px/1 var(--font-display); color: var(--gaf-white); text-transform: uppercase; letter-spacing: 0.06em; }
+    .total-value { font: 800 24px/1 var(--font-display); color: var(--gaf-orange); }
 
-    .footer {
-      text-align: center;
-      padding: 32px 24px;
+    .shipping-note {
+      background: var(--gaf-orange-soft);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
       font: 400 13px/1.4 var(--font-sans);
-      color: var(--gaf-grey-400);
+      color: var(--gaf-orange-700);
+      text-align: center;
+      margin-bottom: 16px;
     }
 
-    @media (max-width: 768px) {
-      .container { padding: 24px 12px; }
-      .page-title { font-size: 24px; }
-      table { display: block; overflow-x: auto; }
-      .summary-cards { grid-template-columns: 1fr 1fr; }
+    .footer { text-align: center; padding: 24px 16px; font: 400 12px/1.5 var(--font-sans); color: var(--gaf-grey-400); }
+
+    /* Desktop */
+    @media (min-width: 600px) {
+      .container { padding: 32px 24px; }
+      .page-title { font-size: 32px; }
+      .summary-cards { grid-template-columns: repeat(4, 1fr); }
+      .card-value { font-size: 26px; }
+      .product-img { width: 100px; height: 100px; }
+      .product-name { font-size: 15px; }
     }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="header-logo">Gym and Fitness<span>.</span></div>
-    <div class="header-date">Quote - 9 May 2026</div>
+    <div class="header-date">Quote &mdash; 9 May 2026</div>
   </div>
 
   <div class="container">
@@ -228,152 +170,165 @@
     <div class="summary-cards">
       <div class="card">
         <div class="card-label">Total RRP</div>
-        <div class="card-value">$7,756.00</div>
+        <div class="card-value">$7,756</div>
         <div class="card-detail">Retail pricing</div>
       </div>
       <div class="card">
-        <div class="card-label">Your Price (incl. GST + 20% Staff Markup)</div>
-        <div class="card-value highlight">$3,485.40</div>
-        <div class="card-detail">Cost + 32% (GST + 20% markup)</div>
+        <div class="card-label">Your Price</div>
+        <div class="card-value highlight">$3,485</div>
+        <div class="card-detail">Incl. GST + 20% markup</div>
       </div>
       <div class="card">
         <div class="card-label">You Save</div>
-        <div class="card-value">$4,270.60</div>
+        <div class="card-value">$4,271</div>
         <div class="card-detail">55% off RRP</div>
       </div>
       <div class="card">
-        <div class="card-label">Total Items</div>
+        <div class="card-label">Items</div>
         <div class="card-value">19</div>
         <div class="card-detail">Across 3 categories</div>
       </div>
     </div>
 
-    <div class="section-header">Full Breakdown</div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Qty</th>
-            <th>Product</th>
-            <th>SKU</th>
-            <th class="num">RRP (each)</th>
-            <th class="num">Cost (each)</th>
-            <th class="num">Your Price (each)</th>
-            <th class="num">Line Total</th>
-            <th>Link</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="section-divider"><td colspan="8">Force USA 170kg Bumper Plate Package</td></tr>
-          <tr>
-            <td>2</td>
-            <td>Force USA Ultimate Training Bumper Plates 5kg</td>
-            <td class="sku">F-UTBP5</td>
-            <td class="num">$50.00</td>
-            <td class="num">$24.03</td>
-            <td class="num">$31.72</td>
-            <td class="num">$63.44</td>
-            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Force USA Ultimate Training Bumper Plates 10kg</td>
-            <td class="sku">F-UTBP10</td>
-            <td class="num">$66.00</td>
-            <td class="num">$33.05</td>
-            <td class="num">$43.63</td>
-            <td class="num">$87.26</td>
-            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Force USA Ultimate Training Bumper Plates 15kg</td>
-            <td class="sku">F-UTBP15</td>
-            <td class="num">$88.00</td>
-            <td class="num">$42.82</td>
-            <td class="num">$56.52</td>
-            <td class="num">$113.04</td>
-            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Force USA Ultimate Training Bumper Plates 20kg</td>
-            <td class="sku">F-UTBP20</td>
-            <td class="num">$115.00</td>
-            <td class="num">$57.10</td>
-            <td class="num">$75.37</td>
-            <td class="num">$150.74</td>
-            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Force USA Ultimate Training Bumper Plates 25kg</td>
-            <td class="sku">F-UTBP25</td>
-            <td class="num">$140.00</td>
-            <td class="num">$71.38</td>
-            <td class="num">$94.22</td>
-            <td class="num">$188.44</td>
-            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>Force USA Olympic Quick Lock Collars - Pair</td>
-            <td class="sku">F-OLYLOCK</td>
-            <td class="num">$30.00</td>
-            <td class="num">$5.91</td>
-            <td class="num">$7.80</td>
-            <td class="num">$7.80</td>
-            <td><a href="https://www.gymandfitness.com.au/products/olympic-quick-lock-collars-pair" target="_blank">View</a></td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>Force USA The Ranger Barbell V2</td>
-            <td class="sku">F-OB-RANGER-V2</td>
-            <td class="num">$329.00</td>
-            <td class="num">$149.13</td>
-            <td class="num">$196.85</td>
-            <td class="num">$196.85</td>
-            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ranger-barbell-v2" target="_blank">View</a></td>
-          </tr>
+    <!-- BUMPER PLATE PACKAGE -->
+    <div class="section-label">Force USA 170kg Bumper Plate Package</div>
 
-          <tr class="section-divider"><td colspan="8">All-In-One Trainer</td></tr>
-          <tr>
-            <td>1</td>
-            <td>Force USA C10 All-In-One Trainer</td>
-            <td class="sku">F-C10</td>
-            <td class="num">$6,299.00</td>
-            <td class="num">$1,924.75</td>
-            <td class="num">$2,540.67</td>
-            <td class="num">$2,540.67</td>
-            <td><a href="https://www.gymandfitness.com.au/products/force-usa-c10-all-in-one-trainer" target="_blank">View</a></td>
-          </tr>
+    <div class="product-card">
+      <div class="product-main">
+        <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/products/F-UTBP-0-HERO.jpg?v=1616639881" alt="Force USA Ultimate Training Bumper Plates">
+        <div class="product-info">
+          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">Force USA Ultimate Training Bumper Plates</a></div>
+          <div class="product-sku">Qty: 2 of each weight</div>
+        </div>
+      </div>
+      <div class="variant-list">
+        <div class="variant-row">
+          <div class="variant-label">5kg <span class="sku-tag">F-UTBP5</span></div>
+          <div class="variant-prices">
+            <div class="vp"><div class="vp-label">RRP</div><div class="vp-val">$50.00</div></div>
+            <div class="vp"><div class="vp-label">Cost</div><div class="vp-val">$24.03</div></div>
+            <div class="vp"><div class="vp-label">Yours</div><div class="vp-val yours">$31.72</div></div>
+            <div class="vp"><div class="vp-label">x2</div><div class="vp-val yours">$63.44</div></div>
+          </div>
+        </div>
+        <div class="variant-row">
+          <div class="variant-label">10kg <span class="sku-tag">F-UTBP10</span></div>
+          <div class="variant-prices">
+            <div class="vp"><div class="vp-label">RRP</div><div class="vp-val">$66.00</div></div>
+            <div class="vp"><div class="vp-label">Cost</div><div class="vp-val">$33.05</div></div>
+            <div class="vp"><div class="vp-label">Yours</div><div class="vp-val yours">$43.63</div></div>
+            <div class="vp"><div class="vp-label">x2</div><div class="vp-val yours">$87.26</div></div>
+          </div>
+        </div>
+        <div class="variant-row">
+          <div class="variant-label">15kg <span class="sku-tag">F-UTBP15</span></div>
+          <div class="variant-prices">
+            <div class="vp"><div class="vp-label">RRP</div><div class="vp-val">$88.00</div></div>
+            <div class="vp"><div class="vp-label">Cost</div><div class="vp-val">$42.82</div></div>
+            <div class="vp"><div class="vp-label">Yours</div><div class="vp-val yours">$56.52</div></div>
+            <div class="vp"><div class="vp-label">x2</div><div class="vp-val yours">$113.04</div></div>
+          </div>
+        </div>
+        <div class="variant-row">
+          <div class="variant-label">20kg <span class="sku-tag">F-UTBP20</span></div>
+          <div class="variant-prices">
+            <div class="vp"><div class="vp-label">RRP</div><div class="vp-val">$115.00</div></div>
+            <div class="vp"><div class="vp-label">Cost</div><div class="vp-val">$57.10</div></div>
+            <div class="vp"><div class="vp-label">Yours</div><div class="vp-val yours">$75.37</div></div>
+            <div class="vp"><div class="vp-label">x2</div><div class="vp-val yours">$150.74</div></div>
+          </div>
+        </div>
+        <div class="variant-row">
+          <div class="variant-label">25kg <span class="sku-tag">F-UTBP25</span></div>
+          <div class="variant-prices">
+            <div class="vp"><div class="vp-label">RRP</div><div class="vp-val">$140.00</div></div>
+            <div class="vp"><div class="vp-label">Cost</div><div class="vp-val">$71.38</div></div>
+            <div class="vp"><div class="vp-label">Yours</div><div class="vp-val yours">$94.22</div></div>
+            <div class="vp"><div class="vp-label">x2</div><div class="vp-val yours">$188.44</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-          <tr class="section-divider"><td colspan="8">Flooring</td></tr>
-          <tr>
-            <td>6</td>
-            <td>VersaFit Home Rubber Flooring Tiles 1m x 1m x 15mm (Black)</td>
-            <td class="sku">VF-RTE15-V2</td>
-            <td class="num">$30.00</td>
-            <td class="num">$17.32</td>
-            <td class="num">$22.86</td>
-            <td class="num">$137.16</td>
-            <td><a href="https://www.gymandfitness.com.au/products/versafit-flooring-home-rubber-flooring-tile-1m-x-1m-x-15mm" target="_blank">View</a></td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="5"></td>
-            <td>Total</td>
-            <td class="num">$3,485.40</td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
+    <div class="product-card">
+      <div class="product-main">
+        <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/products/0003_HERO_6ab0c03a-0ab6-4d4d-8eaa-c121a0fa16b0.jpg?v=1632461444" alt="Force USA Olympic Quick Lock Collars">
+        <div class="product-info">
+          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/olympic-quick-lock-collars-pair" target="_blank">Force USA Olympic Quick Lock Collars - Pair</a></div>
+          <div class="product-sku">F-OLYLOCK &middot; Qty: 1</div>
+          <div class="price-row">
+            <div class="price-item"><div class="price-label">RRP</div><div class="price-val rrp">$30.00</div></div>
+            <div class="price-item"><div class="price-label">Cost</div><div class="price-val">$5.91</div></div>
+            <div class="price-item"><div class="price-label">Your Price</div><div class="price-val yours">$7.80</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-main">
+        <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/products/0002_3_d1745879-15b4-4bce-8318-911b946b9e5a.jpg?v=1613450141" alt="Force USA The Ranger Barbell V2">
+        <div class="product-info">
+          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/force-usa-ranger-barbell-v2" target="_blank">Force USA The Ranger Barbell V2</a></div>
+          <div class="product-sku">F-OB-RANGER-V2 &middot; Qty: 1</div>
+          <div class="price-row">
+            <div class="price-item"><div class="price-label">RRP</div><div class="price-val rrp">$329.00</div></div>
+            <div class="price-item"><div class="price-label">Cost</div><div class="price-val">$149.13</div></div>
+            <div class="price-item"><div class="price-label">Your Price</div><div class="price-val yours">$196.85</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL-IN-ONE TRAINER -->
+    <div class="section-label">All-In-One Trainer</div>
+
+    <div class="product-card">
+      <div class="product-main">
+        <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/files/7_2840a0f7-cef3-4331-a5f6-72392c5e8369.png?v=1759448385" alt="Force USA C10 All-In-One Trainer">
+        <div class="product-info">
+          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/force-usa-c10-all-in-one-trainer" target="_blank">Force USA C10 All-In-One Trainer</a></div>
+          <div class="product-sku">F-C10 &middot; Qty: 1</div>
+          <div class="price-row">
+            <div class="price-item"><div class="price-label">RRP</div><div class="price-val rrp">$6,299.00</div></div>
+            <div class="price-item"><div class="price-label">Cost</div><div class="price-val">$1,924.75</div></div>
+            <div class="price-item"><div class="price-label">Your Price</div><div class="price-val yours">$2,540.67</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOORING -->
+    <div class="section-label">Flooring</div>
+
+    <div class="product-card">
+      <div class="product-main">
+        <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/products/VF_0012_1-HERO.jpg?v=1629085137" alt="VersaFit Home Rubber Flooring Tiles">
+        <div class="product-info">
+          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/versafit-flooring-home-rubber-flooring-tile-1m-x-1m-x-15mm" target="_blank">VersaFit Home Rubber Flooring Tiles 1m x 1m x 15mm (Black)</a></div>
+          <div class="product-sku">VF-RTE15-V2 &middot; Qty: 6</div>
+          <div class="price-row">
+            <div class="price-item"><div class="price-label">RRP (each)</div><div class="price-val rrp">$30.00</div></div>
+            <div class="price-item"><div class="price-label">Cost (each)</div><div class="price-val">$17.32</div></div>
+            <div class="price-item"><div class="price-label">Your Price (each)</div><div class="price-val yours">$22.86</div></div>
+            <div class="price-item"><div class="price-label">x6 Total</div><div class="price-val yours">$137.16</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="total-bar">
+      <div class="total-label">Total (excl. shipping)</div>
+      <div class="total-value">$3,485.40</div>
+    </div>
+
+    <div class="shipping-note">
+      Shipping is additional and estimated at approximately $500.
     </div>
 
     <div class="footer">
-      Prices in AUD incl. GST. Your Price = Cost + 32% (GST + 20% staff markup). Prices as at 9 May 2026.<br>
-      Shipping is additional and estimated at approximately $500.
+      Prices in AUD incl. GST. Your Price = Cost + 32% (GST + 20% staff markup). Prices as at 9 May 2026.
     </div>
   </div>
 </body>
