@@ -143,14 +143,33 @@
     }
     .product-info { flex: 1; min-width: 0; }
     .product-name { font: 600 14px/1.3 var(--font-display); color: var(--fg-1); margin-bottom: var(--space-1); }
-    .product-name a { color: var(--fg-1); text-decoration: none; }
-    .product-name a:hover { text-decoration: underline; }
     .product-meta {
       font: var(--text-label);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--fg-3);
       margin-bottom: var(--space-2);
+    }
+
+    /* ── View button ── */
+    .btn-view {
+      display: inline-block;
+      font: 700 12px/1 var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--gaf-orange);
+      background: transparent;
+      border: 2px solid var(--gaf-orange);
+      border-radius: var(--radius-pill);
+      padding: 9px 18px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+      margin-top: var(--space-3);
+    }
+    .btn-view:hover {
+      background: var(--gaf-orange);
+      color: var(--gaf-white);
     }
 
     /* ── Price row ── */
@@ -303,8 +322,9 @@
       <div class="product-main">
         <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/products/F-UTBP-0-HERO.jpg?v=1616639881" alt="Force USA Ultimate Training Bumper Plates">
         <div class="product-info">
-          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">Force USA Ultimate Training Bumper Plates</a></div>
+          <div class="product-name">Force USA Ultimate Training Bumper Plates</div>
           <div class="product-meta">Qty: 2 of each weight</div>
+          <a class="btn-view" href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View Product</a>
         </div>
       </div>
       <div class="variant-list">
@@ -360,13 +380,14 @@
       <div class="product-main">
         <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/products/0003_HERO_6ab0c03a-0ab6-4d4d-8eaa-c121a0fa16b0.jpg?v=1632461444" alt="Force USA Olympic Quick Lock Collars">
         <div class="product-info">
-          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/olympic-quick-lock-collars-pair" target="_blank">Force USA Olympic Quick Lock Collars - Pair</a></div>
+          <div class="product-name">Force USA Olympic Quick Lock Collars - Pair</div>
           <div class="product-meta">F-OLYLOCK &middot; Qty: 1</div>
           <div class="price-row">
             <div class="price-item"><div class="price-label">RRP</div><div class="price-val rrp">$30.00</div></div>
             <div class="price-item"><div class="price-label">Cost</div><div class="price-val">$5.91</div></div>
             <div class="price-item"><div class="price-label">Your Price</div><div class="price-val yours">$7.80</div></div>
           </div>
+          <a class="btn-view" href="https://www.gymandfitness.com.au/products/olympic-quick-lock-collars-pair" target="_blank">View Product</a>
         </div>
       </div>
     </div>
@@ -375,13 +396,14 @@
       <div class="product-main">
         <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/products/0002_3_d1745879-15b4-4bce-8318-911b946b9e5a.jpg?v=1613450141" alt="Force USA The Ranger Barbell V2">
         <div class="product-info">
-          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/force-usa-ranger-barbell-v2" target="_blank">Force USA The Ranger Barbell V2</a></div>
+          <div class="product-name">Force USA The Ranger Barbell V2</div>
           <div class="product-meta">F-OB-RANGER-V2 &middot; Qty: 1</div>
           <div class="price-row">
             <div class="price-item"><div class="price-label">RRP</div><div class="price-val rrp">$329.00</div></div>
             <div class="price-item"><div class="price-label">Cost</div><div class="price-val">$149.13</div></div>
             <div class="price-item"><div class="price-label">Your Price</div><div class="price-val yours">$196.85</div></div>
           </div>
+          <a class="btn-view" href="https://www.gymandfitness.com.au/products/force-usa-ranger-barbell-v2" target="_blank">View Product</a>
         </div>
       </div>
     </div>
@@ -393,13 +415,14 @@
       <div class="product-main">
         <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/files/7_2840a0f7-cef3-4331-a5f6-72392c5e8369.png?v=1759448385" alt="Force USA C10 All-In-One Trainer">
         <div class="product-info">
-          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/force-usa-c10-all-in-one-trainer" target="_blank">Force USA C10 All-In-One Trainer</a></div>
+          <div class="product-name">Force USA C10 All-In-One Trainer</div>
           <div class="product-meta">F-C10 &middot; Qty: 1</div>
           <div class="price-row">
             <div class="price-item"><div class="price-label">RRP</div><div class="price-val rrp">$6,299.00</div></div>
             <div class="price-item"><div class="price-label">Cost</div><div class="price-val">$1,924.75</div></div>
             <div class="price-item"><div class="price-label">Your Price</div><div class="price-val yours">$2,540.67</div></div>
           </div>
+          <a class="btn-view" href="https://www.gymandfitness.com.au/products/force-usa-c10-all-in-one-trainer" target="_blank">View Product</a>
         </div>
       </div>
     </div>
@@ -411,7 +434,7 @@
       <div class="product-main">
         <img class="product-img" src="https://cdn.shopify.com/s/files/1/1950/1891/products/VF_0012_1-HERO.jpg?v=1629085137" alt="VersaFit Home Rubber Flooring Tiles">
         <div class="product-info">
-          <div class="product-name"><a href="https://www.gymandfitness.com.au/products/versafit-flooring-home-rubber-flooring-tile-1m-x-1m-x-15mm" target="_blank">VersaFit Home Rubber Flooring Tiles 1m x 1m x 15mm (Black)</a></div>
+          <div class="product-name">VersaFit Home Rubber Flooring Tiles 1m x 1m x 15mm (Black)</div>
           <div class="product-meta">VF-RTE15-V2 &middot; Qty: 6</div>
           <div class="price-row">
             <div class="price-item"><div class="price-label">RRP (each)</div><div class="price-val rrp">$30.00</div></div>
@@ -419,6 +442,7 @@
             <div class="price-item"><div class="price-label">Yours (each)</div><div class="price-val yours">$22.86</div></div>
             <div class="price-item"><div class="price-label">x6 Total</div><div class="price-val yours">$137.16</div></div>
           </div>
+          <a class="btn-view" href="https://www.gymandfitness.com.au/products/versafit-flooring-home-rubber-flooring-tile-1m-x-1m-x-15mm" target="_blank">View Product</a>
         </div>
       </div>
     </div>
