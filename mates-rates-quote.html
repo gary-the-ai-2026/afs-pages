@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Gym Quote - Gym and Fitness</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gaf-black: #000000;
+      --gaf-white: #FFFFFF;
+      --gaf-ink: #000000;
+      --gaf-grey-dark: #424242;
+      --gaf-grey-pale: #F0F0F0;
+      --gaf-orange: #F26422;
+      --gaf-orange-hover: #D85418;
+      --gaf-orange-soft: #FDE9DD;
+      --gaf-orange-700: #B34213;
+      --gaf-grey-50: #FAFAFA;
+      --gaf-grey-100: #F0F0F0;
+      --gaf-grey-200: #E2E2E2;
+      --gaf-grey-300: #C9C9C9;
+      --gaf-grey-400: #A0A0A0;
+      --gaf-grey-500: #717171;
+      --gaf-grey-600: #555555;
+      --gaf-grey-700: #424242;
+      --gaf-grey-800: #2B2B2B;
+      --gaf-grey-900: #1A1A1A;
+      --font-display: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+      --font-sans: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
+      --radius-md: 6px;
+      --radius-lg: 10px;
+      --shadow-sm: 0 2px 4px rgba(21,21,19,.06), 0 1px 2px rgba(21,21,19,.04);
+      --shadow-md: 0 6px 14px rgba(21,21,19,.08), 0 2px 4px rgba(21,21,19,.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font: 400 16px/1.55 var(--font-sans);
+      background: var(--gaf-grey-50);
+      color: var(--gaf-ink);
+      min-height: 100vh;
+    }
+
+    .header {
+      background: var(--gaf-ink);
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logo {
+      font: 800 22px/1 var(--font-display);
+      color: var(--gaf-white);
+      letter-spacing: -0.02em;
+    }
+    .header-logo span { color: var(--gaf-orange); }
+    .header-date {
+      font: 400 14px/1 var(--font-sans);
+      color: var(--gaf-grey-400);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    .page-title {
+      font: 800 32px/1.2 var(--font-display);
+      color: var(--gaf-ink);
+      margin-bottom: 4px;
+    }
+    .page-subtitle {
+      font: 400 16px/1.4 var(--font-sans);
+      color: var(--gaf-grey-600);
+      margin-bottom: 32px;
+    }
+
+    .section-header {
+      font: 700 12px/1.3 var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gaf-orange);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--gaf-orange);
+      display: inline-block;
+    }
+
+    .table-wrapper {
+      background: var(--gaf-white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead {
+      background: var(--gaf-grey-800);
+    }
+    thead th {
+      font: 600 12px/1 var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gaf-white);
+      padding: 14px 16px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    thead th.num { text-align: right; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--gaf-grey-200);
+      transition: background 200ms ease;
+    }
+    tbody tr:hover { background: var(--gaf-grey-50); }
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 14px 16px;
+      font: 400 14px/1.4 var(--font-sans);
+      color: var(--gaf-grey-700);
+      vertical-align: middle;
+    }
+    tbody td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: var(--gaf-ink);
+    }
+    tbody td.sku {
+      font: 500 13px/1 var(--font-display);
+      color: var(--gaf-grey-500);
+      letter-spacing: 0.02em;
+    }
+    tbody td a {
+      color: var(--gaf-orange);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    tbody td a:hover {
+      color: var(--gaf-orange-hover);
+      text-decoration: underline;
+    }
+
+    .section-divider td {
+      background: var(--gaf-orange-soft);
+      font: 700 12px/1 var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gaf-orange-700);
+      padding: 10px 16px;
+    }
+
+    tfoot {
+      background: var(--gaf-ink);
+    }
+    tfoot td {
+      padding: 18px 16px;
+      font: 700 15px/1 var(--font-display);
+      color: var(--gaf-white);
+    }
+    tfoot td.num {
+      color: var(--gaf-orange);
+      font-size: 18px;
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: var(--gaf-white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 24px;
+    }
+    .card-label {
+      font: 600 11px/1 var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gaf-grey-500);
+      margin-bottom: 8px;
+    }
+    .card-value {
+      font: 800 28px/1.1 var(--font-display);
+      color: var(--gaf-ink);
+    }
+    .card-value.highlight { color: var(--gaf-orange); }
+    .card-detail {
+      font: 400 13px/1.3 var(--font-sans);
+      color: var(--gaf-grey-500);
+      margin-top: 6px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 32px 24px;
+      font: 400 13px/1.4 var(--font-sans);
+      color: var(--gaf-grey-400);
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 24px 12px; }
+      .page-title { font-size: 24px; }
+      table { display: block; overflow-x: auto; }
+      .summary-cards { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-logo">Gym and Fitness<span>.</span></div>
+    <div class="header-date">Quote - 9 May 2026</div>
+  </div>
+
+  <div class="container">
+    <h1 class="page-title">Home Gym Quote</h1>
+    <p class="page-subtitle">Package breakdown with individual SKU pricing</p>
+
+    <div class="summary-cards">
+      <div class="card">
+        <div class="card-label">Total RRP</div>
+        <div class="card-value">$7,792.00</div>
+        <div class="card-detail">Retail pricing</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Your Price (32% Markup)</div>
+        <div class="card-value highlight">$3,516.36</div>
+        <div class="card-detail">Cost + 32%</div>
+      </div>
+      <div class="card">
+        <div class="card-label">You Save</div>
+        <div class="card-value">$4,275.64</div>
+        <div class="card-detail">55% off RRP</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Total Items</div>
+        <div class="card-value">19</div>
+        <div class="card-detail">Across 3 categories</div>
+      </div>
+    </div>
+
+    <div class="section-header">Full Breakdown</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Qty</th>
+            <th>Product</th>
+            <th>SKU</th>
+            <th class="num">RRP (ea)</th>
+            <th class="num">Cost (ea)</th>
+            <th class="num">Your Price (ea)</th>
+            <th class="num">Line Total</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="section-divider"><td colspan="8">Force USA 170kg Bumper Plate Package</td></tr>
+          <tr>
+            <td>2</td>
+            <td>Force USA Ultimate Training Bumper Plates 5kg</td>
+            <td class="sku">F-UTBP5</td>
+            <td class="num">$50.00</td>
+            <td class="num">$24.03</td>
+            <td class="num">$31.72</td>
+            <td class="num">$63.44</td>
+            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Force USA Ultimate Training Bumper Plates 10kg</td>
+            <td class="sku">F-UTBP10</td>
+            <td class="num">$66.00</td>
+            <td class="num">$33.05</td>
+            <td class="num">$43.63</td>
+            <td class="num">$87.26</td>
+            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Force USA Ultimate Training Bumper Plates 15kg</td>
+            <td class="sku">F-UTBP15</td>
+            <td class="num">$88.00</td>
+            <td class="num">$42.82</td>
+            <td class="num">$56.52</td>
+            <td class="num">$113.04</td>
+            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Force USA Ultimate Training Bumper Plates 20kg</td>
+            <td class="sku">F-UTBP20</td>
+            <td class="num">$115.00</td>
+            <td class="num">$57.10</td>
+            <td class="num">$75.37</td>
+            <td class="num">$150.74</td>
+            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Force USA Ultimate Training Bumper Plates 25kg</td>
+            <td class="sku">F-UTBP25</td>
+            <td class="num">$140.00</td>
+            <td class="num">$71.38</td>
+            <td class="num">$94.22</td>
+            <td class="num">$188.44</td>
+            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ultimate-training-bumper-plates" target="_blank">View</a></td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Force USA Olympic Quick Lock Collars - Pair</td>
+            <td class="sku">F-OLYLOCK</td>
+            <td class="num">$30.00</td>
+            <td class="num">$5.91</td>
+            <td class="num">$7.80</td>
+            <td class="num">$7.80</td>
+            <td><a href="https://www.gymandfitness.com.au/products/olympic-quick-lock-collars-pair" target="_blank">View</a></td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Force USA The Ranger Barbell V2</td>
+            <td class="sku">F-OB-RANGER-V2</td>
+            <td class="num">$329.00</td>
+            <td class="num">$149.13</td>
+            <td class="num">$196.85</td>
+            <td class="num">$196.85</td>
+            <td><a href="https://www.gymandfitness.com.au/products/force-usa-ranger-barbell-v2" target="_blank">View</a></td>
+          </tr>
+
+          <tr class="section-divider"><td colspan="8">All-In-One Trainer</td></tr>
+          <tr>
+            <td>1</td>
+            <td>Force USA C10 All-In-One Trainer</td>
+            <td class="sku">F-C10</td>
+            <td class="num">$6,299.00</td>
+            <td class="num">$1,924.75</td>
+            <td class="num">$2,540.67</td>
+            <td class="num">$2,540.67</td>
+            <td><a href="https://www.gymandfitness.com.au/products/force-usa-c10-all-in-one-trainer" target="_blank">View</a></td>
+          </tr>
+
+          <tr class="section-divider"><td colspan="8">Flooring</td></tr>
+          <tr>
+            <td>6</td>
+            <td>VersaFit Commercial Rubber Flooring Tiles 1m x 1m x 15mm (Black)</td>
+            <td class="sku">VF-RT15-V2</td>
+            <td class="num">$36.00</td>
+            <td class="num">$21.23</td>
+            <td class="num">$28.02</td>
+            <td class="num">$168.12</td>
+            <td><a href="https://www.gymandfitness.com.au/products/versafit-commercial-rubber-flooring-tile" target="_blank">View</a></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5"></td>
+            <td>Total</td>
+            <td class="num">$3,516.36</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="footer">
+      Prices in AUD. Cost prices from Shopify as at 9 May 2026. Your Price = Cost + 32% markup.
+    </div>
+  </div>
+</body>
+</html>
