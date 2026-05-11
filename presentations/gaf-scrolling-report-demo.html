@@ -413,7 +413,48 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
 }
 
 /* ── Closing section ── */
-.closing-logo { height: 48px; width: auto; opacity: 0.5; margin-bottom: 24px; }
+.closing-logo { height: 64px; width: auto; opacity: 0.7; margin-bottom: 24px; }
+
+/* ── Section imagery ── */
+.section-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.section-split .section-copy { min-width: 0; }
+.section-split .section-media { min-width: 0; }
+.section-media img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+}
+.section-media.stack {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.section-media.stack img {
+  aspect-ratio: 4/3;
+}
+.hero-bg {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 45%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.25;
+  mask-image: linear-gradient(to right, transparent, black 40%);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
+}
+.campaign-img {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  aspect-ratio: 16/7;
+  object-fit: cover;
+  margin-top: 40px;
+}
 .closing-period {
   font: 700 14px/1 var(--font-display);
   text-transform: uppercase;
@@ -449,6 +490,9 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
   .check-grid { grid-template-columns: 1fr; }
   .meta-strip { flex-wrap: wrap; gap: 24px; }
   .bar-label { min-width: 60px; font-size: 12px; }
+  .section-split { grid-template-columns: 1fr; gap: 32px; }
+  .section-split .section-media { order: -1; }
+  .hero-bg { width: 100%; opacity: 0.15; mask-image: linear-gradient(to top, transparent 10%, black 60%); -webkit-mask-image: linear-gradient(to top, transparent 10%, black 60%); }
 }
 @media (max-width: 480px) {
   .kpi-grid { grid-template-columns: 1fr; }
@@ -475,7 +519,9 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
 
   <!-- ═══ HERO ═══ -->
   <section class="section dark" id="hero">
+    <div class="hero-bg" style="background-image: url('../images/brand-promise/hero-g3-home-gym.jpg');"></div>
     <div class="section-inner">
+      <img src="https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576" alt="Gym and Fitness" class="fade-up" style="height: 40px; width: auto; filter: brightness(0) invert(1); margin-bottom: 32px;">
       <div class="eyebrow fade-up">Marketing Update</div>
       <h1 class="display-xl fade-up d1">Building<br>Momentum.</h1>
       <p class="subtitle fade-up d2">Campaign execution accelerating, channel performance validated, and strategic foundations strengthening across every key metric.</p>
@@ -529,25 +575,35 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
   <!-- ═══ SOCIAL ═══ -->
   <section class="section light" id="social">
     <div class="section-inner">
-      <div class="eyebrow fade-up">01 - Social &amp; Community</div>
-      <h2 class="display-lg fade-up d1">Audience engagement at all-time highs.</h2>
-      <p class="subtitle fade-up d2">Organic reach and engagement continue to climb as content strategy matures across Instagram and Facebook.</p>
-      <div class="highlight-list">
-        <div class="highlight-item fade-up d3">
-          <div class="highlight-num">01</div>
-          <div class="highlight-text">Instagram reach up 34% MoM with 156K accounts reached organically</div>
+      <div class="section-split">
+        <div class="section-copy">
+          <div class="eyebrow fade-up">01 - Social &amp; Community</div>
+          <h2 class="display-lg fade-up d1">Audience engagement at all-time highs.</h2>
+          <p class="subtitle fade-up d2">Organic reach and engagement continue to climb as content strategy matures across Instagram and Facebook.</p>
+          <div class="highlight-list">
+            <div class="highlight-item fade-up d3">
+              <div class="highlight-num">01</div>
+              <div class="highlight-text">Instagram reach up 34% MoM with 156K accounts reached organically</div>
+            </div>
+            <div class="highlight-item fade-up d4">
+              <div class="highlight-num">02</div>
+              <div class="highlight-text">Reels averaging 12K views per post, up from 7.8K in April</div>
+            </div>
+            <div class="highlight-item fade-up d5">
+              <div class="highlight-num">03</div>
+              <div class="highlight-text">Community engagement rate holding at 4.2% (industry avg: 1.8%)</div>
+            </div>
+            <div class="highlight-item fade-up d6">
+              <div class="highlight-num">04</div>
+              <div class="highlight-text">UGC pipeline producing 8+ pieces per week from ambassador program</div>
+            </div>
+          </div>
         </div>
-        <div class="highlight-item fade-up d4">
-          <div class="highlight-num">02</div>
-          <div class="highlight-text">Reels averaging 12K views per post, up from 7.8K in April</div>
-        </div>
-        <div class="highlight-item fade-up d5">
-          <div class="highlight-num">03</div>
-          <div class="highlight-text">Community engagement rate holding at 4.2% (industry avg: 1.8%)</div>
-        </div>
-        <div class="highlight-item fade-up d6">
-          <div class="highlight-num">04</div>
-          <div class="highlight-text">UGC pipeline producing 8+ pieces per week from ambassador program</div>
+        <div class="section-media stack fade-up d3">
+          <img src="assets/sarahs-day-nike.png" alt="Ambassador content">
+          <img src="assets/experience-centre.jpg" alt="Experience centre">
+          <img src="assets/qrl-bumpers.png" alt="Product content">
+          <img src="harris-lifestyle.jpg" alt="Lifestyle content">
         </div>
       </div>
     </div>
@@ -577,6 +633,7 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
           <div class="highlight-text">AI Gym Designer soft-launched to 500 beta users, 38% completion rate</div>
         </div>
       </div>
+      <img class="campaign-img fade-up d5" src="harris-elevate-1.jpg" alt="Home Gym Season campaign creative">
     </div>
   </section>
 
