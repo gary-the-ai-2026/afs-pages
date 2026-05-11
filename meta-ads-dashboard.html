@@ -230,15 +230,20 @@ async function fetchOrganicData(igId, pageId, since, until, token) {
   const sinceTs = Math.floor(new Date(since).getTime() / 1000);
   const untilTs = Math.floor(new Date(until + 'T23:59:59').getTime() / 1000);
 
+  // Get page access token first — page insights require it
+  const accountsRes = await fetch(`${base}/me/accounts?fields=id,access_token&access_token=${token}`).then(r => r.json()).catch(() => ({ data: [] }));
+  const pageTokenEntry = (accountsRes?.data || []).find(p => p.id === pageId);
+  const pageToken = pageTokenEntry?.access_token || token;
+
   // Fetch IG insights, profile, media, and page insights in parallel
   const [profileRes, reachRes, totalsRes, followsRes, mediaRes, pageInsightsRes, pageFansRes] = await Promise.all([
     fetch(`${base}/${igId}?fields=username,followers_count,media_count&access_token=${token}`).then(r => r.json()),
     igInsightsChunked(igId, 'reach', since, until, token, null),
     igInsightsChunked(igId, 'accounts_engaged,total_interactions,profile_views', since, until, token, 'total_value'),
-    igInsightsChunked(igId, 'follows_and_unfollows', since, until, token, 'total_value'),
+    fetch(`${base}/${igId}/insights?metric=follows_and_unfollows&metric_type=total_value&breakdown=follow_type&period=day&since=${sinceTs}&until=${untilTs}&access_token=${token}`).then(r => r.json()).catch(() => ({ data: [] })),
     fetch(`${base}/${igId}/media?fields=id,caption,timestamp,media_type,media_url,thumbnail_url,permalink,like_count,comments_count&limit=100&access_token=${token}`).then(r => r.json()),
-    fetch(`${base}/${pageId}/insights?metric=page_impressions_unique,page_impressions,page_fan_adds_unique,page_fan_removes_unique,page_post_engagements&period=day&since=${sinceTs}&until=${untilTs}&access_token=${token}`).then(r => r.json()).catch(() => ({ data: [] })),
-    fetch(`${base}/${pageId}?fields=fan_count,name&access_token=${token}`).then(r => r.json()).catch(() => ({})),
+    fetch(`${base}/${pageId}/insights?metric=page_impressions_unique,page_impressions,page_fan_adds_unique,page_fan_removes_unique,page_post_engagements&period=day&since=${sinceTs}&until=${untilTs}&access_token=${pageToken}`).then(r => r.json()).catch(() => ({ data: [] })),
+    fetch(`${base}/${pageId}?fields=fan_count,name&access_token=${pageToken}`).then(r => r.json()).catch(() => ({})),
   ]);
 
   if (profileRes.error) throw new Error(profileRes.error.message);
@@ -253,12 +258,11 @@ async function fetchOrganicData(igId, pageId, since, until, token) {
   const totalsMap = {};
   (totalsRes?.data || []).forEach(m => { totalsMap[m.name] = m.total_value?.value || 0; });
 
-  // Follows/unfollows — try both upper and lower case dimension values
+  // Follows/unfollows — dimension values are FOLLOWER (new follows) and NON_FOLLOWER (unfollows)
   const followsData = (followsRes?.data || []).find(m => m.name === 'follows_and_unfollows');
   const fBreakdown = followsData?.total_value?.breakdowns?.[0]?.results || [];
-  const matchDim = (r, val) => (r.dimension_values?.[0] || '').toUpperCase() === val.toUpperCase();
-  const follows = fBreakdown.find(r => matchDim(r, 'follow'))?.value || 0;
-  const unfollows = fBreakdown.find(r => matchDim(r, 'unfollow'))?.value || 0;
+  const follows = fBreakdown.find(r => (r.dimension_values?.[0]||'').toUpperCase() === 'FOLLOWER')?.value || 0;
+  const unfollows = fBreakdown.find(r => (r.dimension_values?.[0]||'').toUpperCase() === 'NON_FOLLOWER')?.value || 0;
 
   // Top posts — filter to selected date range, sort by likes
   const rangeStart = new Date(since), rangeEnd = new Date(until + 'T23:59:59');
@@ -297,11 +301,14 @@ async function fetchOrganicData(igId, pageId, since, until, token) {
     Shares: topPosts.reduce((a, p) => a + p.shares, 0),
   };
 
-  // Facebook page insights
+  // Facebook page insights — sum daily values
   const pageMetrics = {};
   (pageInsightsRes?.data || []).forEach(m => {
-    const vals = (m.values || []).map(v => ({ date: (v.end_time || '').slice(0,10), value: v.value || 0 }));
-    pageMetrics[m.name] = { total: vals.reduce((a,v) => a + v.value, 0), series: vals };
+    const vals = (m.values || []).map(v => ({
+      date: (v.end_time || '').slice(0, 10),
+      value: typeof v.value === 'object' ? Object.values(v.value).reduce((a,b)=>a+b,0) : (v.value || 0),
+    }));
+    pageMetrics[m.name] = { total: vals.reduce((a, v) => a + v.value, 0), series: vals };
   });
 
   return {
