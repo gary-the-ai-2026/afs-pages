@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ad Performance Dashboard</title>
+<title>Social Performance Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -63,6 +63,8 @@ const BRANDS = {
   gaf: {
     name: 'Gym & Fitness',
     accountId: 'act_10153080558849684',
+    igId: '17841400440304858',
+    pageId: '106498739683',
     currency: 'AUD',
     logo: 'https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576',
     logoDark: 'https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576',
@@ -79,6 +81,8 @@ const BRANDS = {
   revel: {
     name: 'Revel Saunas',
     accountId: 'act_2412898282250572',
+    igId: '17841449027645284',
+    pageId: '122103865226004055',
     currency: 'AUD',
     logo: 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-White-02.png?v=1691241102',
     logoDark: 'https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-Black-01.png?v=1691024664',
@@ -95,7 +99,7 @@ const BRANDS = {
 };
 
 const META_API = 'https://graph.facebook.com/v21.0';
-const DEFAULT_TOKEN = 'EAAKiMl2GC1oBRfyCoV0VkZCaPySg3qxIBkA8705MevFgXRscMxHgmXCF83sBlbvNm2QDa564iZAFZB4UWAhqNFL3q6laaqpCWha5TZAHKZAtjv1OiSb9JZBqqigJCoyfMvPMpNikvmUmACXwJASjovZCZAHB3dBH124BAqaLuhH9RgSRsZAbQq3oYSqe7NwZDZD';
+const DEFAULT_TOKEN = 'EAAKiMl2GC1oBRQg8ZAgeiudsZCDUZCRAbGruYU6V1VgY3nGWLvxEUhZBGQ0RZAP59zLJXgAMZBTMf2OiULsjSW7FVmOZAYOiQATkQeDT2lQHam14DRXfteiBDMkXpxP6DreX8ZCYtO7fEZBQEiaMFU1N6caFsLYxPYWF0TLS5b2hLusGoZAb8IXhSMq2nwlAZDZD';
 
 // ─── Helpers ───
 const fmt = {
@@ -177,6 +181,75 @@ async function fetchAllPages(path, token, maxPages = 50) {
     page++;
   }
   return all;
+}
+
+async function fetchOrganicData(igId, since, until, token) {
+  const sinceTs = Math.floor(new Date(since).getTime() / 1000);
+  const untilTs = Math.floor(new Date(until + 'T23:59:59').getTime() / 1000);
+  const base = META_API;
+
+  const [profileRes, reachRes, totalsRes, mediaRes] = await Promise.all([
+    fetch(`${base}/${igId}?fields=username,followers_count,media_count&access_token=${token}`).then(r => r.json()),
+    fetch(`${base}/${igId}/insights?metric=reach&period=day&since=${sinceTs}&until=${untilTs}&access_token=${token}`).then(r => r.json()),
+    fetch(`${base}/${igId}/insights?metric=accounts_engaged,total_interactions,profile_views,follows_and_unfollows&metric_type=total_value&period=day&since=${sinceTs}&until=${untilTs}&access_token=${token}`).then(r => r.json()),
+    fetch(`${base}/${igId}/media?fields=id,caption,timestamp,media_type,media_url,thumbnail_url,permalink,like_count,comments_count&limit=50&access_token=${token}`).then(r => r.json()),
+  ]);
+
+  if (profileRes.error) throw new Error(profileRes.error.message);
+
+  const dailyReach = (reachRes?.data?.[0]?.values || []).map(v => ({
+    date: (v.end_time || '').slice(0, 10),
+    value: v.value || 0,
+  }));
+  const totalReach = dailyReach.reduce((a, b) => a + b.value, 0);
+
+  const totalsMap = {};
+  (totalsRes?.data || []).forEach(m => { totalsMap[m.name] = m.total_value?.value || 0; });
+
+  const followsData = (totalsRes?.data || []).find(m => m.name === 'follows_and_unfollows');
+  const fBreakdown = followsData?.total_value?.breakdowns?.[0]?.results || [];
+  const follows = fBreakdown.find(r => r.dimension_values?.[0] === 'follow')?.value || 0;
+  const unfollows = fBreakdown.find(r => r.dimension_values?.[0] === 'unfollow')?.value || 0;
+
+  const sortedPosts = (mediaRes?.data || [])
+    .sort((a, b) => (b.like_count || 0) - (a.like_count || 0))
+    .slice(0, 12);
+
+  const postInsights = await Promise.all(
+    sortedPosts.map(p =>
+      fetch(`${base}/${p.id}/insights?metric=reach,saved,shares&access_token=${token}`)
+        .then(r => r.json()).catch(() => null)
+    )
+  );
+
+  const topPosts = sortedPosts.map((p, i) => {
+    const ins = postInsights[i]?.data || [];
+    const getM = name => ins.find(m => m.name === name)?.values?.[0]?.value || 0;
+    return {
+      id: p.id, caption: (p.caption || '').slice(0, 100),
+      timestamp: p.timestamp, media_type: p.media_type,
+      thumbnail: p.thumbnail_url || (p.media_type !== 'VIDEO' ? p.media_url : null),
+      permalink: p.permalink,
+      likes: p.like_count || 0, comments: p.comments_count || 0,
+      reach: getM('reach'), saves: getM('saved'), shares: getM('shares'),
+    };
+  });
+
+  const breakdown = {
+    Likes: topPosts.reduce((a, p) => a + p.likes, 0),
+    Comments: topPosts.reduce((a, p) => a + p.comments, 0),
+    Saves: topPosts.reduce((a, p) => a + p.saves, 0),
+    Shares: topPosts.reduce((a, p) => a + p.shares, 0),
+  };
+
+  return {
+    profile: profileRes, reach: totalReach, dailyReach,
+    engagedTotal: totalsMap['accounts_engaged'] || 0,
+    interactionsTotal: totalsMap['total_interactions'] || 0,
+    profileViewsTotal: totalsMap['profile_views'] || 0,
+    followsUnfollows: { follows, unfollows, net: follows - unfollows },
+    topPosts, breakdown,
+  };
 }
 
 async function fetchInsights(accountId, level, since, until, token, attrWindow) {
@@ -2189,6 +2262,208 @@ function BreakdownsTab({ data, brand }) {
   );
 }
 
+// ─── Organic Tab ───
+function OrganicTab({ organicData, organicLoading, brand }) {
+  const b = BRANDS[brand];
+
+  if (organicLoading) return (
+    <div className="flex items-center justify-center py-24">
+      <div className="text-center">
+        <div className="w-10 h-10 rounded-full spinner mx-auto mb-4" style={{borderWidth:'3px',borderColor:'#e5e7eb',borderTopColor:b.primary}} />
+        <p className="text-sm text-gray-400">Pulling organic data from Instagram…</p>
+      </div>
+    </div>
+  );
+
+  if (!organicData) return (
+    <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+      <svg className="w-14 h-14 mb-4 opacity-25" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+      </svg>
+      <p className="text-sm">Click Refresh to load organic data</p>
+    </div>
+  );
+
+  const { profile, reach, engagedTotal, interactionsTotal, profileViewsTotal, followsUnfollows, topPosts, dailyReach, breakdown } = organicData;
+  const engRate = reach > 0 ? (engagedTotal / reach * 100) : 0;
+  const netFol = followsUnfollows?.net || 0;
+
+  const kpis = [
+    { label: 'Organic Reach', value: fmt.number(reach), sub: 'unique accounts reached' },
+    { label: 'Engagement Rate', value: engRate.toFixed(2) + '%', sub: 'engaged ÷ reach' },
+    { label: 'Followers', value: fmt.number(profile?.followers_count || 0), sub: (netFol >= 0 ? '+' : '') + fmt.number(netFol) + ' net this period' },
+    { label: 'Total Interactions', value: fmt.number(interactionsTotal), sub: 'likes · comments · saves · shares' },
+    { label: 'Profile Views', value: fmt.number(profileViewsTotal), sub: 'this period' },
+  ];
+
+  const W = 800, H = 180, PAD = { top: 16, right: 16, bottom: 28, left: 52 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const reachMax = Math.max(...(dailyReach.map(d => d.value)), 1);
+  const reachAvg = dailyReach.length ? dailyReach.reduce((a,d) => a+d.value, 0) / dailyReach.length : 0;
+
+  const typeIcon = t => t === 'VIDEO' ? '▶' : t === 'CAROUSEL_ALBUM' ? '⊞' : '◻';
+
+  return (
+    <div className="space-y-6 fade-in">
+
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-xl font-bold text-gray-900">Organic Performance</h2>
+          <p className="text-sm text-gray-400 mt-0.5 flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" style={{color:'#E1306C'}}>
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            @{profile?.username} · Instagram
+          </p>
+        </div>
+        <div className="hidden sm:flex items-center gap-4 text-xs text-gray-500">
+          <span><span className="font-semibold text-gray-800">{fmt.number(profile?.followers_count || 0)}</span> followers</span>
+          <span><span className="font-semibold text-gray-800">{fmt.number(profile?.media_count || 0)}</span> posts</span>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 stagger">
+        {kpis.map((k, i) => (
+          <div key={i} className="dash-card p-4 sm:p-5">
+            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{k.label}</p>
+            <p className="text-xl sm:text-2xl font-bold font-display text-gray-900 tabular-nums">{k.value}</p>
+            <p className="text-[10px] text-gray-400 mt-1 leading-tight">{k.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Daily Reach Chart */}
+      {dailyReach.length > 1 && (
+        <div className="dash-card p-5 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display text-base font-bold text-gray-900">Daily Organic Reach</h3>
+            <span className="text-xs text-gray-400">avg {fmt.number(Math.round(reachAvg))} / day</span>
+          </div>
+          <div className="w-full overflow-hidden">
+            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none" style={{height:'160px'}}>
+              <defs>
+                <linearGradient id="orgReachGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={b.primary} stopOpacity="0.18"/>
+                  <stop offset="100%" stopColor={b.primary} stopOpacity="0.02"/>
+                </linearGradient>
+              </defs>
+              {/* Avg line */}
+              {(() => {
+                const y = PAD.top + cH * (1 - reachAvg / reachMax);
+                return <line x1={PAD.left} y1={y} x2={PAD.left + cW} y2={y} stroke={b.primary} strokeWidth="1" strokeDasharray="4,4" opacity="0.35" />;
+              })()}
+              {/* Bars */}
+              {dailyReach.map((d, i) => {
+                const bw = Math.max(1, cW / dailyReach.length - 2);
+                const bh = Math.max(2, (d.value / reachMax) * cH);
+                const x = PAD.left + (i / dailyReach.length) * cW + (cW / dailyReach.length - bw) / 2;
+                const y = PAD.top + cH - bh;
+                return (
+                  <rect key={i} x={x} y={y} width={bw} height={bh} rx="2"
+                    fill={b.primary} opacity="0.75" />
+                );
+              })}
+              {/* Y axis labels */}
+              {[0, 0.5, 1].map((pct, i) => {
+                const y = PAD.top + cH * (1 - pct);
+                return (
+                  <text key={i} x={PAD.left - 6} y={y + 4} textAnchor="end" fontSize="10" fill="#9ca3af">
+                    {fmt.number(Math.round(reachMax * pct))}
+                  </text>
+                );
+              })}
+              {/* X axis — first, mid, last dates */}
+              {[0, Math.floor(dailyReach.length / 2), dailyReach.length - 1].map(idx => {
+                if (!dailyReach[idx]) return null;
+                const x = PAD.left + (idx / dailyReach.length) * cW + (cW / dailyReach.length) / 2;
+                const d = new Date(dailyReach[idx].date);
+                const label = d.toLocaleDateString('en-AU', {day:'numeric',month:'short'});
+                return <text key={idx} x={x} y={H - 4} textAnchor="middle" fontSize="10" fill="#9ca3af">{label}</text>;
+              })}
+            </svg>
+          </div>
+        </div>
+      )}
+
+      {/* Engagement Breakdown + Follows */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 dash-card p-5 sm:p-6">
+          <h3 className="font-display text-base font-bold text-gray-900 mb-5">Engagement Breakdown</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {Object.entries(breakdown).map(([k, v]) => {
+              const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
+              const pct = total > 0 ? (v / total * 100) : 0;
+              return (
+                <div key={k}>
+                  <p className="text-xs text-gray-400 font-medium mb-1">{k}</p>
+                  <p className="text-2xl font-bold font-display text-gray-900 tabular-nums mb-2">{fmt.number(v)}</p>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-700" style={{width: pct + '%', backgroundColor: b.primary}} />
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1">{pct.toFixed(0)}%</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="dash-card p-5 sm:p-6">
+          <h3 className="font-display text-base font-bold text-gray-900 mb-5">Follower Movement</h3>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs text-gray-400 mb-1">New Follows</p>
+              <p className="text-2xl font-bold font-display text-emerald-600 tabular-nums">+{fmt.number(followsUnfollows?.follows || 0)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Unfollows</p>
+              <p className="text-2xl font-bold font-display text-red-400 tabular-nums">−{fmt.number(followsUnfollows?.unfollows || 0)}</p>
+            </div>
+            <div className="pt-3 border-t border-gray-100">
+              <p className="text-xs text-gray-400 mb-1">Net Growth</p>
+              <p className={`text-2xl font-bold font-display tabular-nums ${netFol >= 0 ? 'text-emerald-600' : 'text-red-400'}`}>
+                {netFol >= 0 ? '+' : ''}{fmt.number(netFol)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Posts */}
+      {topPosts.length > 0 && (
+        <div className="dash-card p-5 sm:p-6">
+          <h3 className="font-display text-base font-bold text-gray-900 mb-4">Top Posts <span className="text-sm font-normal text-gray-400 ml-1">by likes</span></h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {topPosts.slice(0, 12).map((post, i) => (
+              <a key={i} href={post.permalink} target="_blank" rel="noopener noreferrer" className="group block">
+                <div className="relative rounded-xl overflow-hidden bg-gray-100 mb-2" style={{aspectRatio:'1/1'}}>
+                  {post.thumbnail ? (
+                    <img src={post.thumbnail} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </div>
+                  )}
+                  <span className="absolute top-1.5 right-1.5 text-[9px] font-bold bg-black/60 text-white px-1.5 py-0.5 rounded-full">{typeIcon(post.media_type)}</span>
+                </div>
+                <p className="text-[10px] text-gray-400 mb-0.5">{new Date(post.timestamp).toLocaleDateString('en-AU',{day:'numeric',month:'short'})}</p>
+                <div className="flex items-center gap-2 text-[10px] text-gray-600 font-medium">
+                  <span>♥ {fmt.number(post.likes)}</span>
+                  <span>✦ {fmt.number(post.saves)}</span>
+                </div>
+                {post.reach > 0 && <p className="text-[10px] text-gray-400 mt-0.5">{fmt.number(post.reach)} reach</p>}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
 // ─── Empty State ───
 function EmptyState({ brand }) {
   return (
@@ -2227,6 +2502,8 @@ function App() {
   const [data, setData] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
   const [attrWindow, setAttrWindow] = useState('7d_click');
+  const [organicData, setOrganicData] = useState(null);
+  const [organicLoading, setOrganicLoading] = useState(false);
 
   const b = BRANDS[brand];
 
@@ -2234,7 +2511,24 @@ function App() {
     setBrand(newBrand);
     localStorage.setItem('meta_ads_brand', newBrand);
     setData(null);
+    setOrganicData(null);
   };
+
+  const loadOrganic = useCallback(async () => {
+    if (!token) return;
+    setOrganicLoading(true);
+    try {
+      const { since, until } = getDateRange(datePreset, customDates);
+      if (!since || !until) return;
+      const igId = BRANDS[brand].igId;
+      const result = await fetchOrganicData(igId, since, until, token);
+      setOrganicData(result);
+    } catch (err) {
+      console.error('Organic fetch error:', err.message);
+    } finally {
+      setOrganicLoading(false);
+    }
+  }, [token, brand, datePreset, customDates]);
 
   const handleLogout = () => {
     localStorage.removeItem('meta_ads_token');
@@ -2303,6 +2597,14 @@ function App() {
     if (token && data && datePreset === 'custom' && customDates.since && customDates.until) fetchData();
   }, [customDates.since, customDates.until]);
 
+  useEffect(() => {
+    if (tab === 'organic' && token && !organicData && !organicLoading) loadOrganic();
+  }, [tab]);
+
+  useEffect(() => {
+    if (tab === 'organic' && token) { setOrganicData(null); }
+  }, [brand, datePreset]);
+
   if (!token) return <TokenScreen onSave={setToken} brand={brand} />;
 
   const tabs = [
@@ -2312,6 +2614,7 @@ function App() {
     { id: 'creative', label: 'Creative Performance (Ads)' },
     { id: 'video', label: 'Video Performance' },
     { id: 'breakdowns', label: 'Breakdowns' },
+    { id: 'organic', label: '📸 Organic' },
   ];
 
   const attrOptions = [
@@ -2345,7 +2648,7 @@ function App() {
             <div className="flex items-center gap-3 sm:gap-4">
               <img src={b.logoDark} alt={b.name} className="h-5 sm:h-7 w-auto object-contain" />
               <div className="h-5 w-px bg-gray-200 hidden sm:block" />
-              <h1 className="font-display text-sm sm:text-base font-bold text-gray-900 hidden sm:block">Ad Performance</h1>
+              <h1 className="font-display text-sm sm:text-base font-bold text-gray-900 hidden sm:block">Social Performance</h1>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
@@ -2433,8 +2736,8 @@ function App() {
             )}
 
             <button
-              onClick={fetchData}
-              disabled={loading}
+              onClick={() => { if (tab === 'organic') { setOrganicData(null); setTimeout(loadOrganic, 50); } else { fetchData(); } }}
+              disabled={loading || organicLoading}
               className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
               style={{backgroundColor: b.primary}}
             >
@@ -2477,12 +2780,13 @@ function App() {
         {tab === 'creative' && data && <CreativeTab data={data} brand={brand} />}
         {tab === 'video' && data && <VideoTab data={data} brand={brand} />}
         {tab === 'breakdowns' && data && <BreakdownsTab data={data} brand={brand} />}
+        {tab === 'organic' && <OrganicTab organicData={organicData} organicLoading={organicLoading} brand={brand} />}
       </main>
 
       {/* Footer */}
       <footer className="py-3 sm:py-4 mt-6 sm:mt-8">
         <div className="max-w-[1600px] mx-auto px-3 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-1">
-          <span className="text-[10px] sm:text-xs text-gray-300">Data pulled live from Meta Marketing API v21.0</span>
+          <span className="text-[10px] sm:text-xs text-gray-300">Paid data: Meta Marketing API v21.0 · Organic data: Instagram Graph API v21.0</span>
           <span className="text-[10px] sm:text-xs text-gray-300">Token stored locally in browser only</span>
         </div>
       </footer>
