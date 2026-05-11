@@ -2554,7 +2554,7 @@ function OrganicTab({ organicData, organicLoading, brand, datePreset }) {
             <span className="text-xs text-gray-400">avg {fmt.number(Math.round(chartAvg))} / {isLongRange ? 'month' : 'day'}</span>
           </div>
           <div className="relative">
-            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:'260px'}}
+            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:'260px'}} preserveAspectRatio="none"
               onMouseLeave={() => setHoverIdx(null)}>
               <defs>
                 <linearGradient id={`orgGrad_${brand}`} x1="0" y1="0" x2="0" y2="1">
@@ -2658,7 +2658,7 @@ function OrganicTab({ organicData, organicLoading, brand, datePreset }) {
         {topPosts.length === 0 ? (
           <p className="text-sm text-gray-400 py-6 text-center">No posts found in this date range</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {topPosts.slice(0, 8).map((post, i) => {
               const interactions = post.likes + post.comments + post.saves + post.shares;
               return (
