@@ -136,6 +136,7 @@ function getDateRange(preset, custom) {
     case 'last_7d': return { since: pad(daysAgo(6)), until: pad(today) };
     case 'last_14d': return { since: pad(daysAgo(13)), until: pad(today) };
     case 'last_30d': return { since: pad(daysAgo(29)), until: pad(today) };
+    case 'last_90d': return { since: pad(daysAgo(89)), until: pad(today) };
     case 'this_month': {
       const start = new Date(today.getFullYear(), today.getMonth(), 1);
       return { since: pad(start), until: pad(today) };
@@ -695,7 +696,7 @@ function TrendChart({ dailyData, brand, datePreset }) {
 
   // Aggregate by month for last_12m
   const monthlyPoints = useMemo(() => {
-    if (datePreset !== 'last_12m' || !points.length) return [];
+    if ((datePreset !== 'last_12m' && datePreset !== 'last_90d') || !points.length) return [];
     const buckets = {};
     points.forEach(p => {
       const key = p.date.slice(0, 7); // YYYY-MM
@@ -2435,7 +2436,7 @@ function OrganicTab({ organicData, organicLoading, brand, datePreset }) {
   const b = BRANDS[brand];
   const [activeMetric, setActiveMetric] = useState('reach');
   const [hoverIdx, setHoverIdx] = useState(null);
-  const isLongRange = datePreset === 'last_12m';
+  const isLongRange = datePreset === 'last_12m' || datePreset === 'last_90d';
 
   const igIcon = (
     <svg className="w-3.5 h-3.5 inline-block mr-1" viewBox="0 0 24 24" fill="currentColor" style={{color:'#E1306C'}}>
@@ -2480,7 +2481,7 @@ function OrganicTab({ organicData, organicLoading, brand, datePreset }) {
   const chartSeries = seriesMap[activeMetric] || reachSeries;
   const chartMax = Math.max(...chartSeries.map(d => d.value), 1);
   const chartAvg = chartSeries.length ? chartSeries.reduce((a,d)=>a+d.value,0)/chartSeries.length : 0;
-  const W = 800, H = 200, PAD = { top: 20, right: 16, bottom: 32, left: 56 };
+  const W = 800, H = 300, PAD = { top: 20, right: 16, bottom: 32, left: 56 };
   const cW = W - PAD.left - PAD.right, cH = H - PAD.top - PAD.bottom;
 
   const kpis = [
@@ -2553,7 +2554,7 @@ function OrganicTab({ organicData, organicLoading, brand, datePreset }) {
             <span className="text-xs text-gray-400">avg {fmt.number(Math.round(chartAvg))} / {isLongRange ? 'month' : 'day'}</span>
           </div>
           <div className="relative">
-            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:'180px'}}
+            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:'260px'}}
               onMouseLeave={() => setHoverIdx(null)}>
               <defs>
                 <linearGradient id={`orgGrad_${brand}`} x1="0" y1="0" x2="0" y2="1">
@@ -2847,7 +2848,7 @@ function App() {
       const accountId = BRANDS[brand].accountId;
       const comp = getComparisonRange(since, until);
 
-      const isLongRange = datePreset === 'last_12m';
+      const isLongRange = datePreset === 'last_12m' || datePreset === 'last_90d';
       const dailyIncrement = isLongRange ? 'monthly' : 1;
 
       const aw = attrWindow;
@@ -2932,6 +2933,7 @@ function App() {
     { value: 'last_7d', label: 'Last 7 Days' },
     { value: 'last_14d', label: 'Last 14 Days' },
     { value: 'last_30d', label: 'Last 30 Days' },
+    { value: 'last_90d', label: 'Last 90 Days' },
     { value: 'this_month', label: 'This Month' },
     { value: 'last_month', label: 'Last Month' },
     { value: 'last_12m', label: 'Last 12 Months' },
