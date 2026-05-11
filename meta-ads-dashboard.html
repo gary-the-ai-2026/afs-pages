@@ -2576,16 +2576,20 @@ function OrganicTab({ organicData, organicLoading, brand, datePreset }) {
                     <rect x={x-1} y={PAD.top} width={bw+2} height={cH} fill="transparent"/>
                     <rect x={x} y={y} width={bw} height={bh} rx="2"
                       fill={b.primary} opacity={isHover ? 1 : 0.72}/>
-                    {isHover && <>
-                      <line x1={x+bw/2} y1={PAD.top+4} x2={x+bw/2} y2={y-2} stroke={b.primary} strokeWidth="1" strokeDasharray="2,2" opacity="0.4"/>
-                      <rect x={Math.min(Math.max(x+bw/2-44, PAD.left), PAD.left+cW-88)} y={PAD.top+4} width="88" height="28" rx="5" fill="#1f2937" opacity="0.88"/>
-                      <text x={Math.min(Math.max(x+bw/2, PAD.left+44), PAD.left+cW-44)} y={PAD.top+13} textAnchor="middle" fontSize="9" fill="#9ca3af">
-                        {new Date(d.date).toLocaleDateString('en-AU', isLongRange?{month:'short',year:'2-digit'}:{day:'numeric',month:'short'})}
-                      </text>
-                      <text x={Math.min(Math.max(x+bw/2, PAD.left+44), PAD.left+cW-44)} y={PAD.top+25} textAnchor="middle" fontSize="11" fontWeight="600" fill="#ffffff">
-                        {fmt.number(d.value)}
-                      </text>
-                    </>}
+                    {isHover && (() => {
+                      const tx = Math.min(Math.max(x+bw/2, PAD.left+52), PAD.left+cW-52);
+                      const ty = PAD.top + 6;
+                      return <>
+                        <line x1={x+bw/2} y1={ty+46} x2={x+bw/2} y2={y-2} stroke={b.primary} strokeWidth="1" strokeDasharray="2,2" opacity="0.4"/>
+                        <rect x={tx-52} y={ty} width="104" height="42" rx="6" fill="#1f2937" opacity="0.92"/>
+                        <text x={tx} y={ty+16} textAnchor="middle" fontSize="11" fill="#9ca3af">
+                          {new Date(d.date).toLocaleDateString('en-AU', isLongRange?{month:'short',year:'2-digit'}:{day:'numeric',month:'short'})}
+                        </text>
+                        <text x={tx} y={ty+34} textAnchor="middle" fontSize="14" fontWeight="700" fill="#ffffff">
+                          {fmt.number(d.value)}
+                        </text>
+                      </>;
+                    })()}
                   </g>
                 );
               })}
