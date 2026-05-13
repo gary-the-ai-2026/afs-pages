@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EOFY 2026 — Sales Team Briefing</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        gaf: { orange: '#F26422', 'orange-hover': '#D85418', 'orange-soft': '#FDE9DD', black: '#0a0a0a', dark: '#141414', mid: '#1e1e1e', steel: '#2a2a2a', ash: '#8a8a8a' },
+        lt: { bg: '#ffffff', card: '#f7f7f8', card2: '#eeeef0', border: '#e0e0e2', text: '#1a1a1a', sub: '#6b6b6b', muted: '#b0b0b0' },
+        rev: { green: '#25B34B', sage: '#ABB99C', forest: '#485D4D', 'green-soft': '#E8F5EC' },
+      },
+      fontFamily: {
+        display: ['"Montserrat"', 'sans-serif'],
+        body: ['"Open Sans"', 'sans-serif'],
+      },
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',sans-serif;overflow:hidden}
+h1,h2,h3,h4,h5,h6{font-family:'Montserrat',sans-serif}
+.font-display{font-weight:900;letter-spacing:.01em}
+.grain-dark::after{content:'';position:fixed;inset:0;pointer-events:none;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index:9999}
+.slide-enter{animation:slideIn .5s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.stagger>*{opacity:0;animation:slideIn .5s cubic-bezier(.16,1,.3,1) forwards}
+.stagger>*:nth-child(1){animation-delay:.05s}
+.stagger>*:nth-child(2){animation-delay:.12s}
+.stagger>*:nth-child(3){animation-delay:.19s}
+.stagger>*:nth-child(4){animation-delay:.26s}
+.stagger>*:nth-child(5){animation-delay:.33s}
+.stagger>*:nth-child(6){animation-delay:.4s}
+.stagger>*:nth-child(7){animation-delay:.47s}
+.stagger>*:nth-child(8){animation-delay:.54s}
+.stagger>*:nth-child(9){animation-delay:.61s}
+.stagger>*:nth-child(10){animation-delay:.68s}
+.bar-grow{animation:barGrow .8s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes barGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{border-radius:10px}
+.gaf-scroll::-webkit-scrollbar-thumb{background:#F26422}
+.rev-scroll::-webkit-scrollbar-thumb{background:#25B34B}
+.slash{position:absolute;width:200%;height:1px;transform:rotate(-12deg)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://esm.sh/react@19.1.0" type="module"></script>
+<script src="https://esm.sh/react-dom@19.1.0/client" type="module"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" data-type="module">
+import React, { useState, useEffect, useCallback, createContext, useContext } from 'https://esm.sh/react@19.1.0';
+import { createRoot } from 'https://esm.sh/react-dom@19.1.0/client';
+
+const ThemeCtx = createContext();
+const useTheme = () => useContext(ThemeCtx);
+
+// ===== ICONS =====
+const I = ({ d, size = 18, className = '', sw = 1.5 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" className={className}>
+    {Array.isArray(d) ? d.map((p, i) => <path key={i} d={p} />) : <path d={d} />}
+  </svg>
+);
+const ChevL = p => <I {...p} d="M15 18l-6-6 6-6" />;
+const ChevR = p => <I {...p} d="M9 18l6-6-6-6" />;
+const Dollar = p => <I {...p} d={["M12 2v20","M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"]} />;
+const Bolt = p => <I {...p} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />;
+const Eye = p => <I {...p} d={["M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"]} />;
+const Users = p => <I {...p} d={["M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2","M12 7a4 4 0 100-8 4 4 0 000 8","M22 21v-2a4 4 0 00-3-3.87","M16 3.13a4 4 0 010 7.75"]} />;
+const Check = p => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||18} height={p.size||18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>;
+const Target = p => <svg xmlns="http://www.w3.org/2000/svg" width={p.size||18} height={p.size||18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={p.className||''}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+const Cal = p => <I {...p} d={["M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z","M16 2v4","M8 2v4","M3 10h18"]} />;
+const Megaphone = p => <I {...p} d={["M3 11l18-5v12L3 13v-2z","M11.6 16.8a3 3 0 11-5.8-1.6"]} />;
+const Pkg = p => <I {...p} d={["M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z","M3.27 6.96L12 12.01l8.73-5.05","M12 22.08V12"]} />;
+const Sun = p => <I {...p} d={["M12 1v2","M12 21v2","M4.22 4.22l1.42 1.42","M18.36 18.36l1.42 1.42","M1 12h2","M21 12h2","M4.22 19.78l1.42-1.42","M18.36 5.64l1.42-1.42"]} />;
+const Moon = p => <I {...p} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />;
+const Tag = p => <I {...p} d={["M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z","M7 7h.01"]} />;
+const Flame = p => <I {...p} d={["M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"]} />;
+const Mail = p => <I {...p} d={["M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z","M22 6l-10 7L2 6"]} />;
+const Phone = p => <I {...p} d={["M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"]} />;
+const Clock = p => <I {...p} d={["M12 2a10 10 0 100 20 10 10 0 000-20z","M12 6v6l4 2"]} />;
+const Gift = p => <I {...p} d={["M20 12v10H4V12","M2 7h20v5H2z","M12 22V7","M12 7H7.5a2.5 2.5 0 110-5C11 2 12 7 12 7z","M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"]} />;
+const Droplet = p => <I {...p} d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" />;
+const Heart = p => <I {...p} d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />;
+const ArrowRight = p => <I {...p} d={["M5 12h14","M12 5l7 7-7 7"]} />;
+const Shield = p => <I {...p} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />;
+
+const GAF_LOGO = "https://cdn.shopify.com/s/files/1/1950/1891/files/GAFLogo-Primary-WhiteBG_51691f07-8b4f-4d1d-aefc-f2fc004eaa84.png?v=1775792576";
+const REVEL_LOGO_WHITE = "https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-White-02.png?v=1691241102";
+const REVEL_LOGO_BLACK = "https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-Black-01.png?v=1691024664";
+
+// ===== GAF THEMES =====
+const gafThemes = {
+  light: {
+    bg: 'bg-white', bg2: 'bg-lt-card', bg3: 'bg-lt-card2',
+    border: 'border-lt-border', borderAccent: 'border-gaf-orange/20',
+    text: 'text-lt-text', sub: 'text-lt-sub', muted: 'text-lt-muted',
+    cardBg: 'bg-lt-card', cardBorder: 'border-lt-border',
+    slashColor: 'rgba(242,100,34,0.06)', grainClass: '',
+    bodyBg: '#f0f0f0', logoFilter: '', titleText: 'text-lt-text',
+    kpiAccentBg: 'bg-gaf-orange/5', kpiDarkBg: 'bg-lt-text',
+    accent: 'text-gaf-orange', accentBg: 'bg-gaf-orange', accentBgSoft: 'bg-gaf-orange/5',
+    accentBorder: 'border-gaf-orange/20',
+    green: 'text-emerald-600', greenBg: 'bg-emerald-500/10',
+    amber: 'text-amber-600', amberBg: 'bg-amber-500/10',
+    navBg: 'bg-black/5', navBorder: 'border-black/10', navText: 'text-lt-text',
+    navHover: 'hover:bg-gaf-orange hover:border-gaf-orange hover:text-white',
+    navDisabled: 'bg-black/5 text-lt-muted cursor-not-allowed',
+    footerBg: 'bg-gradient-to-r from-gaf-orange via-gaf-orange to-transparent',
+    scrollClass: 'gaf-scroll',
+    brand: 'gaf',
+  },
+  dark: {
+    bg: 'bg-gaf-black', bg2: 'bg-gaf-dark', bg3: 'bg-gaf-mid',
+    border: 'border-gaf-steel/20', borderAccent: 'border-gaf-orange/20',
+    text: 'text-white', sub: 'text-gaf-ash', muted: 'text-gaf-steel',
+    cardBg: 'bg-gaf-dark', cardBorder: 'border-gaf-steel/20',
+    slashColor: 'rgba(242,100,34,0.15)', grainClass: 'grain-dark',
+    bodyBg: '#0a0a0a', logoFilter: 'brightness-0 invert', titleText: 'text-white',
+    kpiAccentBg: 'bg-gaf-orange/5', kpiDarkBg: 'bg-gaf-dark',
+    accent: 'text-gaf-orange', accentBg: 'bg-gaf-orange', accentBgSoft: 'bg-gaf-orange/5',
+    accentBorder: 'border-gaf-orange/20',
+    green: 'text-emerald-400', greenBg: 'bg-emerald-500/10',
+    amber: 'text-amber-400', amberBg: 'bg-amber-500/10',
+    navBg: 'bg-white/5', navBorder: 'border-white/10', navText: 'text-white',
+    navHover: 'hover:bg-gaf-orange hover:border-gaf-orange',
+    navDisabled: 'bg-gaf-steel/20 text-gaf-steel cursor-not-allowed',
+    footerBg: 'bg-gradient-to-r from-gaf-orange via-gaf-orange to-transparent',
+    scrollClass: 'gaf-scroll',
+    brand: 'gaf',
+  }
+};
+
+// ===== REVEL THEMES =====
+const revThemes = {
+  light: {
+    bg: 'bg-white', bg2: 'bg-[#f5f7f5]', bg3: 'bg-[#eef1ee]',
+    border: 'border-[#d8ddd8]', borderAccent: 'border-rev-green/20',
+    text: 'text-lt-text', sub: 'text-lt-sub', muted: 'text-lt-muted',
+    cardBg: 'bg-[#f5f7f5]', cardBorder: 'border-[#d8ddd8]',
+    slashColor: 'rgba(37,179,75,0.06)', grainClass: '',
+    bodyBg: '#f0f0f0', logoFilter: '', titleText: 'text-lt-text',
+    kpiAccentBg: 'bg-rev-green/5', kpiDarkBg: 'bg-lt-text',
+    accent: 'text-rev-green', accentBg: 'bg-rev-green', accentBgSoft: 'bg-rev-green/5',
+    accentBorder: 'border-rev-green/20',
+    green: 'text-emerald-600', greenBg: 'bg-emerald-500/10',
+    amber: 'text-amber-600', amberBg: 'bg-amber-500/10',
+    navBg: 'bg-black/5', navBorder: 'border-black/10', navText: 'text-lt-text',
+    navHover: 'hover:bg-rev-green hover:border-rev-green hover:text-white',
+    navDisabled: 'bg-black/5 text-lt-muted cursor-not-allowed',
+    footerBg: 'bg-gradient-to-r from-rev-green via-rev-green to-transparent',
+    scrollClass: 'rev-scroll',
+    brand: 'revel',
+  },
+  dark: {
+    bg: 'bg-[#0a0f0a]', bg2: 'bg-[#121812]', bg3: 'bg-[#1a221a]',
+    border: 'border-rev-forest/30', borderAccent: 'border-rev-green/20',
+    text: 'text-white', sub: 'text-rev-sage', muted: 'text-rev-forest',
+    cardBg: 'bg-[#121812]', cardBorder: 'border-rev-forest/30',
+    slashColor: 'rgba(37,179,75,0.12)', grainClass: 'grain-dark',
+    bodyBg: '#0a0f0a', logoFilter: '', titleText: 'text-white',
+    kpiAccentBg: 'bg-rev-green/5', kpiDarkBg: 'bg-[#121812]',
+    accent: 'text-rev-green', accentBg: 'bg-rev-green', accentBgSoft: 'bg-rev-green/5',
+    accentBorder: 'border-rev-green/20',
+    green: 'text-emerald-400', greenBg: 'bg-emerald-500/10',
+    amber: 'text-amber-400', amberBg: 'bg-amber-500/10',
+    navBg: 'bg-white/5', navBorder: 'border-white/10', navText: 'text-white',
+    navHover: 'hover:bg-rev-green hover:border-rev-green',
+    navDisabled: 'bg-rev-forest/30 text-rev-forest cursor-not-allowed',
+    footerBg: 'bg-gradient-to-r from-rev-green via-rev-green to-transparent',
+    scrollClass: 'rev-scroll',
+    brand: 'revel',
+  }
+};
+
+// ===== SHARED COMPONENTS =====
+const Logo = ({ brand }) => {
+  const th = useTheme();
+  if (brand === 'revel') {
+    const src = th.brand === 'revel' && th.bg.includes('0a0f0a') ? REVEL_LOGO_WHITE : REVEL_LOGO_BLACK;
+    return <img src={th.titleText.includes('white') ? REVEL_LOGO_WHITE : REVEL_LOGO_BLACK} alt="Revel" className="h-7 w-auto object-contain opacity-70" />;
+  }
+  return <img src={GAF_LOGO} alt="GAF" className={`h-8 w-auto object-contain opacity-60 ${th.logoFilter}`} />;
+};
+
+const Slide = ({ children, num, total, noPad, brand = 'gaf' }) => {
+  const th = useTheme();
+  const accentColor = brand === 'revel' ? '#25B34B' : '#F26422';
+  return (
+  <div className={`w-full h-full ${th.bg} ${th.text} flex flex-col relative overflow-hidden`}>
+    <div className="slash" style={{top:'30%',left:'-50%',background:`linear-gradient(90deg,transparent,${th.slashColor},transparent)`}}></div>
+    <div className="slash" style={{top:'60%',left:'-30%',background:`linear-gradient(90deg,transparent,${th.slashColor},transparent)`}}></div>
+    <header className="flex justify-between items-center px-10 pt-5 pb-3 z-10 shrink-0">
+      <Logo brand={brand} />
+      <div className="flex items-center gap-3">
+        <span className={`text-[14px] font-display font-light tracking-[.3em] ${th.sub} uppercase`}>EOFY 2026</span>
+        <div className={`w-px h-4 ${th.bg3}`}></div>
+        <span className={`text-[14px] font-body ${th.sub}`}>{num}<span className={`${th.muted} mx-1`}>/</span>{total}</span>
+      </div>
+    </header>
+    <main className={`flex-1 flex flex-col z-10 overflow-hidden ${noPad ? '' : 'px-10 pb-8'}`}>
+      {children}
+    </main>
+    <footer className={`h-1 ${th.footerBg} z-10 shrink-0`} style={{width: `${(num/total)*100}%`}}></footer>
+  </div>
+  );
+};
+
+const Kpi = ({ label, value, sub, accent, brand = 'gaf' }) => {
+  const th = useTheme();
+  return (
+  <div className={`p-4 rounded-lg border ${accent ? `${th.kpiAccentBg} ${th.accentBorder}` : `${th.cardBg} ${th.cardBorder}`}`}>
+    <p className={`text-[13px] font-display font-medium tracking-[.25em] uppercase mb-3 ${accent ? th.accent : th.sub}`}>{label}</p>
+    <p className={`text-3xl font-display font-bold ${accent ? th.accent : th.text}`}>{value}</p>
+    {sub && <p className={`text-[15px] ${th.sub} mt-1.5 font-body`}>{sub}</p>}
+  </div>
+  );
+};
+
+const SectionTitle = ({ pre, title, sub }) => {
+  const th = useTheme();
+  return (
+  <div className="mb-4 shrink-0 stagger">
+    {pre && <p className={`text-[14px] font-display tracking-[.4em] ${th.accent} uppercase mb-2`}>{pre}</p>}
+    <h1 className={`font-display text-5xl md:text-7xl ${th.text} leading-[0.9] tracking-wide`}>{title}</h1>
+    {sub && <p className={`text-[15px] ${th.sub} mt-3 font-body max-w-2xl leading-snug`}>{sub}</p>}
+  </div>
+  );
+};
+
+// ========================================================
+// SLIDE 1: GAF TITLE
+// ========================================================
+const GafTitleSlide = ({ n, t }) => {
+  const th = useTheme();
+  return (
+  <div className={`w-full h-full ${th.bg} relative flex flex-col justify-end overflow-hidden`}>
+    <div className="absolute -right-[20%] top-[10%] w-[70%] h-[140%] bg-gaf-orange opacity-[0.04] transform rotate-[-18deg]"></div>
+    <div className="absolute -right-[25%] top-[15%] w-[60%] h-[130%] border border-gaf-orange/10 transform rotate-[-18deg]"></div>
+    <div className="flex-1 flex items-center px-16 z-10">
+      <div className="stagger">
+        <div className="flex items-center gap-5 mb-10">
+          <img src={GAF_LOGO} alt="Gym and Fitness" className={`h-14 w-auto object-contain ${th.logoFilter}`} />
+          <div className={`w-px h-10 ${th.bg3}`}></div>
+          <span className={`text-[14px] font-display tracking-[.4em] ${th.sub} uppercase`}>Sales Team Briefing</span>
+        </div>
+        <h1 className={`font-display text-[7rem] md:text-[10rem] leading-[0.85] tracking-wider ${th.titleText}`}>
+          EOFY<br/><span className="text-gaf-orange">2026</span>
+        </h1>
+        <div className="flex items-center gap-6 mt-10">
+          <div className="w-16 h-[2px] bg-gaf-orange"></div>
+          <p className={`text-[15px] font-body ${th.sub} tracking-wider`}>June 1 - 30 | GAF + Revel</p>
+        </div>
+      </div>
+    </div>
+    <div className="px-16 pb-8 z-10">
+      <p className={`text-[14px] font-display tracking-[.5em] ${th.muted} uppercase`}>Confidential Internal Use</p>
+    </div>
+    <footer className="h-1 bg-gradient-to-r from-gaf-orange via-gaf-orange to-transparent z-10 shrink-0" style={{width:'8%'}}></footer>
+  </div>
+  );
+};
+
+// ========================================================
+// SLIDE 2: GAF CAMPAIGN OVERVIEW
+// ========================================================
+const GafOverviewSlide = ({ n, t }) => {
+  const th = useTheme();
+  return (
+  <Slide num={n} total={t} brand="gaf">
+    <SectionTitle pre="The Campaign" title="GAF EOFY SALE" sub="GAF's second major peak campaign of 2026. 30 days of compelling offers, finance messaging, and brand-led promotions across all channels before June 30 close." />
+    <div className="flex gap-6 flex-1 min-h-0">
+      <div className="flex-1 flex flex-col gap-3 min-h-0">
+        <div className="grid grid-cols-2 gap-4 shrink-0 stagger">
+          <Kpi label="Campaign Window" value="JUN 1-30" sub="30-day campaign with weekly refreshes" accent />
+          <Kpi label="Campaign Type" value="SALE" sub="Peak #2 of 2026 (after March Free Shipping)" accent />
+        </div>
+        <div className={`flex-1 ${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col min-h-0`}>
+          <p className={`text-[14px] font-display tracking-[.3em] ${th.sub} uppercase mb-3 shrink-0`}>Campaign Strategy</p>
+          <div className="space-y-3 stagger flex-1 overflow-auto">
+            {[
+              { icon: Target, title: "Category Killers", desc: "10 hero products with aggressive pricing (up to 48% off) to drive traffic and conversion" },
+              { icon: Gift, title: "Value Adds", desc: "Free accessories with premium purchases (sliding benches, upgrade kits) to lift AOV" },
+              { icon: Bolt, title: "Weekly Refreshes", desc: "Rotate creative and messaging weekly to avoid ad fatigue across the 30-day window" },
+              { icon: Clock, title: "Urgency Mechanics", desc: "Countdown timers, last-chance messaging, and price guarantee to close hesitant buyers" },
+            ].map((s, i) => (
+              <div key={i} className="flex gap-3 items-start">
+                <div className="w-9 h-9 rounded-lg bg-gaf-orange/10 flex items-center justify-center shrink-0">
+                  <s.icon size={18} className="text-gaf-orange" />
+                </div>
+                <div>
+                  <p className={`text-[15px] font-display font-semibold ${th.text}`}>{s.title}</p>
+                  <p className={`text-[14px] ${th.sub} font-body leading-snug`}>{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="w-[320px] shrink-0 flex flex-col gap-3 min-h-0">
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex-1 flex flex-col min-h-0`}>
+          <div className="flex items-center gap-2 mb-3 shrink-0">
+            <Pkg size={15} className="text-gaf-orange" />
+            <p className={`text-[13px] font-display tracking-[.3em] ${th.sub} uppercase`}>Featured Brands</p>
+          </div>
+          <div className="space-y-2 stagger flex-1 overflow-auto">
+            {[
+              { name: "Force USA", note: "All-In-Ones, bumpers, benches" },
+              { name: "Nike Strength", note: "Adjustable dumbbells, accessories" },
+              { name: "CENTR", note: "Training systems" },
+              { name: "STEPR", note: "Stair climbers" },
+              { name: "ProForm", note: "Treadmills" },
+              { name: "Bowflex", note: "Treadmills" },
+              { name: "Solitude", note: "Commercial range (bulk pricing)" },
+            ].map((b, i) => (
+              <div key={i} className={`${th.bg3} rounded-lg p-3`}>
+                <p className={`text-[14px] font-display font-semibold ${th.text}`}>{b.name}</p>
+                <p className={`text-[12px] ${th.muted} font-body`}>{b.note}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-gaf-orange/5 border border-gaf-orange/20 rounded-lg p-3 shrink-0 flex items-start gap-3">
+          <Eye size={16} className="text-gaf-orange shrink-0 mt-0.5" />
+          <p className={`text-[13px] font-body ${th.sub} leading-snug`}>Pricing spreadsheet locked by <span className={`font-semibold ${th.text}`}>Todd (May 8)</span>. Creative from <span className={`font-semibold ${th.text}`}>Joe (May 15)</span>.</p>
+        </div>
+      </div>
+    </div>
+  </Slide>
+  );
+};
+
+// ========================================================
+// SLIDE 3: GAF HERO OFFERS
+// ========================================================
+const GafOffersSlide = ({ n, t }) => {
+  const th = useTheme();
+  const killers = [
+    { sku: "X20", pct: "48%", type: "off" },
+    { sku: "Bowflex T9 Treadmill", pct: "40%", type: "off" },
+    { sku: "ProForm Carbon Pro 2000", pct: "37%", type: "off" },
+    { sku: "Force USA Glide", pct: "24%", type: "off" },
+    { sku: "F-G3-v2", pct: "22%", type: "off" },
+    { sku: "F-FTR", pct: "15.6%", type: "off" },
+    { sku: "G15", pct: "15.9%", type: "off + Free Upgrade Kit" },
+    { sku: "Nike Adj. Dumbbells", pct: "12.5%", type: "off" },
+    { sku: "G4", pct: "12.5%", type: "off" },
+  ];
+  const valueAdds = [
+    { sku: "C20", offer: "Free Sliding Bench" },
+    { sku: "C10", offer: "Free Sliding Bench" },
+    { sku: "F-G15", offer: "Free Upgrade Kit" },
+    { sku: "Solitude Range", offer: "Bulk Buy Pricing Available" },
+  ];
+  return (
+  <Slide num={n} total={t} brand="gaf">
+    <SectionTitle pre="What We're Selling" title="HERO OFFERS" sub="Category Killers drive traffic. Value Adds lift AOV. These are the products to lead conversations with." />
+    <div className="flex gap-6 flex-1 min-h-0">
+      <div className={`flex-1 ${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col min-h-0`}>
+        <div className="flex items-center gap-2 mb-3 shrink-0">
+          <Tag size={16} className="text-gaf-orange" />
+          <p className={`text-[14px] font-display tracking-[.3em] ${th.sub} uppercase`}>Category Killers</p>
+        </div>
+        <div className={`flex-1 overflow-auto space-y-1.5 stagger ${th.scrollClass}`}>
+          {killers.map((k, i) => (
+            <div key={i} className={`${th.bg3} rounded-lg p-3 flex items-center justify-between`}>
+              <p className={`text-[15px] font-display font-semibold ${th.text}`}>{k.sku}</p>
+              <div className="flex items-center gap-2">
+                <span className="bg-gaf-orange text-white text-[13px] font-display font-bold px-3 py-1 rounded-full">{k.pct}</span>
+                {k.type !== 'off' && <span className={`text-[12px] ${th.sub} font-body`}>{k.type.replace('off + ', '')}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="w-[380px] shrink-0 flex flex-col gap-3 min-h-0">
+        <div className="bg-gaf-orange rounded-lg p-5 text-white shrink-0 relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 opacity-10"><Gift size={120} /></div>
+          <p className="text-[14px] font-display tracking-[.3em] uppercase opacity-90 mb-2 relative z-10">Value Adds</p>
+          <h3 className="font-display text-3xl tracking-wide leading-[0.95] relative z-10 mb-4">FREE WITH<br/>PURCHASE</h3>
+          <div className="space-y-2 relative z-10">
+            {valueAdds.map((v, i) => (
+              <div key={i} className="bg-white/15 rounded-lg p-3 flex items-center justify-between">
+                <span className="text-[14px] font-display font-semibold">{v.sku}</span>
+                <span className="text-[13px] font-body opacity-90">{v.offer}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex-1 flex flex-col min-h-0`}>
+          <p className={`text-[13px] font-display tracking-[.3em] ${th.sub} uppercase mb-3 shrink-0`}>Sales Team Notes</p>
+          <div className="space-y-3 flex-1 stagger">
+            <div className="flex gap-2 items-start">
+              <div className="w-1.5 h-1.5 rounded-full bg-gaf-orange mt-2 shrink-0"></div>
+              <p className={`text-[14px] ${th.sub} font-body leading-snug`}>Lead with <span className={`font-semibold ${th.text}`}>Category Killers</span> for price-sensitive buyers, <span className={`font-semibold ${th.text}`}>Value Adds</span> for upsell opportunities</p>
+            </div>
+            <div className="flex gap-2 items-start">
+              <div className="w-1.5 h-1.5 rounded-full bg-gaf-orange mt-2 shrink-0"></div>
+              <p className={`text-[14px] ${th.sub} font-body leading-snug`}>Finance messaging stays live. Latitude "from $X/month" on all hero products</p>
+            </div>
+            <div className="flex gap-2 items-start">
+              <div className="w-1.5 h-1.5 rounded-full bg-gaf-orange mt-2 shrink-0"></div>
+              <p className={`text-[14px] ${th.sub} font-body leading-snug`}>Pricing is <span className={`font-semibold ${th.text}`}>locked after May 8</span>. No changes post-launch</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Slide>
+  );
+};
+
+// ========================================================
+// SLIDE 4: GAF CAMPAIGN TIMELINE
+// ========================================================
+const GafTimelineSlide = ({ n, t }) => {
+  const th = useTheme();
+  const phases = [
+    { phase: "PRE-CAMPAIGN", color: "bg-amber-500", dates: "Now - May 31", items: [
+      { task: "Final Pricing Locked", date: "May 8", owner: "Todd", done: false },
+      { task: "Campaign Theme Creative", date: "May 15", owner: "Joe", done: false },
+      { task: "Meta Ad Plan + Creative", date: "May 16", owner: "Joe", done: false },
+      { task: "Content Plan + Videographer", date: "May 16", owner: "Lionel", done: false },
+      { task: "Lead Waitlist Pop-Up Live", date: "May 18", owner: "Joe", done: false },
+      { task: "Media Buyer Brief + Google", date: "May 19", owner: "Joe", done: false },
+      { task: "Hot Deals Collection Setup", date: "May 22", owner: "Levi", done: false },
+      { task: "EDMs + SMS Built", date: "May 28", owner: "Joe", done: false },
+      { task: "Sales Team Group Chat Kickoff", date: "May 28", owner: "Todd", done: false },
+      { task: "Website Sale Collection Ready", date: "May 28", owner: "Levi", done: false },
+    ]},
+    { phase: "LAUNCH DAY", color: "bg-gaf-orange", dates: "June 1", items: [
+      { task: "Sale Pricing Go Live", owner: "Levi" },
+      { task: "Homepage Creative Swap", owner: "Joe" },
+      { task: "Announcement Bar + Mega Menu", owner: "Levi" },
+      { task: "Paid Ads Go Live (Meta + Google)", owner: "Daniel" },
+      { task: "Launch EDM + SMS Send", owner: "Joe" },
+      { task: "Countdown Timer Active", owner: "Levi" },
+    ]},
+    { phase: "MID-CAMPAIGN", color: "bg-blue-500", dates: "June 15", items: [
+      { task: "Performance Check-In", owner: "Josh" },
+      { task: "Price Drops / Adjustments", owner: "Nick" },
+    ]},
+    { phase: "LAST PUSH + CLOSE", color: "bg-red-500", dates: "June 26-30", items: [
+      { task: "Last Chance Ad Creative Swap", date: "Jun 26", owner: "Joe" },
+      { task: "Last Chance EDM", date: "Jun 26", owner: "Joe" },
+      { task: "Last Day SMS", date: "Jun 30", owner: "Josh" },
+      { task: "Sales Pipeline Blast", date: "Jun 30", owner: "Todd" },
+    ]},
+  ];
+  return (
+  <Slide num={n} total={t} brand="gaf">
+    <SectionTitle pre="The Plan" title="CAMPAIGN TIMELINE" />
+    <div className={`flex-1 flex flex-col gap-2.5 min-h-0 overflow-auto ${th.scrollClass}`}>
+      {phases.map((p, pi) => (
+        <div key={pi} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 shrink-0`}>
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className={`w-2.5 h-2.5 rounded-full ${p.color}`}></div>
+            <p className={`text-[14px] font-display font-bold tracking-[.2em] uppercase ${th.text}`}>{p.phase}</p>
+            <div className={`h-px flex-1 ${th.border}`}></div>
+            <span className={`text-[13px] font-display ${th.accent}`}>{p.dates}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1">
+            {p.items.map((item, ii) => (
+              <div key={ii} className="flex items-center gap-2 py-0.5">
+                <div className={`w-1 h-1 rounded-full ${p.color} shrink-0`}></div>
+                <span className={`text-[13px] font-body ${th.text} flex-1`}>{item.task}</span>
+                {item.date && <span className={`text-[12px] ${th.muted} font-body shrink-0`}>{item.date}</span>}
+                <span className={`text-[12px] ${th.accent} font-display font-semibold shrink-0`}>{item.owner}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-3 shrink-0`}>
+        <div className="flex items-center gap-3 mb-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-gray-400"></div>
+          <p className={`text-[14px] font-display font-bold tracking-[.2em] uppercase ${th.text}`}>POST-CAMPAIGN</p>
+          <div className={`h-px flex-1 ${th.border}`}></div>
+          <span className={`text-[13px] font-display ${th.accent}`}>July 1-7</span>
+        </div>
+        <p className={`text-[13px] font-body ${th.sub}`}>Turn off ads, revert pricing, remove sale collections, rollback homepage, revert extended hours, post-campaign review (Jul 7)</p>
+      </div>
+    </div>
+  </Slide>
+  );
+};
+
+// ========================================================
+// SLIDE 5: GAF CHANNEL PLAN
+// ========================================================
+const GafChannelSlide = ({ n, t }) => {
+  const th = useTheme();
+  const channels = [
+    { icon: Megaphone, name: "Meta Ads", desc: "10-20 ad variations. Weekly creative refresh. Audiences optimised from BCFM learnings.", owner: "Joe + Daniel" },
+    { icon: Eye, name: "Google Ads", desc: "Display banners + search ad copy updates. Media buyer briefed by May 19.", owner: "Joe + Daniel" },
+    { icon: Mail, name: "Email (Klaviyo/HubSpot)", desc: "Launch EDM, mid-campaign brand focus, last-chance urgency, + HubSpot pipeline blast on final day.", owner: "Joe" },
+    { icon: Phone, name: "SMS", desc: "Launch morning (Jun 1) + last-day blast (Jun 30). Short, punchy, direct link to sale collection.", owner: "Josh" },
+    { icon: Flame, name: "Organic Content", desc: "Full social schedule, video/reel concepts, blog content, UGC opportunities. Videographer booked.", owner: "Lionel" },
+    { icon: Pkg, name: "Showroom / POS", desc: "A5 tickets, signage, branded collateral. Extended showroom hours during campaign.", owner: "Joe + Levi" },
+  ];
+  return (
+  <Slide num={n} total={t} brand="gaf">
+    <SectionTitle pre="The Channels" title="HOW WE'RE REACHING THEM" sub="Every channel is briefed and scheduled. This is what customers will see before, during, and after they talk to you." />
+    <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 stagger">
+      {channels.map((c, i) => (
+        <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col gap-3`}>
+          <div className="flex items-center justify-between">
+            <div className="w-10 h-10 rounded-lg bg-gaf-orange/10 flex items-center justify-center">
+              <c.icon size={20} className="text-gaf-orange" />
+            </div>
+            <span className={`text-[12px] font-display ${th.accent} font-semibold`}>{c.owner}</span>
+          </div>
+          <p className={`text-[17px] font-display font-bold ${th.text}`}>{c.name}</p>
+          <p className={`text-[14px] ${th.sub} font-body leading-snug flex-1`}>{c.desc}</p>
+        </div>
+      ))}
+    </div>
+  </Slide>
+  );
+};
+
+// ========================================================
+// SLIDE 6: GAF SALES TEAM PLAYBOOK
+// ========================================================
+const GafSalesPlaybookSlide = ({ n, t }) => {
+  const th = useTheme();
+  return (
+  <Slide num={n} total={t} brand="gaf">
+    <SectionTitle pre="Your Role" title="SALES TEAM PLAYBOOK" sub="What the sales team needs to do before, during, and at close." />
+    <div className="flex gap-6 flex-1 min-h-0">
+      <div className="flex-1 flex flex-col gap-3 min-h-0">
+        <div className="bg-gaf-orange rounded-lg p-5 text-white shrink-0 relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 opacity-10"><Users size={120} /></div>
+          <p className="text-[14px] font-display tracking-[.3em] uppercase opacity-90 mb-2 relative z-10">Pre-Launch</p>
+          <h3 className="font-display text-4xl tracking-wide leading-[0.95] relative z-10">GET READY</h3>
+          <div className="w-12 h-[2px] bg-white mt-3 mb-3 relative z-10"></div>
+          <div className="space-y-2 relative z-10">
+            <p className="text-[15px] font-body opacity-95 leading-snug flex items-start gap-2"><span className="mt-1">1.</span> Group Chat Kickoff (May 28) -- key offers, talking points, FAQs</p>
+            <p className="text-[15px] font-body opacity-95 leading-snug flex items-start gap-2"><span className="mt-1">2.</span> Know the hero products and pricing inside out</p>
+            <p className="text-[15px] font-body opacity-95 leading-snug flex items-start gap-2"><span className="mt-1">3.</span> Waitlist leads start flowing from May 18 -- warm them up</p>
+          </div>
+        </div>
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex-1 flex flex-col min-h-0`}>
+          <p className={`text-[14px] font-display tracking-[.3em] ${th.sub} uppercase mb-3 shrink-0`}>During Campaign (Jun 1-30)</p>
+          <div className="space-y-3 flex-1 stagger">
+            {[
+              { title: "Lead with the offer", desc: "Category Killers for traffic, Value Adds for upsell. Finance messaging on everything." },
+              { title: "Extended hours", desc: "Showroom and phone hours extended for the campaign period. Be available." },
+              { title: "Price guarantee messaging", desc: "Visible on sale pages and PDPs. Reinforces confidence for hesitant buyers." },
+              { title: "Mid-campaign pulse", desc: "Jun 15 check-in. Josh reviews performance, adjustments go live if needed." },
+            ].map((item, i) => (
+              <div key={i} className="flex gap-3 items-start">
+                <div className={`w-5 h-5 rounded-full ${th.greenBg} flex items-center justify-center shrink-0 mt-0.5`}>
+                  <Check size={11} className={th.green} />
+                </div>
+                <div>
+                  <p className={`text-[15px] font-display font-semibold ${th.text}`}>{item.title}</p>
+                  <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="w-[340px] shrink-0 flex flex-col gap-3 min-h-0">
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex-1 flex flex-col min-h-0`}>
+          <div className="flex items-center gap-2 mb-3 shrink-0">
+            <Flame size={16} className="text-gaf-orange" />
+            <p className={`text-[13px] font-display tracking-[.3em] ${th.sub} uppercase`}>Final Push (Jun 26-30)</p>
+          </div>
+          <div className="space-y-3 stagger flex-1">
+            <div className={`${th.bg3} rounded-lg p-4`}>
+              <p className={`text-[14px] font-display font-semibold ${th.text} mb-1`}>Last Chance Messaging</p>
+              <p className={`text-[13px] ${th.sub} font-body leading-snug`}>Ad creative swaps to urgency. "Last chance to lock in EOFY pricing." Countdown everywhere.</p>
+            </div>
+            <div className={`${th.bg3} rounded-lg p-4`}>
+              <p className={`text-[14px] font-display font-semibold ${th.text} mb-1`}>Pipeline Blast (Jun 30)</p>
+              <p className={`text-[13px] ${th.sub} font-body leading-snug`}>Contact ALL warm/hot pipeline leads. "Sale ends tonight." Finance still available. Extended hours for last-minute orders.</p>
+            </div>
+            <div className={`${th.bg3} rounded-lg p-4`}>
+              <p className={`text-[14px] font-display font-semibold ${th.text} mb-1`}>Last Day EDM + SMS</p>
+              <p className={`text-[13px] ${th.sub} font-body leading-snug`}>HubSpot pipeline blast + SMS goes out Jun 30. Personalised where possible. Strong CTA.</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gaf-orange/5 border border-gaf-orange/20 rounded-lg p-3 shrink-0 flex items-start gap-3">
+          <Target size={16} className="text-gaf-orange shrink-0 mt-0.5" />
+          <p className={`text-[13px] font-body ${th.sub} leading-snug`}>All hands on deck. EOFY is a company-wide push, not just marketing.</p>
+        </div>
+      </div>
+    </div>
+  </Slide>
+  );
+};
+
+// ========================================================
+// SLIDE 7: REVEL TRANSITION TITLE
+// ========================================================
+const RevelTitleSlide = ({ n, t }) => {
+  const th = useTheme();
+  return (
+  <div className={`w-full h-full ${th.bg} relative flex flex-col justify-end overflow-hidden`}>
+    <div className="absolute -right-[15%] top-[5%] w-[60%] h-[150%] bg-rev-green opacity-[0.04] transform rotate-[-18deg]"></div>
+    <div className="absolute -right-[20%] top-[10%] w-[50%] h-[140%] border border-rev-green/10 transform rotate-[-18deg]"></div>
+    {/* Watermark drop icon */}
+    <div className="absolute right-16 top-1/2 -translate-y-1/2 opacity-[0.03]">
+      <Droplet size={400} className={th.text} sw={0.5} />
+    </div>
+    <div className="flex-1 flex items-center px-16 z-10">
+      <div className="stagger">
+        <div className="flex items-center gap-5 mb-10">
+          <img src={th.titleText.includes('white') ? REVEL_LOGO_WHITE : REVEL_LOGO_BLACK} alt="Revel" className="h-12 w-auto object-contain" />
+          <div className={`w-px h-10 ${th.bg3}`}></div>
+          <span className={`text-[14px] font-display tracking-[.4em] ${th.sub} uppercase`}>EOFY Campaign</span>
+        </div>
+        <h1 className={`font-display text-[5.5rem] md:text-[8rem] leading-[0.85] tracking-wider ${th.titleText}`}>
+          UPGRADE<br/>YOUR<br/><span className="text-rev-green">RECOVERY</span>
+        </h1>
+        <div className="flex items-center gap-6 mt-10">
+          <div className="w-16 h-[2px] bg-rev-green"></div>
+          <p className={`text-[15px] font-body ${th.sub} tracking-wider`}>May 25 - June 21 | 4-Week Campaign</p>
+        </div>
+      </div>
+    </div>
+    <div className="px-16 pb-8 z-10">
+      <p className={`text-[14px] font-display tracking-[.5em] ${th.muted} uppercase`}>Revel Recovery + Wellness</p>
+    </div>
+    <footer className={`h-1 ${th.footerBg} z-10 shrink-0`} style={{width: `${(n/t)*100}%`}}></footer>
+  </div>
+  );
+};
+
+// ========================================================
+// SLIDE 8: REVEL CAMPAIGN OVERVIEW
+// ========================================================
+const RevelOverviewSlide = ({ n, t }) => {
+  const th = useTheme();
+  return (
+  <Slide num={n} total={t} brand="revel">
+    <SectionTitle pre="The Campaign" title="REVEL EOFY" sub="Position saunas and ice baths as tax-deductible wellness investments. Four weeks of escalating urgency, moving from early access to last-chance close." />
+    <div className="flex gap-6 flex-1 min-h-0">
+      <div className="flex-1 flex flex-col gap-3 min-h-0">
+        <div className="grid grid-cols-3 gap-4 shrink-0 stagger">
+          <Kpi label="Campaign Window" value="4 WEEKS" sub="May 25 - June 21" accent brand="revel" />
+          <Kpi label="Headline Offer" value="UP TO 30% OFF" sub="Recovery systems + bundles" accent brand="revel" />
+          <Kpi label="Key Angle" value="TAX TIME" sub="Claim it this financial year" brand="revel" />
+        </div>
+        <div className={`flex-1 ${th.cardBg} border ${th.cardBorder} rounded-lg p-5 flex flex-col min-h-0`}>
+          <p className={`text-[14px] font-display tracking-[.3em] ${th.sub} uppercase mb-3 shrink-0`}>Campaign Messaging Pillars</p>
+          <div className="grid grid-cols-2 gap-3 flex-1 stagger">
+            {[
+              { icon: Dollar, title: "Tax Deductible", desc: "Business owners: invest in wellness, claim it this FY. ABN angle for saunas, ice baths, recovery rooms." },
+              { icon: Heart, title: "Wellness Upgrade", desc: "Upgrade your recovery before the financial year ends. Personal health investment framing." },
+              { icon: Pkg, title: "Product Bundles", desc: "Recovery studio setups, Airbnb wellness upgrades. Bundle offers to clear inventory and lift AOV." },
+              { icon: Shield, title: "Limited Stock", desc: "Stock sale messaging in weeks 3-4. Scarcity is real. Once it's gone, it's gone." },
+            ].map((p, i) => (
+              <div key={i} className={`${th.bg3} rounded-lg p-4 flex flex-col gap-2`}>
+                <div className="w-9 h-9 rounded-lg bg-rev-green/10 flex items-center justify-center shrink-0">
+                  <p.icon size={18} className="text-rev-green" />
+                </div>
+                <p className={`text-[15px] font-display font-semibold ${th.text}`}>{p.title}</p>
+                <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="w-[300px] shrink-0 flex flex-col gap-3 min-h-0">
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex-1 flex flex-col min-h-0`}>
+          <p className={`text-[13px] font-display tracking-[.3em] ${th.sub} uppercase mb-3 shrink-0`}>Team</p>
+          <div className="space-y-3 stagger flex-1">
+            {[
+              { name: "Sasha", role: "Campaign lead" },
+              { name: "Tenille", role: "Web banners + Meta ads" },
+              { name: "Tristan", role: "Oversight" },
+            ].map((p, i) => (
+              <div key={i} className={`${th.bg3} rounded-lg p-3`}>
+                <p className={`text-[14px] font-display font-semibold ${th.text}`}>{p.name}</p>
+                <p className={`text-[12px] ${th.muted} font-body`}>{p.role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-rev-green rounded-lg p-4 text-white shrink-0 relative overflow-hidden">
+          <div className="absolute -right-2 -bottom-2 opacity-10"><Droplet size={80} /></div>
+          <p className="text-[13px] font-display tracking-[.2em] uppercase opacity-90 mb-1 relative z-10">Creative Direction</p>
+          <p className="text-[14px] font-body opacity-95 leading-snug relative z-10">High-impact "Up to 30% OFF" lockup as the focal point. Mix of lifestyle and product-only imagery. Consistent signature look across all assets.</p>
+        </div>
+      </div>
+    </div>
+  </Slide>
+  );
+};
+
+// ========================================================
+// SLIDE 9: REVEL WEEK-BY-WEEK
+// ========================================================
+const RevelWeeksSlide = ({ n, t }) => {
+  const th = useTheme();
+  const weeks = [
+    { num: 13, dates: "May 25 - 31", name: "EOFY EARLY ACCESS", focus: "Start EOFY momentum", message: "Upgrade your recovery before the financial year ends.", content: "Early EOFY offers / Business wellness setups", color: "bg-rev-sage" },
+    { num: 14, dates: "Jun 1 - 7", name: "EOFY WELLNESS UPGRADE", focus: "Sauna + ice bath as tax-deductible investments", message: "Invest in recovery. Claim it this financial year.", content: "Recovery studio setups / Airbnb wellness upgrades", color: "bg-rev-green" },
+    { num: 15, dates: "Jun 8 - 14", name: "EOFY STOCK SALE", focus: "Clear remaining inventory", message: "End of financial year deals on Revel recovery systems.", content: "Product bundles / Limited stock messaging / Price-led ads", color: "bg-rev-green" },
+    { num: 16, dates: "Jun 15 - 21", name: "LAST CHANCE EOFY", focus: "Final urgency push", message: "Last chance to claim your recovery upgrade before June 30.", content: "Countdown messaging / Business owner angle / Bundle offers", color: "bg-rev-forest" },
+  ];
+  return (
+  <Slide num={n} total={t} brand="revel">
+    <SectionTitle pre="Week by Week" title="THE 4-WEEK PLAN" />
+    <div className={`flex-1 flex flex-col gap-3 min-h-0 overflow-auto ${th.scrollClass}`}>
+      {weeks.map((w, i) => (
+        <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg flex overflow-hidden shrink-0`}>
+          <div className={`${w.color} w-2 shrink-0`}></div>
+          <div className="flex-1 p-4 flex gap-6">
+            <div className="shrink-0 w-[100px]">
+              <p className={`text-[12px] font-display tracking-[.3em] ${th.accent} uppercase`}>Week {w.num}</p>
+              <p className={`text-[13px] ${th.muted} font-body mt-0.5`}>{w.dates}</p>
+            </div>
+            <div className="flex-1">
+              <p className={`text-[16px] font-display font-bold ${th.text} uppercase tracking-wide`}>{w.name}</p>
+              <p className={`text-[13px] ${th.sub} font-body mt-1`}><span className={`font-semibold ${th.text}`}>Focus:</span> {w.focus}</p>
+              <p className={`text-[13px] ${th.sub} font-body mt-0.5`}><span className={`font-semibold ${th.text}`}>Message:</span> {w.message}</p>
+            </div>
+            <div className={`w-[280px] shrink-0 ${th.bg3} rounded-lg p-3`}>
+              <p className={`text-[12px] font-display tracking-[.2em] ${th.muted} uppercase mb-1`}>Content</p>
+              <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{w.content}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div className="bg-rev-green/5 border border-rev-green/20 rounded-lg p-3 mt-3 shrink-0 flex items-start gap-3">
+      <Eye size={16} className="text-rev-green shrink-0 mt-0.5" />
+      <p className={`text-[13px] font-body ${th.sub} leading-snug`}><span className={`font-semibold ${th.text}`}>Key sales angle:</span> Business owners can claim saunas and ice baths as a tax deduction. This is the strongest conversion lever for Revel EOFY. Lead with it on every call.</p>
+    </div>
+  </Slide>
+  );
+};
+
+// ========================================================
+// SLIDE 10: Q&A
+// ========================================================
+const QASlide = ({ n, t }) => {
+  const th = useTheme();
+  return (
+  <div className={`w-full h-full ${th.bg} relative flex items-center justify-center overflow-hidden`}>
+    <div className="absolute -right-[20%] top-[10%] w-[70%] h-[140%] bg-gaf-orange opacity-[0.03] transform rotate-[-18deg]"></div>
+    <div className="absolute -left-[15%] bottom-[20%] w-[40%] h-[100%] bg-rev-green opacity-[0.03] transform rotate-[-18deg]"></div>
+    <div className={`absolute -left-[20%] bottom-[10%] w-[50%] h-[120%] border ${th.cardBorder} opacity-30 transform rotate-[-18deg]`}></div>
+    <div className="z-10 text-center stagger">
+      <div className="flex items-center justify-center gap-6 mb-8">
+        <img src={GAF_LOGO} alt="GAF" className={`h-10 w-auto object-contain opacity-40 ${th.logoFilter}`} />
+        <div className={`w-px h-8 ${th.bg3}`}></div>
+        <img src={th.titleText === 'text-white' ? REVEL_LOGO_WHITE : REVEL_LOGO_BLACK} alt="Revel" className="h-8 w-auto object-contain opacity-40" />
+      </div>
+      <p className={`text-[14px] font-display tracking-[.5em] text-gaf-orange uppercase mb-6`}>Over to you</p>
+      <h1 className={`font-display text-[10rem] md:text-[14rem] ${th.text} leading-[0.85] tracking-wider`}>Q&A</h1>
+      <div className="flex items-center justify-center gap-2 mt-8">
+        <div className="w-8 h-[2px] bg-gaf-orange"></div>
+        <div className="w-8 h-[2px] bg-rev-green"></div>
+      </div>
+    </div>
+    <footer className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-gaf-orange via-rev-green to-transparent z-10 w-full"></footer>
+  </div>
+  );
+};
+
+// ========================================================
+// SLIDE REGISTRY
+// ========================================================
+const SLIDES = [
+  { Comp: GafTitleSlide, brand: 'gaf' },
+  { Comp: GafOverviewSlide, brand: 'gaf' },
+  { Comp: GafOffersSlide, brand: 'gaf' },
+  { Comp: GafTimelineSlide, brand: 'gaf' },
+  { Comp: GafChannelSlide, brand: 'gaf' },
+  { Comp: GafSalesPlaybookSlide, brand: 'gaf' },
+  { Comp: RevelTitleSlide, brand: 'revel' },
+  { Comp: RevelOverviewSlide, brand: 'revel' },
+  { Comp: RevelWeeksSlide, brand: 'revel' },
+  { Comp: QASlide, brand: 'gaf' },
+];
+
+// ========================================================
+// APP
+// ========================================================
+function App() {
+  const [idx, setIdx] = useState(0);
+  const [key, setKey] = useState(0);
+  const [dark, setDark] = useState(false);
+  const [zoom, setZoom] = useState(() => Math.min(window.innerWidth / 1600, window.innerHeight / 900, 1));
+
+  const currentBrand = SLIDES[idx].brand;
+  const themeSet = currentBrand === 'revel' ? revThemes : gafThemes;
+  const th = dark ? themeSet.dark : themeSet.light;
+
+  const go = useCallback((dir) => {
+    const next = idx + dir;
+    if (next >= 0 && next < SLIDES.length) { setIdx(next); setKey(k => k + 1); }
+  }, [idx]);
+
+  useEffect(() => {
+    const calc = () => setZoom(Math.min(window.innerWidth / 1600, window.innerHeight / 900, 1));
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, []);
+
+  useEffect(() => {
+    const h = e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+      else if (e.key === 'ArrowLeft') go(-1);
+      else if (e.key === 'd' || e.key === 'D') setDark(d => !d);
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [go]);
+
+  useEffect(() => {
+    document.body.style.background = th.bodyBg;
+    document.body.className = th.grainClass;
+  }, [dark, currentBrand]);
+
+  const { Comp } = SLIDES[idx];
+  const accentColor = currentBrand === 'revel' ? '#25B34B' : '#F26422';
+
+  return (
+    <ThemeCtx.Provider value={th}>
+      <div className="w-screen h-screen overflow-hidden flex items-center justify-center" style={{background: th.bodyBg}}>
+        <div key={key} className="overflow-hidden slide-enter rounded-lg shrink-0 relative" style={{width: 1600, height: 900, zoom, boxShadow: dark ? '0 0 80px rgba(0,0,0,.6)' : '0 4px 60px rgba(0,0,0,.12)'}}>
+          <Comp n={idx + 1} t={SLIDES.length} />
+          <div className="absolute bottom-6 right-8 flex gap-2 z-50">
+            <button onClick={() => setDark(d => !d)} title="Toggle theme (D)"
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border ${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}>
+              {dark ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
+            <div className="w-px h-9" style={{background: `${accentColor}33`}}></div>
+            <button onClick={() => go(-1)} disabled={idx===0}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border ${idx===0 ? th.navDisabled : `${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}`}>
+              <ChevL size={16} />
+            </button>
+            <button onClick={() => go(1)} disabled={idx===SLIDES.length-1}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border ${idx===SLIDES.length-1 ? th.navDisabled : `${th.navBg} ${th.navBorder} ${th.navText} ${th.navHover}`}`}>
+              <ChevR size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </ThemeCtx.Provider>
+  );
+}
+
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
