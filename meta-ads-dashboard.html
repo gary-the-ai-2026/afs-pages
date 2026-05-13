@@ -95,6 +95,24 @@ const BRANDS = {
     accentGradient: 'from-green-500 to-green-600',
     bodyFont: '"Montserrat", sans-serif',
     headingFont: '"Montserrat", sans-serif',
+  },
+  forceusa: {
+    name: 'Force USA',
+    accountId: 'act_501079870436090',
+    igId: '17841406216695295',
+    pageId: '1670716019614165',
+    currency: 'USD',
+    logo: 'https://cdn.shopify.com/s/files/1/1963/1339/files/force-usa-logo.png',
+    logoDark: 'https://cdn.shopify.com/s/files/1/1963/1339/files/force-usa-logo.png',
+    primary: '#185787',
+    primaryLight: '#e8f0f7',
+    primaryMid: '#c8ddef',
+    headerBg: '#081C28',
+    headerText: '#ffffff',
+    cardBorder: '#e6eaf1',
+    accentGradient: 'from-blue-600 to-blue-700',
+    bodyFont: '"Open Sans", sans-serif',
+    headingFont: '"Montserrat", sans-serif',
   }
 };
 
@@ -2971,7 +2989,7 @@ function App() {
                       color: brand === key ? '#fff' : '#6b7280',
                     }}
                   >
-                    {key === 'gaf' ? 'GAF' : 'Revel'}
+                    {key === 'gaf' ? 'GAF' : key === 'revel' ? 'Revel' : 'Force USA'}
                   </button>
                 ))}
               </div>
