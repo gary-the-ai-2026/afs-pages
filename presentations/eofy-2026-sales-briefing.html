@@ -292,6 +292,18 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
 .section.dark .callout strong, .section.rev-dark .callout strong { color: #FFFFFF; }
 .section.light .callout strong, .section.subtle .callout strong { color: var(--fg-1); }
 
+/* CTA button */
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 24px;
+  font: 700 14px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.06em;
+  color: #FFFFFF; background: var(--gaf-orange); padding: 16px 28px;
+  border-radius: var(--radius-md); text-decoration: none;
+  transition: background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+.cta-btn:hover { background: var(--gaf-orange-hover); transform: translateY(-1px); }
+.cta-btn.rev { background: var(--rev-green); }
+.cta-btn.rev:hover { background: #1e9a3f; }
+
 /* Meta strip */
 .meta-strip {
   display: flex; gap: 40px; margin-top: 64px; padding-top: 32px;
@@ -452,10 +464,6 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
           <div class="kpi-sub">est. from GP lift ratio</div>
         </div>
       </div>
-      <div class="callout orange fade-up d5">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-        <p><strong>Key brands:</strong> Force USA, Nike Strength, CENTR, STEPR, ProForm, Bowflex, Solitude. Latitude "from $X/month" messaging stays live on all hero products.</p>
-      </div>
     </div>
   </section>
 
@@ -491,8 +499,9 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
           </div>
           <div class="callout orange fade-up d5">
             <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg>
-            <p><strong>Sales team:</strong> Lead with Category Killers for price-sensitive buyers, Value Adds for upsell. Finance messaging on everything. Pricing is <strong>locked after May 8</strong>.</p>
+            <p><strong>Sales team:</strong> Lead with Category Killers for price-sensitive buyers, Value Adds for upsell opportunities.</p>
           </div>
+          <a href="https://docs.google.com/spreadsheets/d/1qZVgfeX5jnkM4AIJ57Y76X7NlbNNqKRMmePSQFrDFS0/edit?usp=sharing" target="_blank" class="cta-btn fade-up d6">View Full Pricing Spreadsheet &rarr;</a>
         </div>
       </div>
     </div>
@@ -730,7 +739,7 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
       </div>
       <div class="callout green fade-up d4">
         <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg>
-        <p><strong>Creative direction:</strong> High-impact "Up to 30% OFF" lockup as the focal point. Mix of lifestyle and product-only imagery. Consistent signature look across all assets. <strong>Tenille</strong> on web banners + Meta ads.</p>
+        <p><strong>Creative direction:</strong> High-impact "Up to 30% OFF" lockup as the focal point. Mix of lifestyle and product-only imagery. Consistent signature look across all assets.</p>
       </div>
     </div>
   </section>
