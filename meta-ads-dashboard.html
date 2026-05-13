@@ -121,11 +121,13 @@ const DEFAULT_TOKEN = 'EAAKiMl2GC1oBRQg8ZAgeiudsZCDUZCRAbGruYU6V1VgY3nGWLvxEUhZB
 
 // ─── Helpers ───
 const fmt = {
+  _currency: 'AUD',
   currency: (v) => {
     const n = parseFloat(v) || 0;
-    if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
-    if (n >= 10000) return '$' + (n/1000).toFixed(1) + 'K';
-    return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const sym = fmt._currency === 'USD' ? 'US$' : '$';
+    if (n >= 1000000) return sym + (n/1000000).toFixed(1) + 'M';
+    if (n >= 10000) return sym + (n/1000).toFixed(1) + 'K';
+    return sym + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   },
   number: (v) => {
     const n = parseFloat(v) || 0;
@@ -2830,6 +2832,7 @@ function App() {
   const [organicLoading, setOrganicLoading] = useState(false);
 
   const b = BRANDS[brand];
+  fmt._currency = b.currency;
 
   const handleBrandSwitch = (newBrand) => {
     setBrand(newBrand);
