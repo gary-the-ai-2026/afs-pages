@@ -474,7 +474,7 @@ async function fetchAdsCreatives(adIds, token) {
   const result = allAds.map(ad => {
     const detail = creativeDetails[adCreativeMap[ad.id]] || {};
     const spec = detail.object_story_spec;
-    const isVideo = !!spec?.video_data || !!ad.creative?.video_id || detail.object_type === 'VIDEO';
+    const isVideo = detail.object_type === 'VIDEO' || !!spec?.video_data?.video_id;
     const candidateIds = [ad.creative?.video_id, spec?.video_data?.video_id, spec?.link_data?.video_id].filter(Boolean).map(String);
     const videoId = candidateIds.find(id => /^\d+$/.test(id)) || null;
     return {
@@ -1719,7 +1719,7 @@ function CreativeTab({ data, brand }) {
         const creative = creativeMap[r.ad_id];
         const thumb = creative?.image_url || creative?.thumbnail_url;
         if (!thumb) return null;
-        const isVideo = !!creative?.isVideo || !!creative?.videoId || videoAdIds.has(r.ad_id);
+        const isVideo = !!creative?.isVideo;
         const videoId = creative?.videoId || null;
         const videoSource = creative?.videoSource || null;
         const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
