@@ -567,53 +567,89 @@ const ChallengesSlide = ({ n, t }) => {
   );
 };
 
-// ===== SLIDE 7: PROMOTIONAL CALENDAR =====
-const CalIcon = p => <I {...p} d={["M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z","M16 2v4","M8 2v4","M3 10h18"]} />;
+// ===== SLIDE: GROWING REP IN 2026 =====
 const Tag = p => <I {...p} d={["M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z","M7 7h.01"]} />;
 
-const CalendarSlide = ({ n, t }) => {
+const GrowingRepSlide = ({ n, t }) => {
   const th = useTheme();
-  const months = [
-    { month: 'JUN', label: 'EOFY Sale', type: 'major', desc: 'Hero Rep Fitness sale event. PR-5000 racks, FB-5000 benches, Ares 2.0 at aggressive pricing. Biggest campaign of H1.', items: ['PR-5000 Power Rack (save $314)', 'FB-5000 Flat Bench (save $129)', 'Ares 2.0 (save $555)'] },
-    { month: 'JUL', label: 'Post-EOFY Recovery', type: 'brand', desc: 'Brand-building window. Content push on Rep rack builds and gym setups. Gold Coast Marathon activation.', items: ['Rack build guide content', 'Customer testimonials', 'UGC campaign launch'] },
-    { month: 'AUG', label: 'GC Show Day', type: 'event', desc: 'Local activation. Rep Fitness product showcase and demo opportunity.', items: ['Product demos', 'Lead generation'] },
-    { month: 'SEP', label: "Father's Day + Aus Fitness Expo", type: 'major', desc: "Dual campaign: Father's Day gifting push (benches, dumbbells) and Aus Fitness Expo activation for commercial channel.", items: ["Father's Day bundles", 'Expo booth + Rep products', 'Commercial lead gen'] },
-    { month: 'OCT', label: 'Rack Season', type: 'brand', desc: 'Spring home gym builds. Push PR-5000 and PR-4000 racks, attachments, and full gym packages.', items: ['Rack configurator content', 'Full gym package deals', 'Experience Centre shoots'] },
-    { month: 'NOV', label: 'BCFM Sale', type: 'major', desc: 'Black Friday / Cyber Monday. Aggressive Rep Fitness pricing across full range. Whitelisted ads through Rep socials.', items: ['Full range sale pricing', 'Whitelisted social ads', 'Email + retargeting blitz'] },
-    { month: 'DEC', label: 'Boxing Day Sale', type: 'major', desc: 'Year-end clearance and Boxing Day event. Christmas cut-off messaging into post-Christmas sale.', items: ['Boxing Day deals', 'Christmas cut-off comms', 'New Year campaign tease'] },
+  const funnelStages = [
+    { label: 'Brand Awareness', metric: '15% organic', issue: '66% of traffic is paid', width: '100%', op: 0.12 },
+    { label: 'Website Traffic', metric: '302K page views', sub: '76K sessions across 11 months', width: '80%', op: 0.22 },
+    { label: 'Engagement', metric: '41K top product views', sub: 'Rep x Pepin Dumbbell leads', width: '58%', op: 0.45 },
+    { label: 'Conversion', metric: '$1.29M revenue', sub: '24.9% GP average', width: '38%', op: 1 },
   ];
-  const typeColors = { major: 'bg-gaf-orange', brand: th.kpiDarkBg, event: th.greenBg };
-  const typeLabels = { major: 'Sale', brand: 'Brand', event: 'Event' };
+  const heroes = [
+    { name: 'PR-5000 Power Rack', eofy: 1362, was: 1676 },
+    { name: 'FB-5000 Flat Bench', eofy: 290, was: 419 },
+    { name: 'Ares 2.0 5000 Series', eofy: 5219, was: 5774 },
+  ];
   return (
   <Slide num={n} total={t}>
-    <SectionTitle pre="H2 2026" title="PROMOTIONAL CALENDAR" sub="Rep Fitness campaign roadmap: June through December 2026" />
-    <div className="flex flex-col flex-1 gap-2 min-h-0 stagger">
-      {months.map((m, i) => (
-        <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg px-4 py-2.5 flex items-start gap-4 ${m.type === 'major' ? th.borderAccent : ''}`}>
-          <div className="w-12 shrink-0 text-center">
-            <p className={`text-[18px] font-heading font-bold ${m.type === 'major' ? 'text-gaf-orange' : th.text}`}>{m.month}</p>
-          </div>
-          <div className="w-px h-10 bg-gaf-orange/20 shrink-0 mt-0.5"></div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <p className={`text-[14px] font-heading font-semibold ${th.text}`}>{m.label}</p>
-              <span className={`text-[10px] font-heading tracking-wider uppercase px-2 py-0.5 rounded-full ${m.type === 'major' ? 'bg-gaf-orange/10 text-gaf-orange' : m.type === 'event' ? `${th.greenBg} ${th.green}` : `${th.bg3} ${th.sub}`}`}>{typeLabels[m.type]}</span>
+    <SectionTitle pre="Growth" title="GROWING REP IN 2026" sub="Expanding the funnel from brand awareness to conversion" />
+    <div className="flex flex-1 gap-6 min-h-0">
+      <div className="flex-1 flex flex-col gap-2">
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 stagger">
+          {funnelStages.map((s, i) => (
+            <div key={i} className="w-full flex justify-center">
+              <div className="rounded-lg px-5 py-3 flex items-center justify-between transition-all"
+                style={{width: s.width, backgroundColor: `rgba(242,100,34,${s.op})`, border: '1px solid rgba(242,100,34,0.2)'}}>
+                <div>
+                  <p className={`text-[15px] font-heading font-bold ${s.op >= 0.4 ? 'text-white' : th.text}`}>{s.label}</p>
+                  {s.sub && <p className={`text-[12px] ${s.op >= 0.4 ? 'text-white/70' : th.sub} font-body`}>{s.sub}</p>}
+                </div>
+                <div className="text-right">
+                  <p className={`text-[17px] font-heading font-bold ${s.op >= 0.4 ? 'text-white' : 'text-gaf-orange'}`}>{s.metric}</p>
+                  {s.issue && <p className={`text-[11px] font-body ${s.op >= 0.4 ? 'text-white/70' : th.amber}`}>{s.issue}</p>}
+                </div>
+              </div>
             </div>
-            <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{m.desc}</p>
+          ))}
+        </div>
+        <div className={`${th.cardBg} border-2 border-dashed border-gaf-orange/30 rounded-lg p-3 text-center shrink-0`}>
+          <p className={`text-[14px] font-body ${th.text} leading-snug`}>
+            <span className="text-gaf-orange font-semibold">Brand awareness is the bottleneck.</span> We convert well at the bottom through competitive pricing, but 66% paid traffic dependency limits scale. Investment in AU brand-building will grow the top and reduce cost per acquisition.
+          </p>
+        </div>
+      </div>
+      <div className="w-[420px] shrink-0 flex flex-col gap-3">
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex flex-col`} style={{borderLeft: '3px solid #f26422'}}>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <span className="text-[10px] font-heading tracking-wider uppercase text-gaf-orange bg-gaf-orange/10 rounded px-2 py-0.5">June 2026</span>
+              <h4 className={`text-[16px] font-heading font-bold ${th.text} mt-1`}>EOFY Sale</h4>
+            </div>
+            <Tag size={18} className="text-gaf-orange" />
           </div>
-          <div className="w-[260px] shrink-0 flex flex-wrap gap-1.5 mt-0.5">
-            {m.items.map((item, j) => (
-              <span key={j} className={`text-[11px] font-body ${th.sub} ${th.bg3} rounded px-2 py-0.5`}>{item}</span>
-            ))}
+          <div className="space-y-2">
+            {heroes.map((h, j) => {
+              const save = h.was - h.eofy;
+              return (
+              <div key={j} className={`flex items-center justify-between ${th.bg3} rounded-lg px-3 py-2`}>
+                <span className={`text-[13px] font-body ${th.text} font-medium`}>{h.name}</span>
+                <div className="flex items-center gap-3">
+                  <span className={`text-[12px] ${th.muted} font-body line-through`}>${h.was.toLocaleString()}</span>
+                  <span className="text-[15px] font-heading font-bold text-gaf-orange">${h.eofy.toLocaleString()}</span>
+                  <span className="text-[11px] font-heading text-gaf-orange bg-gaf-orange/10 rounded px-1.5 py-0.5">-${save}</span>
+                </div>
+              </div>
+              );
+            })}
           </div>
         </div>
-      ))}
-      <div className={`flex items-center gap-6 ${th.cardBg} border ${th.cardBorder} rounded-lg px-5 py-2 shrink-0`}>
-        <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase">Peak Events</p>
-        <div className={`flex gap-6 text-[14px] font-body ${th.sub}`}>
-          <span><span className="text-gaf-orange font-semibold">4 major sales</span> (EOFY, Father's Day, BCFM, Boxing Day)</span>
-          <span><span className={`${th.green} font-semibold`}>2 event activations</span> (GC Show Day, Aus Fitness Expo)</span>
-          <span><span className={`${th.text} font-semibold`}>7 months</span> of continuous Rep Fitness presence</span>
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4`} style={{borderLeft: '3px solid #f26422'}}>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <span className={`text-[10px] font-heading tracking-wider uppercase ${th.sub} ${th.bg3} rounded px-2 py-0.5`}>November 2026</span>
+              <h4 className={`text-[16px] font-heading font-bold ${th.text} mt-1`}>Black Friday / Cyber Monday</h4>
+            </div>
+            <Tag size={18} className={th.sub} />
+          </div>
+          <p className={`text-[13px] ${th.sub} font-body leading-snug`}>Full range sale pricing across Rep Fitness. Whitelisted ads through Rep social accounts. Email + retargeting blitz across the full portfolio.</p>
+        </div>
+        <div className="bg-gaf-orange rounded-lg p-4 flex-1 flex flex-col justify-center">
+          <ArrowUp size={20} className="text-white mb-2" />
+          <h4 className="text-[15px] font-heading font-bold text-white uppercase tracking-wider mb-2">The Opportunity</h4>
+          <p className="text-[14px] text-white/90 font-body leading-snug">Pricing events drive strong conversion, but we need brand awareness support to fill the top of the funnel. With co-investment in AU brand building, we can reduce paid dependency and grow organic demand for Rep Fitness in Australia.</p>
         </div>
       </div>
     </div>
@@ -621,65 +657,82 @@ const CalendarSlide = ({ n, t }) => {
   );
 };
 
-// ===== SLIDE 8: EOFY SALE HEROES =====
-const EOFYSlide = ({ n, t }) => {
+// ===== SLIDE: WHITELISTED ADS =====
+const WhitelabelSlide = ({ n, t }) => {
   const th = useTheme();
-  const heroes = [
-    { name: 'FB-5000 Competition Flat Bench', sku: 'FB-5000', eofy: 290, was: 419, gp: 23.8, cat: 'Bench' },
-    { name: 'PR-5000 Power Rack', sku: 'PR-5000', eofy: 1362, was: 1676, gp: 27.3, cat: 'Power Rack' },
-    { name: 'Cambered Swiss Bar', sku: 'BB-4312', eofy: 649, was: 734, gp: 52.7, cat: 'Barbell' },
-    { name: 'Nighthawk Adjustable Bench', sku: 'AB-4102', eofy: 799, was: 899, gp: 43.4, cat: 'Bench' },
-    { name: 'Ares 2.0 5000 Series 6-Post', sku: 'PRA-FT-5002', eofy: 5219, was: 5774, gp: 36.6, cat: 'Functional Trainer' },
-    { name: 'Arcadia Functional Trainer', sku: 'FT-3500', eofy: 3999, was: 4199, gp: 43.0, cat: 'Functional Trainer' },
+  const ads = [
+    { brand: 'Force USA', letter: 'F', copy: 'Build your best self at home. We don\'t just train for the mirror; we train for life.', product: 'All-In-One Trainers | Force USA', format: 'Video 0:12', bg: '#1a1a1a' },
+    { brand: 'Force USA', letter: 'F', copy: 'Before you can be Superman, you have to train like him.', product: 'Force USA | All-In-One Trainers', format: 'Video 0:30', bg: '#2a2a2a' },
+    { brand: 'STEPR', letter: 'S', copy: 'No subscriptions. Just results. Step Up Your Fitness Game with STEPR!', product: 'STEPR Connected Stair Climbers', format: 'Static', bg: '#e8e8e8', light: true },
+    { brand: 'STEPR', letter: 'S', copy: 'Big performance. Small footprint. STEPR GO is designed for your space.', product: 'STEPR Go | Designed For...', format: 'Video 0:24', bg: '#111' },
   ];
   return (
   <Slide num={n} total={t}>
-    <SectionTitle pre="June 2026" title="EOFY SALE" sub="Hero Rep Fitness products with EOFY pricing for the Australian market" />
-    <div className="flex flex-col flex-1 gap-3 min-h-0">
-      <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 stagger">
-        {heroes.map((h, i) => {
-          const save = h.was - h.eofy;
-          const pct = ((save / h.was) * 100).toFixed(0);
-          return (
-          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex flex-col justify-between ${th.borderAccent}`}>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className={`text-[11px] font-heading tracking-wider uppercase ${th.sub} ${th.bg3} rounded px-2 py-0.5`}>{h.cat}</span>
-                <span className="text-[11px] font-heading tracking-wider text-gaf-orange bg-gaf-orange/10 rounded px-2 py-0.5">SAVE ${save.toLocaleString()}</span>
-              </div>
-              <h3 className={`text-[16px] font-heading font-bold ${th.text} mb-1 leading-tight`}>{h.name}</h3>
-              <p className={`text-[12px] font-body ${th.muted}`}>{h.sku}</p>
+    <SectionTitle pre="Proven Model" title="WHITELISTED ADS" sub="Partnership ads running through brand social accounts outperform standard GAF ads" />
+    <div className="flex flex-1 gap-6 min-h-0">
+      <div className="w-[360px] shrink-0 flex flex-col gap-3 stagger">
+        <div className={`${th.kpiAccentBg} border-2 ${th.borderAccent} rounded-lg p-5 text-center`}>
+          <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase mb-2">Top ROAS in GAF Ad Account</p>
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="text-[6.5rem] font-display text-gaf-orange leading-none">4</span>
+            <span className={`text-[2.2rem] font-heading font-bold ${th.sub}`}>of 4</span>
+          </div>
+          <p className={`text-[15px] ${th.text} font-heading font-semibold mt-1`}>are whitelisted ads</p>
+          <p className={`text-[13px] ${th.sub} font-body mt-2 leading-snug`}>All four highest-performing ads by ROAS in the GAF ad account run through brand social accounts</p>
+        </div>
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex flex-col gap-2`}>
+          <h4 className={`text-[13px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>Why Whitelisted Ads Win</h4>
+          {["Appear from the brand's own social profile with higher trust",
+            "Leverage the brand's established audience and social proof",
+            "Outperform standard retailer ads on engagement and ROAS",
+            "Customer sees the brand, not the retailer, building equity"
+          ].map((item, j) => (
+            <div key={j} className="flex items-start gap-2">
+              <Check size={12} className={`${th.green} mt-0.5 shrink-0`} />
+              <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{item}</p>
             </div>
-            <div className="mt-3 pt-3 border-t border-dashed" style={{borderColor: 'rgba(242,100,34,0.2)'}}>
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className={`text-[12px] ${th.muted} font-body line-through`}>Was ${h.was.toLocaleString()}</p>
-                  <p className="text-[28px] font-heading font-bold text-gaf-orange leading-none">${h.eofy.toLocaleString()}</p>
-                </div>
-                <div className="text-right">
-                  <p className={`text-[22px] font-heading font-bold ${th.green}`}>{pct}%</p>
-                  <p className={`text-[11px] ${th.sub} font-body`}>OFF</p>
-                </div>
+          ))}
+        </div>
+        <div className="bg-gaf-orange rounded-lg p-4">
+          <h4 className="text-[14px] font-heading font-bold text-white uppercase tracking-wider mb-1">The Ask</h4>
+          <p className="text-[13px] text-white/90 font-body leading-snug">Replicate this proven model for Rep Fitness. Grant GAF Meta Partnership Ad access to run whitelisted campaigns through Rep's social accounts in the AU market.</p>
+        </div>
+      </div>
+      <div className="flex-1 grid grid-cols-2 gap-3 min-h-0">
+        {ads.map((ad, i) => (
+          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg overflow-hidden flex flex-col`}>
+            <div className="flex items-center gap-2 px-3 pt-3 pb-1.5">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-heading font-bold bg-black text-white">{ad.letter}</div>
+              <div className="flex-1">
+                <p className={`text-[13px] font-heading font-semibold ${th.text}`}>{ad.brand}</p>
+                <p className={`text-[11px] ${th.muted} font-body`}>Sponsored</p>
               </div>
-              <div className="flex items-center gap-2 mt-2">
-                <span className={`text-[12px] font-body ${th.sub}`}>GP%:</span>
-                <div className={`flex-1 ${th.bg3} rounded-full h-1.5`}>
-                  <div className="h-full rounded-full bg-gaf-orange fill-anim" style={{'--target-w': `${h.gp}%`}}></div>
-                </div>
-                <span className={`text-[13px] font-heading font-semibold ${h.gp > 35 ? th.green : th.amber}`}>{h.gp}%</span>
+              <span className="text-[10px] font-heading tracking-wider uppercase bg-gaf-orange/10 text-gaf-orange rounded px-2 py-0.5">Top ROAS</span>
+            </div>
+            <p className={`text-[12px] ${th.sub} font-body leading-snug px-3 pb-2`} style={{display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{ad.copy}</p>
+            <div className="flex-1 mx-3 rounded-lg flex items-center justify-center relative overflow-hidden" style={{backgroundColor: ad.bg, minHeight: '90px'}}>
+              <div className={`text-center ${ad.light ? 'text-black/30' : 'text-white/25'}`}>
+                <Cam size={22} className="mx-auto mb-1" />
+                <p className="text-[11px] font-heading">{ad.format}</p>
               </div>
+            </div>
+            <div className="flex items-center justify-between px-3 py-2 mt-1">
+              <div className="flex-1 min-w-0">
+                <p className={`text-[11px] ${th.muted} font-body`}>gymandfitness.com.au</p>
+                <p className={`text-[12px] font-heading font-semibold ${th.text} truncate`}>{ad.product}</p>
+              </div>
+              <div className={`text-[11px] font-heading font-semibold px-3 py-1 rounded border ${th.cardBorder} ${th.text} shrink-0 ml-2`}>Shop now</div>
             </div>
           </div>
-          );
-        })}
+        ))}
       </div>
-      <div className={`flex items-center justify-between ${th.cardBg} border ${th.cardBorder} rounded-lg px-5 py-2.5 shrink-0`}>
-        <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase">EOFY Strategy</p>
-        <div className={`flex gap-8 text-[14px] font-body ${th.sub}`}>
-          <span>Campaign: <span className="text-gaf-orange font-semibold">1 - 30 June</span></span>
-          <span>Channels: <span className={`${th.text} font-semibold`}>Paid Search + Social + EDM + Whitelisted Ads</span></span>
-          <span>Focus: <span className={`${th.green} font-semibold`}>Racks, Benches, Barbells</span></span>
-        </div>
+    </div>
+    <div className={`flex items-center justify-between ${th.cardBg} border ${th.cardBorder} rounded-lg px-5 py-2 mt-3 shrink-0`}>
+      <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase">Proven Across Portfolio</p>
+      <div className={`flex gap-8 text-[14px] font-body ${th.sub}`}>
+        <span>Force USA: <span className="text-gaf-orange font-semibold">Whitelisted</span></span>
+        <span>STEPR: <span className="text-gaf-orange font-semibold">Whitelisted</span></span>
+        <span>Rep Fitness: <span className={`${th.amber} font-semibold`}>Requesting access</span></span>
       </div>
     </div>
   </Slide>
@@ -894,7 +947,7 @@ const QSlide = ({ n, t }) => {
 };
 
 // ===== APP =====
-const SLIDES = [TitleSlide, PerfSlide, SalesSlide, DigitalSlide, WinsSlide, ChallengesSlide, CalendarSlide, EOFYSlide, PlansSlide, ExpSlide, SupportSlide, QSlide];
+const SLIDES = [TitleSlide, PerfSlide, SalesSlide, DigitalSlide, WinsSlide, ChallengesSlide, SupportSlide, GrowingRepSlide, WhitelabelSlide, PlansSlide, ExpSlide, QSlide];
 
 function App() {
   const [idx, setIdx] = useState(0);
