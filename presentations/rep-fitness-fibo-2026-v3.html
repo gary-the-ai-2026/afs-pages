@@ -617,6 +617,7 @@ const GrowingRepSlide = ({ n, t }) => {
             <div>
               <span className="text-[10px] font-heading tracking-wider uppercase text-gaf-orange bg-gaf-orange/10 rounded px-2 py-0.5">June 2026</span>
               <h4 className={`text-[16px] font-heading font-bold ${th.text} mt-1`}>EOFY Sale</h4>
+              <p className={`text-[11px] ${th.sub} font-body mt-0.5`}>Top 3 of 12 product offers</p>
             </div>
             <Tag size={18} className="text-gaf-orange" />
           </div>
@@ -661,67 +662,55 @@ const GrowingRepSlide = ({ n, t }) => {
 const WhitelabelSlide = ({ n, t }) => {
   const th = useTheme();
   const ads = [
-    { brand: 'Force USA', letter: 'F', copy: 'Build your best self at home. We don\'t just train for the mirror; we train for life.', product: 'All-In-One Trainers | Force USA', format: 'Video 0:12', bg: '#1a1a1a' },
-    { brand: 'Force USA', letter: 'F', copy: 'Before you can be Superman, you have to train like him.', product: 'Force USA | All-In-One Trainers', format: 'Video 0:30', bg: '#2a2a2a' },
-    { brand: 'STEPR', letter: 'S', copy: 'No subscriptions. Just results. Step Up Your Fitness Game with STEPR!', product: 'STEPR Connected Stair Climbers', format: 'Static', bg: '#e8e8e8', light: true },
-    { brand: 'STEPR', letter: 'S', copy: 'Big performance. Small footprint. STEPR GO is designed for your space.', product: 'STEPR Go | Designed For...', format: 'Video 0:24', bg: '#111' },
+    { brand: 'Force USA', img: 'assets/whitelisted-ad-9.png' },
+    { brand: 'Force USA', img: 'assets/whitelisted-ad-10.png' },
+    { brand: 'STEPR', img: 'assets/whitelisted-ad-11.png' },
+    { brand: 'STEPR', img: 'assets/whitelisted-ad-12.png' },
   ];
   return (
   <Slide num={n} total={t}>
     <SectionTitle pre="Proven Model" title="WHITELISTED ADS" sub="Partnership ads running through brand social accounts outperform standard GAF ads" />
-    <div className="flex flex-1 gap-6 min-h-0">
-      <div className="w-[360px] shrink-0 flex flex-col gap-3 stagger">
-        <div className={`${th.kpiAccentBg} border-2 ${th.borderAccent} rounded-lg p-5 text-center`}>
-          <p className="text-[13px] font-heading tracking-[.3em] text-gaf-orange uppercase mb-2">Top ROAS in GAF Ad Account</p>
+    <div className="flex flex-1 gap-5 min-h-0">
+      <div className="w-[300px] shrink-0 flex flex-col gap-3 stagger">
+        <div className={`${th.kpiAccentBg} border-2 ${th.borderAccent} rounded-lg p-4 text-center`}>
+          <p className="text-[12px] font-heading tracking-[.3em] text-gaf-orange uppercase mb-1">Top ROAS in GAF Ad Account</p>
           <div className="flex items-baseline justify-center gap-2">
-            <span className="text-[6.5rem] font-display text-gaf-orange leading-none">4</span>
-            <span className={`text-[2.2rem] font-heading font-bold ${th.sub}`}>of 4</span>
+            <span className="text-[5.5rem] font-display text-gaf-orange leading-none">4</span>
+            <span className={`text-[2rem] font-heading font-bold ${th.sub}`}>of 4</span>
           </div>
-          <p className={`text-[15px] ${th.text} font-heading font-semibold mt-1`}>are whitelisted ads</p>
-          <p className={`text-[13px] ${th.sub} font-body mt-2 leading-snug`}>All four highest-performing ads by ROAS in the GAF ad account run through brand social accounts</p>
+          <p className={`text-[14px] ${th.text} font-heading font-semibold mt-1`}>are whitelisted ads</p>
+          <p className={`text-[12px] ${th.sub} font-body mt-1.5 leading-snug`}>All four highest-performing ads by ROAS in the GAF ad account run through brand social accounts</p>
         </div>
-        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-4 flex flex-col gap-2`}>
-          <h4 className={`text-[13px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>Why Whitelisted Ads Win</h4>
+        <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-3.5 flex flex-col gap-1.5`}>
+          <h4 className={`text-[12px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>Why Whitelisted Ads Win</h4>
           {["Appear from the brand's own social profile with higher trust",
             "Leverage the brand's established audience and social proof",
             "Outperform standard retailer ads on engagement and ROAS",
             "Customer sees the brand, not the retailer, building equity"
           ].map((item, j) => (
             <div key={j} className="flex items-start gap-2">
-              <Check size={12} className={`${th.green} mt-0.5 shrink-0`} />
-              <p className={`text-[13px] ${th.sub} font-body leading-snug`}>{item}</p>
+              <Check size={11} className={`${th.green} mt-0.5 shrink-0`} />
+              <p className={`text-[12px] ${th.sub} font-body leading-snug`}>{item}</p>
             </div>
           ))}
         </div>
-        <div className="bg-gaf-orange rounded-lg p-4">
-          <h4 className="text-[14px] font-heading font-bold text-white uppercase tracking-wider mb-1">The Ask</h4>
-          <p className="text-[13px] text-white/90 font-body leading-snug">Replicate this proven model for Rep Fitness. Grant GAF Meta Partnership Ad access to run whitelisted campaigns through Rep's social accounts in the AU market.</p>
+        <div className="bg-gaf-orange rounded-lg p-3.5">
+          <h4 className="text-[13px] font-heading font-bold text-white uppercase tracking-wider mb-1">The Ask</h4>
+          <p className="text-[12px] text-white/90 font-body leading-snug">Replicate this proven model for Rep Fitness. Grant GAF Meta Partnership Ad access to run whitelisted campaigns through Rep's social accounts in the AU market.</p>
         </div>
       </div>
-      <div className="flex-1 grid grid-cols-2 gap-3 min-h-0">
+      <div className="flex-1 flex gap-3 min-h-0">
         {ads.map((ad, i) => (
-          <div key={i} className={`${th.cardBg} border ${th.cardBorder} rounded-lg overflow-hidden flex flex-col`}>
-            <div className="flex items-center gap-2 px-3 pt-3 pb-1.5">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-heading font-bold bg-black text-white">{ad.letter}</div>
-              <div className="flex-1">
-                <p className={`text-[13px] font-heading font-semibold ${th.text}`}>{ad.brand}</p>
-                <p className={`text-[11px] ${th.muted} font-body`}>Sponsored</p>
+          <div key={i} className={`flex-1 ${th.cardBg} border ${th.cardBorder} rounded-lg overflow-hidden flex flex-col`}>
+            <div className="flex items-center justify-between px-2 pt-2 pb-1 shrink-0">
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-heading font-bold bg-black text-white">{ad.brand[0]}</div>
+                <span className={`text-[11px] font-heading font-semibold ${th.text}`}>{ad.brand}</span>
               </div>
-              <span className="text-[10px] font-heading tracking-wider uppercase bg-gaf-orange/10 text-gaf-orange rounded px-2 py-0.5">Top ROAS</span>
+              <span className="text-[9px] font-heading tracking-wider uppercase bg-gaf-orange/10 text-gaf-orange rounded px-1.5 py-0.5">Top ROAS</span>
             </div>
-            <p className={`text-[12px] ${th.sub} font-body leading-snug px-3 pb-2`} style={{display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{ad.copy}</p>
-            <div className="flex-1 mx-3 rounded-lg flex items-center justify-center relative overflow-hidden" style={{backgroundColor: ad.bg, minHeight: '90px'}}>
-              <div className={`text-center ${ad.light ? 'text-black/30' : 'text-white/25'}`}>
-                <Cam size={22} className="mx-auto mb-1" />
-                <p className="text-[11px] font-heading">{ad.format}</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between px-3 py-2 mt-1">
-              <div className="flex-1 min-w-0">
-                <p className={`text-[11px] ${th.muted} font-body`}>gymandfitness.com.au</p>
-                <p className={`text-[12px] font-heading font-semibold ${th.text} truncate`}>{ad.product}</p>
-              </div>
-              <div className={`text-[11px] font-heading font-semibold px-3 py-1 rounded border ${th.cardBorder} ${th.text} shrink-0 ml-2`}>Shop now</div>
+            <div className="flex-1 mx-2 mb-2 rounded overflow-hidden relative">
+              <img src={ad.img} alt={`${ad.brand} whitelisted ad`} className="w-full h-full object-cover object-top" />
             </div>
           </div>
         ))}
@@ -892,24 +881,6 @@ const SupportSlide = ({ n, t }) => {
                 <div key={j} className={`${th.bg3} rounded-lg p-2.5`}>
                   <p className={`text-[12px] font-heading font-semibold ${th.text} mb-0.5`}>{item.label}</p>
                   <p className={`text-[12px] ${th.sub} font-body leading-snug`}>{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className={`${th.cardBg} border ${th.cardBorder} rounded-lg p-3`}>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Bolt size={14} className="text-gaf-orange" />
-              <h4 className={`text-[13px] font-heading font-semibold tracking-[.2em] uppercase ${th.text}`}>Marketing Assets</h4>
-            </div>
-            <div className="space-y-1">
-              {["Local AU lifestyle imagery + video for Meta/YouTube",
-                "Rack configuration guides to reduce online friction",
-                "Co-branded creative adapted for AU market",
-                "Event/expo collateral and demo equipment"
-              ].map((item, j) => (
-                <div key={j} className="flex items-start gap-2">
-                  <Msg size={9} className={`${th.muted} mt-0.5 shrink-0`} />
-                  <p className={`text-[12px] ${th.sub} font-body leading-snug`}>{item}</p>
                 </div>
               ))}
             </div>
