@@ -478,17 +478,121 @@
     }
 
     /* --- RESPONSIVE --- */
+
+    /* Tablet */
+    @media (max-width: 1024px) {
+      .slide-inner { padding: 48px 32px; }
+      h1 { font-size: 44px; }
+      h2 { font-size: 34px; }
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .slide-title h1 { font-size: 48px; }
+    }
+
+    /* Mobile */
     @media (max-width: 768px) {
-      .slide-inner { padding: 40px 24px; }
-      h1 { font-size: 36px; }
-      h2 { font-size: 28px; }
-      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      html { scroll-snap-type: none; }
+
+      .slide {
+        min-height: auto;
+        padding: 0;
+      }
+
+      .slide-inner { padding: 48px 20px; }
+
+      h1 { font-size: 32px; line-height: 1.15; }
+      h2 { font-size: 26px; margin-bottom: 20px; }
+      h3 { font-size: 18px; }
+      h4 { font-size: 16px; }
+      .subtitle { font-size: 16px; }
+      .eyebrow { font-size: 11px; margin-bottom: 12px; }
+
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 16px; }
       .heartbeat-grid { grid-template-columns: 1fr; }
-      .big-number { font-size: 48px; }
+
+      .big-number { font-size: 40px; }
+      .big-number-label { font-size: 12px; }
+
       .title-meta { flex-direction: column; gap: 16px; }
-      .nav-dots { right: 12px; }
-      .metric-row { gap: 24px; }
-      .slide-title h1 { font-size: 40px; }
+
+      .nav-dots { display: none; }
+      .slide-counter { bottom: 16px; right: 16px; font-size: 12px; }
+
+      .metric-row { gap: 16px; flex-wrap: wrap; justify-content: center; }
+
+      .slide-title h1 { font-size: 34px; }
+      .slide-title .subtitle { font-size: 16px; }
+
+      /* Integration pills: smaller on mobile */
+      .integration-grid { gap: 8px; }
+      .integration-pill { padding: 10px 14px; font-size: 12px; }
+
+      /* Pills */
+      .pill { font-size: 10px; padding: 5px 10px; margin: 0 4px 6px 0; }
+
+      /* Cards */
+      .card { padding: 20px; }
+
+      /* Flow diagram */
+      .flow { gap: 8px; }
+      .flow-node { font-size: 12px; padding: 8px 14px; }
+
+      /* Heartbeat cards */
+      .heartbeat-card { padding: 12px 16px; gap: 10px; }
+      .heartbeat-card .freq { font-size: 10px; min-width: 60px; }
+      .heartbeat-card .desc { font-size: 12px; }
+
+      /* Score rows */
+      .score-label { font-size: 12px; min-width: 100px; }
+      .score-value { font-size: 12px; min-width: 36px; }
+
+      /* Case study: stack the 3-column layout */
+      .slide-inner > div[style*="grid-template-columns: 1fr 40px 1fr"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 24px !important;
+      }
+      .slide-inner > div[style*="grid-template-columns: 1fr 40px 1fr"] > div:nth-child(2) {
+        padding-top: 0 !important;
+        transform: rotate(90deg);
+      }
+
+      /* Stats row on sales calls slide */
+      .slide-inner > div[style*="display: flex"][style*="gap: 20px"] {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+      }
+      .slide-inner > div[style*="display: flex"][style*="gap: 20px"] > div[style*="flex: 0 0 1px"] {
+        display: none !important;
+      }
+
+      /* Thesis slide: stack image and text */
+      .slide-inner > div[style*="display: flex"][style*="gap: 48px"] {
+        flex-direction: column !important;
+        gap: 24px !important;
+      }
+
+      /* Google Chat 2-col grid */
+      .slide-inner > div[style*="grid-template-columns: 1fr 1fr"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px !important;
+      }
+
+      /* Data table */
+      .data-table { font-size: 12px; }
+      .data-table th { font-size: 10px; padding: 8px; }
+      .data-table td { padding: 10px 8px; }
+    }
+
+    /* Small mobile */
+    @media (max-width: 400px) {
+      .slide-inner { padding: 36px 16px; }
+      h1 { font-size: 28px; }
+      h2 { font-size: 22px; }
+      .big-number { font-size: 32px; }
+      .slide-title h1 { font-size: 28px; }
+      .integration-pill { padding: 8px 10px; font-size: 11px; }
     }
 
     /* --- ANIMATIONS --- */
