@@ -137,6 +137,42 @@ const BRANDS = {
 const META_API = 'https://graph.facebook.com/v21.0';
 const DEFAULT_TOKEN = 'EAAKiMl2GC1oBRQg8ZAgeiudsZCDUZCRAbGruYU6V1VgY3nGWLvxEUhZBGQ0RZAP59zLJXgAMZBTMf2OiULsjSW7FVmOZAYOiQATkQeDT2lQHam14DRXfteiBDMkXpxP6DreX8ZCYtO7fEZBQEiaMFU1N6caFsLYxPYWF0TLS5b2hLusGoZAb8IXhSMq2nwlAZDZD';
 
+// ─── Daily Cache ───
+const CACHE_PREFIX = 'spd_cache_';
+const todayKey = () => new Date().toISOString().slice(0, 10);
+
+function cacheGet(type, brand, datePreset, extra = '') {
+  try {
+    const key = `${CACHE_PREFIX}${type}_${brand}_${datePreset}${extra}`;
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { day, data } = JSON.parse(raw);
+    if (day !== todayKey()) { localStorage.removeItem(key); return null; }
+    return data;
+  } catch { return null; }
+}
+
+function cacheSet(type, brand, datePreset, data, extra = '') {
+  try {
+    const key = `${CACHE_PREFIX}${type}_${brand}_${datePreset}${extra}`;
+    localStorage.setItem(key, JSON.stringify({ day: todayKey(), data }));
+  } catch {}
+}
+
+function cachePurgeStale() {
+  try {
+    const today = todayKey();
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(CACHE_PREFIX)) {
+        const raw = localStorage.getItem(k);
+        try { if (JSON.parse(raw).day !== today) localStorage.removeItem(k); } catch { localStorage.removeItem(k); }
+      }
+    }
+  } catch {}
+}
+cachePurgeStale();
+
 // ─── Helpers ───
 const fmt = {
   _currency: 'AUD',
@@ -2859,14 +2895,22 @@ function App() {
     setOrganicData(null);
   };
 
-  const loadOrganic = useCallback(async () => {
+  const loadOrganic = useCallback(async (forceRefresh = false) => {
     if (!token) return;
+    const dpKey = datePreset === 'custom' ? `custom_${customDates.since}_${customDates.until}` : datePreset;
+
+    if (!forceRefresh) {
+      const cached = cacheGet('organic', brand, dpKey);
+      if (cached) { setOrganicData(cached); return; }
+    }
+
     setOrganicLoading(true);
     try {
       const { since, until } = getDateRange(datePreset, customDates);
       if (!since || !until) return;
       const { igId, pageId } = BRANDS[brand];
       const result = await fetchOrganicData(igId, pageId, since, until, token);
+      cacheSet('organic', brand, dpKey, result);
       setOrganicData(result);
     } catch (err) {
       console.error('Organic fetch error:', err.message);
@@ -2881,8 +2925,16 @@ function App() {
     setData(null);
   };
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (forceRefresh = false) => {
     if (!token) return;
+    const cacheExtra = `_${attrWindow}`;
+    const dpKey = datePreset === 'custom' ? `custom_${customDates.since}_${customDates.until}` : datePreset;
+
+    if (!forceRefresh) {
+      const cached = cacheGet('ads', brand, dpKey, cacheExtra);
+      if (cached) { setData(cached); setLastRefresh(new Date()); return; }
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -2913,7 +2965,9 @@ function App() {
       const adIds = [...new Set(adInsights.map(r => r.ad_id).filter(Boolean))];
       const adsCreatives = await fetchAdsCreatives(adIds, token);
 
-      setData({ campaignInsights, adsetInsights, adInsights, adsCreatives, dailyInsights, compInsights, campaignMeta, videoInsights, breakdownAge, breakdownGender, breakdownPlatform, breakdownPosition, breakdownRegion: breakdownCountry });
+      const result = { campaignInsights, adsetInsights, adInsights, adsCreatives, dailyInsights, compInsights, campaignMeta, videoInsights, breakdownAge, breakdownGender, breakdownPlatform, breakdownPosition, breakdownRegion: breakdownCountry };
+      cacheSet('ads', brand, dpKey, result, cacheExtra);
+      setData(result);
       setLastRefresh(new Date());
     } catch (err) {
       setError(err.message);
@@ -3010,7 +3064,7 @@ function App() {
                       color: brand === key ? '#fff' : '#6b7280',
                     }}
                   >
-                    {key === 'gaf' ? 'GAF' : key === 'revel' ? 'Revel' : 'Force USA'}
+                    {key === 'gaf' ? 'GAF' : key === 'forceusa' ? 'Force USA' : val.name}
                   </button>
                 ))}
               </div>
@@ -3082,7 +3136,7 @@ function App() {
             )}
 
             <button
-              onClick={() => { if (tab === 'organic') { setOrganicData(null); setTimeout(loadOrganic, 50); } else { fetchData(); } }}
+              onClick={() => { if (tab === 'organic') { setOrganicData(null); setTimeout(() => loadOrganic(true), 50); } else { fetchData(true); } }}
               disabled={loading || organicLoading}
               className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
               style={{backgroundColor: b.primary}}
