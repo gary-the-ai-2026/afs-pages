@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Revel Aura Sauna Range - Internal Pricing</title>
+  <title>Revel Aura Sauna - Quote</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -28,402 +28,284 @@
       --font-sans: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
       --shadow-sm: 0 2px 4px rgba(21,21,19,.06), 0 1px 2px rgba(21,21,19,.04);
       --shadow-md: 0 6px 14px rgba(21,21,19,.08), 0 2px 4px rgba(21,21,19,.04);
+      --shadow-lg: 0 12px 28px rgba(21,21,19,.12), 0 4px 8px rgba(21,21,19,.06);
       --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
       --dur-base: 200ms;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font: 400 16px/1.55 var(--font-sans); background: var(--grey-50); color: var(--black); }
+    body { font: 400 16px/1.55 var(--font-sans); background: var(--grey-50); color: var(--black); -webkit-font-smoothing: antialiased; }
 
     .header {
       background: var(--black);
-      padding: 16px;
+      padding: 16px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
     .header img { height: 32px; width: auto; }
-    .header-date { font: 400 12px/1.4 var(--font-sans); color: var(--grey-400); }
-
-    .container { max-width: 900px; margin: 0 auto; padding: 40px 16px; }
-
-    .page-title { font: 700 32px/1.15 var(--font-display); text-transform: uppercase; color: var(--black); margin-bottom: 4px; }
-    .page-subtitle { font: 400 14px/1.5 var(--font-sans); color: var(--grey-600); margin-bottom: 32px; }
-
-    .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
-    .card {
-      background: var(--white);
-      border: 1px solid var(--grey-200);
-      border-radius: 6px;
-      box-shadow: var(--shadow-sm);
-      padding: 20px;
-    }
-    .card-label {
-      font: 600 11px/1.2 var(--font-display);
+    .header-tag {
+      font: 600 11px/1 var(--font-display);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--grey-600);
-      margin-bottom: 4px;
-    }
-    .card-value { font: 700 24px/1.1 var(--font-display); color: var(--black); font-variant-numeric: tabular-nums; }
-    .card-value.highlight { color: var(--revel-green); }
-    .card-detail { font: 400 12px/1.4 var(--font-sans); color: var(--grey-500); margin-top: 4px; }
-
-    .eyebrow {
-      font: 700 12px/1.3 var(--font-display);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
       color: var(--revel-green);
-      margin: 40px 0 12px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--revel-green);
-      display: inline-block;
+      background: rgba(37,179,75,.12);
+      padding: 6px 12px;
+      border-radius: 4px;
     }
 
-    .product-card {
+    .container { max-width: 720px; margin: 0 auto; padding: 40px 20px 60px; }
+
+    .page-title {
+      font: 800 36px/1.1 var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      color: var(--black);
+      margin-bottom: 6px;
+    }
+    .page-subtitle {
+      font: 400 15px/1.5 var(--font-sans);
+      color: var(--grey-600);
+      margin-bottom: 40px;
+    }
+
+    .product {
       background: var(--white);
       border: 1px solid var(--grey-200);
-      border-radius: 6px;
+      border-radius: 10px;
       box-shadow: var(--shadow-sm);
-      margin-bottom: 16px;
       overflow: hidden;
+      margin-bottom: 28px;
       transition: box-shadow var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
     }
-    .product-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .product:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
 
-    .product-main {
-      display: flex;
-      gap: 16px;
-      padding: 20px;
-      align-items: flex-start;
+    .product-hero {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      background: var(--grey-100);
+      display: block;
     }
-    .product-img {
-      width: 100px;
-      height: 100px;
-      border-radius: 4px;
-      object-fit: contain;
-      background: var(--grey-900);
-      flex-shrink: 0;
+
+    .product-gallery {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
     }
-    .product-info { flex: 1; min-width: 0; }
-    .product-name { font: 600 15px/1.3 var(--font-display); color: var(--black); margin-bottom: 4px; }
-    .product-meta {
-      font: 600 11px/1.2 var(--font-display);
+    .product-gallery img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+    }
+
+    .product-body { padding: 24px; }
+
+    .product-name {
+      font: 700 20px/1.25 var(--font-display);
+      color: var(--black);
+      margin-bottom: 4px;
+    }
+    .product-sku {
+      font: 600 11px/1 var(--font-display);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--grey-500);
-      margin-bottom: 12px;
-    }
-    .gen-badge {
-      display: inline-block;
-      font: 700 10px/1 var(--font-display);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 4px 8px;
-      border-radius: 4px;
-      margin-left: 8px;
-    }
-    .gen-badge.current { background: var(--revel-green-soft); color: var(--revel-green-700); }
-    .gen-badge.legacy { background: var(--grey-100); color: var(--grey-500); }
-
-    .price-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
-      margin-top: 8px;
-    }
-    .price-item {}
-    .price-label {
-      font: 600 9px/1 var(--font-display);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       color: var(--grey-400);
-      margin-bottom: 3px;
+      margin-bottom: 20px;
     }
-    .price-val { font: 700 15px/1.2 var(--font-display); color: var(--black); font-variant-numeric: tabular-nums; }
-    .price-val.retail { color: var(--grey-500); }
-    .price-val.cost { color: var(--revel-green); }
-    .price-val.gp { color: var(--revel-forest); }
+
+    .price-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .price-block {}
+    .price-label {
+      font: 600 10px/1 var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-400);
+      margin-bottom: 6px;
+    }
+    .price-value {
+      font: 700 22px/1.1 var(--font-display);
+      font-variant-numeric: tabular-nums;
+      color: var(--black);
+    }
+    .price-value.rrp {
+      color: var(--grey-500);
+      text-decoration: line-through;
+      text-decoration-color: var(--grey-300);
+    }
+    .price-value.cost { color: var(--grey-600); font-size: 18px; }
+    .price-value.your-price { color: var(--revel-green); }
+
+    .savings-bar {
+      background: var(--revel-green-soft);
+      border: 1px solid rgba(37,179,75,.2);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .savings-text {
+      font: 600 13px/1.3 var(--font-display);
+      color: var(--revel-green-700);
+    }
+    .savings-pct {
+      font: 800 18px/1 var(--font-display);
+      color: var(--revel-green);
+    }
 
     .btn-view {
       display: inline-block;
-      font: 700 11px/1 var(--font-display);
+      font: 700 12px/1 var(--font-display);
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: var(--revel-green);
-      background: transparent;
-      border: 2px solid var(--revel-green);
-      border-radius: 999px;
-      padding: 8px 16px;
+      color: var(--white);
+      background: var(--revel-green);
+      border: none;
+      border-radius: 6px;
+      padding: 12px 24px;
       text-decoration: none;
       cursor: pointer;
-      transition: background var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
-      margin-top: 12px;
+      transition: background var(--dur-base) var(--ease-out);
+      margin-top: 16px;
     }
-    .btn-view:hover { background: var(--revel-green); color: var(--white); }
+    .btn-view:hover { background: var(--revel-green-700); }
 
     .note-bar {
-      background: var(--revel-green-soft);
-      border: 1px solid var(--revel-green);
-      border-radius: 6px;
-      padding: 12px 16px;
-      font: 400 13px/1.5 var(--font-sans);
-      color: var(--revel-green-700);
-      margin-top: 32px;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-top: 12px;
     }
+    .note-bar p {
+      font: 400 13px/1.6 var(--font-sans);
+      color: var(--grey-500);
+    }
+    .note-bar strong { color: var(--grey-700); }
 
     .footer {
       text-align: center;
-      padding: 40px 16px;
+      padding: 40px 20px;
       font: 400 12px/1.4 var(--font-sans);
       color: var(--grey-400);
     }
 
-    @media (max-width: 768px) {
-      .summary-cards { grid-template-columns: 1fr 1fr; }
-      .product-main { flex-direction: column; }
-      .product-img { width: 100%; height: 200px; }
-      .price-grid { grid-template-columns: repeat(3, 1fr); }
-      .page-title { font-size: 24px; }
-      .card-value { font-size: 20px; }
-    }
-    @media (max-width: 480px) {
-      .price-grid { grid-template-columns: repeat(2, 1fr); }
-      .summary-cards { grid-template-columns: 1fr; }
+    @media (max-width: 600px) {
+      .container { padding: 24px 16px 40px; }
+      .page-title { font-size: 26px; }
+      .product-body { padding: 20px 16px; }
+      .product-name { font-size: 17px; }
+      .price-row { grid-template-columns: 1fr; gap: 14px; }
+      .price-block {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--grey-100);
+      }
+      .price-block:last-child { border-bottom: none; padding-bottom: 0; }
+      .price-label { margin-bottom: 0; }
+      .price-value { font-size: 20px; }
+      .price-value.cost { font-size: 18px; }
+      .savings-bar { flex-direction: column; gap: 4px; text-align: center; }
+      .header { padding: 12px 16px; }
+      .header img { height: 26px; }
     }
   </style>
 </head>
 <body>
   <div class="header">
     <img src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/REVEL_Logo-White-02.png?v=1691241102" alt="Revel">
-    <div class="header-date">Internal Pricing &mdash; 18 May 2026</div>
+    <div class="header-tag">Quote</div>
   </div>
 
   <div class="container">
-    <h1 class="page-title">Aura Sauna Range</h1>
-    <p class="page-subtitle">Full Spectrum Infrared Saunas &mdash; 2-3 person models with AU defined cost, purchase price, and margin data from NetSuite.</p>
+    <h1 class="page-title">Aura Sauna<br>Next Gen Range</h1>
+    <p class="page-subtitle">Full Spectrum Infrared Saunas - 2 &amp; 3 Person Models</p>
 
-    <div class="summary-cards">
-      <div class="card">
-        <div class="card-label">Models</div>
-        <div class="card-value">4</div>
-        <div class="card-detail">2 current + 2 legacy</div>
+    <!-- 2 Person Next Gen -->
+    <div class="product">
+      <img class="product-hero" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/Aura-2P-G2-01.png?v=1769789942" alt="Revel Aura 2 Person Next Gen">
+      <div class="product-gallery">
+        <img src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/revel-aura2P-24.jpg?v=1769789361" alt="Aura 2P lifestyle">
+        <img src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/revel-aura2P-23.jpg?v=1769789364" alt="Aura 2P detail">
       </div>
-      <div class="card">
-        <div class="card-label">Price Range</div>
-        <div class="card-value">$3,999 &ndash; $6,999</div>
-        <div class="card-detail">Retail incl. GST</div>
-      </div>
-      <div class="card">
-        <div class="card-label">Avg AU Cost</div>
-        <div class="card-value highlight">$2,201</div>
-        <div class="card-detail">Item defined cost</div>
-      </div>
-      <div class="card">
-        <div class="card-label">Avg GP%</div>
-        <div class="card-value highlight">63%</div>
-        <div class="card-detail">On AU defined cost</div>
+      <div class="product-body">
+        <div class="product-name">Revel Aura 2 Person Full Spectrum Infrared Sauna</div>
+        <div class="product-sku">SKU: R-FS-2P-V2 &middot; Next Gen</div>
+
+        <div class="price-row">
+          <div class="price-block">
+            <div class="price-label">RRP</div>
+            <div class="price-value rrp">$5,999</div>
+          </div>
+          <div class="price-block">
+            <div class="price-label">AU Item Defined Cost</div>
+            <div class="price-value cost">$2,363</div>
+          </div>
+          <div class="price-block">
+            <div class="price-label">Your Price</div>
+            <div class="price-value your-price">$3,119</div>
+          </div>
+        </div>
+
+        <div class="savings-bar">
+          <span class="savings-text">Saving off RRP</span>
+          <span class="savings-pct">$2,880 (48%)</span>
+        </div>
+
+        <a href="https://revelsaunas.com.au/products/revel-aura-2-person-full-spectrum-infrared-sauna-v2" target="_blank" class="btn-view">View on Site</a>
       </div>
     </div>
 
-    <span class="eyebrow">Next Gen (Current Range)</span>
-
-    <!-- Aura 2P V2 -->
-    <div class="product-card">
-      <div class="product-main">
-        <img class="product-img" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/2-Person-Aura-V2-angle_d5ab1cf3-7b5e-4f5e-9efa-4bfcf3f0a8fa.png?v=1747206006" alt="Aura 2 Person Next Gen" onerror="this.style.display='none'">
-        <div class="product-info">
-          <div class="product-name">Revel Aura 2 Person Full Spectrum Infrared Sauna <span class="gen-badge current">Next Gen</span></div>
-          <div class="product-meta">SKU: R-FS-2P-V2</div>
-          <div class="price-grid">
-            <div class="price-item">
-              <div class="price-label">Retail</div>
-              <div class="price-val retail">$5,999</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">AU Defined Cost</div>
-              <div class="price-val cost">$2,363</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">Last Purchase</div>
-              <div class="price-val">$1,639</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">Avg Cost</div>
-              <div class="price-val">$1,680</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">GP% (AU Cost)</div>
-              <div class="price-val gp">61%</div>
-            </div>
-          </div>
-          <a href="https://revelsaunas.com.au/products/revel-aura-2-person-full-spectrum-infrared-sauna-next-gen" target="_blank" class="btn-view">View on Site</a>
-        </div>
+    <!-- 3 Person Next Gen -->
+    <div class="product">
+      <img class="product-hero" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/revel-aura3P-00.png?v=1764230992" alt="Revel Aura 3 Person Next Gen">
+      <div class="product-gallery">
+        <img src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/revel-aura3P-06.png?v=1769789986" alt="Aura 3P lifestyle">
+        <img src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/Aura-2P-G2-15.jpg?v=1769789350" alt="Aura interior detail">
       </div>
-    </div>
+      <div class="product-body">
+        <div class="product-name">Revel Aura 3 Person Full Spectrum Infrared Sauna</div>
+        <div class="product-sku">SKU: R-FS-3P-V2 &middot; Next Gen</div>
 
-    <!-- Aura 3P V2 -->
-    <div class="product-card">
-      <div class="product-main">
-        <img class="product-img" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/files/3-Person-Aura-V2-angle.png?v=1747206006" alt="Aura 3 Person Next Gen" onerror="this.style.display='none'">
-        <div class="product-info">
-          <div class="product-name">Revel Aura 3 Person Full Spectrum Infrared Sauna <span class="gen-badge current">Next Gen</span></div>
-          <div class="product-meta">SKU: R-FS-3P-V2</div>
-          <div class="price-grid">
-            <div class="price-item">
-              <div class="price-label">Retail</div>
-              <div class="price-val retail">$6,999</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">AU Defined Cost</div>
-              <div class="price-val cost">$2,604</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">Last Purchase</div>
-              <div class="price-val">$1,870</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">Avg Cost</div>
-              <div class="price-val">$1,934</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">GP% (AU Cost)</div>
-              <div class="price-val gp">63%</div>
-            </div>
+        <div class="price-row">
+          <div class="price-block">
+            <div class="price-label">RRP</div>
+            <div class="price-value rrp">$6,999</div>
           </div>
-          <a href="https://revelsaunas.com.au/products/revel-aura-3-person-full-spectrum-infrared-sauna-next-gen" target="_blank" class="btn-view">View on Site</a>
-        </div>
-      </div>
-    </div>
-
-    <span class="eyebrow">Gen 1 (Legacy)</span>
-
-    <!-- Aura 2P Gen 1 -->
-    <div class="product-card">
-      <div class="product-main">
-        <img class="product-img" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/products/RevelAura2P-FrontAngle.png?v=1700000000" alt="Aura 2 Person Gen 1" onerror="this.style.display='none'">
-        <div class="product-info">
-          <div class="product-name">Revel Aura (Gen 1) - 2 Person Full Spectrum Infrared Sauna <span class="gen-badge legacy">Gen 1</span></div>
-          <div class="product-meta">SKU: R-FS-2P</div>
-          <div class="price-grid">
-            <div class="price-item">
-              <div class="price-label">Retail</div>
-              <div class="price-val retail">$3,999</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">AU Defined Cost</div>
-              <div class="price-val cost">$1,808</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">Last Purchase</div>
-              <div class="price-val">$1,455</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">Avg Cost</div>
-              <div class="price-val">$1,254</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">GP% (AU Cost)</div>
-              <div class="price-val gp">55%</div>
-            </div>
+          <div class="price-block">
+            <div class="price-label">AU Item Defined Cost</div>
+            <div class="price-value cost">$2,604</div>
           </div>
-          <a href="https://revelsaunas.com.au/products/revel-aura-gen-1-2-person-full-spectrum-infrared-sauna" target="_blank" class="btn-view">View on Site</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Aura 3P Gen 1 (listed as 4P) -->
-    <div class="product-card">
-      <div class="product-main">
-        <img class="product-img" src="https://cdn.shopify.com/s/files/1/0802/6279/1481/products/RevelAura3P-FrontAngle.png?v=1700000000" alt="Aura 3 Person Gen 1" onerror="this.style.display='none'">
-        <div class="product-info">
-          <div class="product-name">Revel Aura - 3 Person Full Spectrum Infrared Sauna <span class="gen-badge legacy">Gen 1</span></div>
-          <div class="product-meta">SKU: R-FS-4P</div>
-          <div class="price-grid">
-            <div class="price-item">
-              <div class="price-label">Retail</div>
-              <div class="price-val retail">$6,999</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">AU Defined Cost</div>
-              <div class="price-val cost">$2,028</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">Last Purchase</div>
-              <div class="price-val">$1,644</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">Avg Cost</div>
-              <div class="price-val">$1,558</div>
-            </div>
-            <div class="price-item">
-              <div class="price-label">GP% (AU Cost)</div>
-              <div class="price-val gp">71%</div>
-            </div>
+          <div class="price-block">
+            <div class="price-label">Your Price</div>
+            <div class="price-value your-price">$3,437</div>
           </div>
-          <a href="https://revelsaunas.com.au/products/revel-aura-3-person-full-spectrum-infrared-sauna" target="_blank" class="btn-view">View on Site</a>
         </div>
+
+        <div class="savings-bar">
+          <span class="savings-text">Saving off RRP</span>
+          <span class="savings-pct">$3,562 (51%)</span>
+        </div>
+
+        <a href="https://revelsaunas.com.au/products/revel-aura-3-person-full-spectrum-infrared-sauna" target="_blank" class="btn-view">View on Site</a>
       </div>
     </div>
 
     <div class="note-bar">
-      <strong>Cost definitions:</strong> AU Defined Cost = landed cost incl. freight + duty (in8sync field). Last Purchase = most recent PO price. Avg Cost = weighted average across all purchase orders. GP% calculated on AU Defined Cost vs retail (incl. GST). All data sourced from NetSuite.
+      <p><strong>Pricing notes:</strong> Your Price is AU Item Defined Cost + 32% markup. All prices in AUD including GST. RRP is current website retail price. Costs sourced from NetSuite.</p>
     </div>
-
-    <table style="width:100%; margin-top:32px; border-collapse:collapse; font-size:13px;">
-      <thead>
-        <tr style="border-bottom:2px solid var(--grey-200);">
-          <th style="text-align:left; padding:10px 8px; font:600 10px/1 var(--font-display); text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-500);">SKU</th>
-          <th style="text-align:left; padding:10px 8px; font:600 10px/1 var(--font-display); text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-500);">Product</th>
-          <th style="text-align:right; padding:10px 8px; font:600 10px/1 var(--font-display); text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-500);">Retail</th>
-          <th style="text-align:right; padding:10px 8px; font:600 10px/1 var(--font-display); text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-500);">AU Cost</th>
-          <th style="text-align:right; padding:10px 8px; font:600 10px/1 var(--font-display); text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-500);">NZ Cost</th>
-          <th style="text-align:right; padding:10px 8px; font:600 10px/1 var(--font-display); text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-500);">Export Cost</th>
-          <th style="text-align:right; padding:10px 8px; font:600 10px/1 var(--font-display); text-transform:uppercase; letter-spacing:0.08em; color:var(--grey-500);">GP%</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr style="border-bottom:1px solid var(--grey-100);">
-          <td style="padding:10px 8px; font:600 13px/1.3 var(--font-display);">R-FS-2P-V2</td>
-          <td style="padding:10px 8px;">Aura 2P Next Gen</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$5,999</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display); color:var(--revel-green);">$2,363</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$2,780</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$1,180</td>
-          <td style="padding:10px 8px; text-align:right; font:700 13px/1.3 var(--font-display); color:var(--revel-forest);">61%</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--grey-100); background:var(--grey-50);">
-          <td style="padding:10px 8px; font:600 13px/1.3 var(--font-display);">R-FS-3P-V2</td>
-          <td style="padding:10px 8px;">Aura 3P Next Gen</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$6,999</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display); color:var(--revel-green);">$2,604</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$3,063</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$1,300</td>
-          <td style="padding:10px 8px; text-align:right; font:700 13px/1.3 var(--font-display); color:var(--revel-forest);">63%</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--grey-100);">
-          <td style="padding:10px 8px; font:600 13px/1.3 var(--font-display);">R-FS-2P</td>
-          <td style="padding:10px 8px;">Aura 2P Gen 1</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$3,999</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display); color:var(--revel-green);">$1,808</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$2,127</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$903</td>
-          <td style="padding:10px 8px; text-align:right; font:700 13px/1.3 var(--font-display); color:var(--revel-forest);">55%</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 8px; font:600 13px/1.3 var(--font-display);">R-FS-4P</td>
-          <td style="padding:10px 8px;">Aura 3P Gen 1</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$6,999</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display); color:var(--revel-green);">$2,028</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$2,386</td>
-          <td style="padding:10px 8px; text-align:right; font:600 13px/1.3 var(--font-display);">$1,013</td>
-          <td style="padding:10px 8px; text-align:right; font:700 13px/1.3 var(--font-display); color:var(--revel-forest);">71%</td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 
   <div class="footer">
-    Internal use only &mdash; Revel Saunas &mdash; Data sourced from NetSuite &mdash; 18 May 2026
+    Revel Saunas &middot; 18 May 2026
   </div>
 </body>
 </html>
