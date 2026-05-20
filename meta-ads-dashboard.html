@@ -200,6 +200,10 @@ function getActionValue(actions, type) {
   return a ? parseFloat(a.value) : 0;
 }
 
+function getPurchaseValue(actions) {
+  return getActionValue(actions, 'omni_purchase') || getActionValue(actions, 'purchase');
+}
+
 function getDateRange(preset, custom) {
   const today = new Date();
   const pad = d => d.toISOString().slice(0,10);
@@ -617,8 +621,8 @@ const OBJECTIVE_LABELS = {
 function classifyCampaign(row, avgMetrics, objective) {
   const goal = OBJECTIVE_MAP[objective] || null;
   const spend = parseFloat(row.spend || 0);
-  const conversions = getActionValue(row.actions, 'purchase') + getActionValue(row.actions, 'omni_purchase');
-  const revenue = getActionValue(row.action_values, 'purchase') + getActionValue(row.action_values, 'omni_purchase');
+  const conversions = getPurchaseValue(row.actions);
+  const revenue = getPurchaseValue(row.action_values);
   const roas = spend > 0 ? revenue / spend : 0;
   const ctr = parseFloat(row.ctr || 0);
   const cpm = parseFloat(row.cpm || 0);
@@ -751,8 +755,8 @@ function TrendChart({ dailyData, brand, datePreset }) {
   const points = useMemo(() => {
     return (dailyData || []).map(d => {
       const spend = parseFloat(d.spend || 0);
-      const purchases = getActionValue(d.actions, 'purchase') + getActionValue(d.actions, 'omni_purchase');
-      const revenue = getActionValue(d.action_values, 'purchase') + getActionValue(d.action_values, 'omni_purchase');
+      const purchases = getPurchaseValue(d.actions);
+      const revenue = getPurchaseValue(d.action_values);
       return {
         date: d.date_start,
         spend,
@@ -1202,8 +1206,8 @@ function OverviewTab({ data, brand, datePreset }) {
       t.impressions += parseInt(r.impressions || 0);
       t.reach += parseInt(r.reach || 0);
       t.clicks += parseInt(r.clicks || 0);
-      t.conversions += getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
-      t.revenue += getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      t.conversions += getPurchaseValue(r.actions);
+      t.revenue += getPurchaseValue(r.action_values);
       t.outboundClicks += getActionValue(r.outbound_clicks, 'outbound_click');
       t.atc += getActionValue(r.actions, 'add_to_cart');
       t.lpv += getActionValue(r.actions, 'landing_page_view');
@@ -1247,7 +1251,7 @@ function OverviewTab({ data, brand, datePreset }) {
   const avgMetrics = useMemo(() => {
     const ci = data.campaignInsights;
     const median = arr => { const s = [...arr].sort((a,b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; };
-    const roasVals = ci.map(r => { const sp = parseFloat(r.spend || 0); const rev = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase'); return sp > 0 ? rev / sp : 0; }).filter(v => v > 0);
+    const roasVals = ci.map(r => { const sp = parseFloat(r.spend || 0); const rev = getPurchaseValue(r.action_values); return sp > 0 ? rev / sp : 0; }).filter(v => v > 0);
     const ctrVals = ci.map(r => parseFloat(r.ctr || 0)).filter(v => v > 0);
     const cpmVals = ci.map(r => parseFloat(r.cpm || 0)).filter(v => v > 0);
     return {
@@ -1262,8 +1266,8 @@ function OverviewTab({ data, brand, datePreset }) {
       const objective = objMap[r.campaign_id] || '';
       const tier = classifyCampaign(r, avgMetrics, objective);
       const spend = parseFloat(r.spend || 0);
-      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
-      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      const conversions = getPurchaseValue(r.actions);
+      const revenue = getPurchaseValue(r.action_values);
       return { ...tier, name: r.campaign_name, spend, conversions, revenue, roas: spend > 0 ? revenue / spend : 0, ctr: parseFloat(r.ctr || 0), cpm: parseFloat(r.cpm || 0), objective };
     }).sort((a, b) => b.spend - a.spend);
   }, [data, objMap, avgMetrics]);
@@ -1275,8 +1279,8 @@ function OverviewTab({ data, brand, datePreset }) {
   const scaleWinners = useMemo(() => {
     return (data.adsetInsights || []).map(r => {
       const spend = parseFloat(r.spend || 0);
-      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
-      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      const conversions = getPurchaseValue(r.actions);
+      const revenue = getPurchaseValue(r.action_values);
       const roas = spend > 0 ? revenue / spend : 0;
       return { name: r.adset_name, campaign: r.campaign_name, spend, conversions, revenue, roas, ctr: parseFloat(r.ctr || 0), cpm: parseFloat(r.cpm || 0) };
     }).filter(r => r.roas > avgMetrics.roas && r.conversions >= 2 && r.spend >= 200)
@@ -1398,9 +1402,9 @@ function CampaignsTab({ data, brand }) {
     return m;
   }, [data]);
   const rows = useMemo(() => data.campaignInsights.map(r => {
-    const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
-    const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
-    const costPerConv = getActionValue(r.cost_per_action_type, 'purchase') + getActionValue(r.cost_per_action_type, 'omni_purchase');
+    const conversions = getPurchaseValue(r.actions);
+    const revenue = getPurchaseValue(r.action_values);
+    const costPerConv = getPurchaseValue(r.cost_per_action_type);
     const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
     const atc = getActionValue(r.actions, 'add_to_cart');
     const lpv = getActionValue(r.actions, 'landing_page_view');
@@ -1478,8 +1482,8 @@ function AdSetsTab({ data, brand }) {
     let filtered = data.adsetInsights;
     if (campaignFilter !== 'all') filtered = filtered.filter(r => r.campaign_name === campaignFilter);
     return filtered.map(r => {
-      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
-      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      const conversions = getPurchaseValue(r.actions);
+      const revenue = getPurchaseValue(r.action_values);
       const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
       const atc = getActionValue(r.actions, 'add_to_cart');
       const lpv = getActionValue(r.actions, 'landing_page_view');
@@ -1776,8 +1780,8 @@ function CreativeTab({ data, brand }) {
         const isVideo = !!creative?.isVideo;
         const videoId = creative?.videoId || null;
         const videoSource = creative?.videoSource || null;
-        const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
-        const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+        const conversions = getPurchaseValue(r.actions);
+        const revenue = getPurchaseValue(r.action_values);
         const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
         const atc = getActionValue(r.actions, 'add_to_cart');
         const lpv = getActionValue(r.actions, 'landing_page_view');
@@ -2364,8 +2368,8 @@ function BreakdownsTab({ data, brand }) {
       const ctr = parseFloat(r.ctr || 0);
       const cpc = parseFloat(r.cpc || 0);
       const cpm = parseFloat(r.cpm || 0);
-      const conversions = getActionValue(r.actions, 'purchase') + getActionValue(r.actions, 'omni_purchase');
-      const revenue = getActionValue(r.action_values, 'purchase') + getActionValue(r.action_values, 'omni_purchase');
+      const conversions = getPurchaseValue(r.actions);
+      const revenue = getPurchaseValue(r.action_values);
       const outbound = getActionValue(r.outbound_clicks, 'outbound_click');
       const atc = getActionValue(r.actions, 'add_to_cart');
       const lpv = getActionValue(r.actions, 'landing_page_view');
